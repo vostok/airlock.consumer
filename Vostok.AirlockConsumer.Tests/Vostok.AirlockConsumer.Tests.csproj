@@ -13,7 +13,6 @@
     <PackageReference Include="Vostok.Logging.Serilog" Version="1.0.0-pre000008" />
     <PackageReference Include="xunit" Version="2.3.0-beta5-build3769" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta5-build3769" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
   </ItemGroup>
 
   <ItemGroup>
