@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using Vostok.Commons.Binary;
 
-namespace AirlockSimpleSerializators
+namespace Vostok.AirlockConsumer
 {
     public class SimpleBinaryReader : IBinaryReader
     {

@@ -2,7 +2,7 @@
 using Vostok.Airlock;
 using Vostok.Commons.Binary;
 
-namespace AirlockSimpleSerializators
+namespace Vostok.AirlockConsumer
 {
     public class SimpleAirlockDeserializationSink : IAirlockDeserializationSink
     {

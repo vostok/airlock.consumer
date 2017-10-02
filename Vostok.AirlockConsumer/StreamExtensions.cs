@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace AirlockSimpleSerializators
+namespace Vostok.AirlockConsumer
 {
     public static class StreamExtensions
     {

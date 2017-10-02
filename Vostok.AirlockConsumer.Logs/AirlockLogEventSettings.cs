@@ -1,4 +1,4 @@
-﻿namespace AirlockLogConsumer
+﻿namespace Vostok.AirlockConsumer.Logs
 {
     public class AirlockLogEventSettings
     {

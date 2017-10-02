@@ -1,9 +1,8 @@
 using System.IO;
-using AirlockSimpleSerializators;
 using Confluent.Kafka.Serialization;
 using Vostok.Airlock;
 
-namespace AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     internal class ConsumerDeserializer<T> : IDeserializer<T>
     {

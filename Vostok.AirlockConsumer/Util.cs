@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public static class Util
     {

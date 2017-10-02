@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public interface IMessageProcessor<T>
     {

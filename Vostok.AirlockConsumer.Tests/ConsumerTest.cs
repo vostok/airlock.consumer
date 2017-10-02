@@ -5,14 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
-using AirlockConsumer;
-using AirlockSimpleSerializators;
 using Vostok.Airlock;
 using Vostok.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AirlockConsumerTest
+namespace Vostok.AirlockConsumer.Tests
 {
     internal class LogEventMessageProcessorStub : IMessageProcessor<LogEventData>
     {

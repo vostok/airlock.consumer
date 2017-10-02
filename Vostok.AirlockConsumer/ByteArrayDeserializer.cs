@@ -1,6 +1,6 @@
 using Confluent.Kafka.Serialization;
 
-namespace AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ByteArrayDeserializer : IDeserializer<byte[]>
     {

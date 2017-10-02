@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Elasticsearch.Net;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
-namespace AirlockConsumerTest
+namespace Vostok.AirlockConsumer.Logs.Tests
 {
     public class ElasticTest
     {

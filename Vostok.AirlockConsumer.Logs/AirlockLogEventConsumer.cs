@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using AirlockConsumer;
 using Elasticsearch.Net;
 using Vostok.Airlock;
 using Vostok.Logging;
 
-namespace AirlockLogConsumer
+namespace Vostok.AirlockConsumer.Logs
 {
     internal class LogEventMessageProcessor : IMessageProcessor<LogEventData>
     {

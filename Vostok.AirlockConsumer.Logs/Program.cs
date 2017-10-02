@@ -1,10 +1,9 @@
 ﻿using System;
-using AirlockConsumer;
 using Serilog;
 using Vostok.Logging;
 using Vostok.Logging.Serilog;
 
-namespace AirlockLogConsumer
+namespace Vostok.AirlockConsumer.Logs
 {
     class Program
     {

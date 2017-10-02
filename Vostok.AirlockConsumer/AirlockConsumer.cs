@@ -9,7 +9,7 @@ using Confluent.Kafka;
 using Vostok.Airlock;
 using Vostok.Logging;
 
-namespace AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ConsumerEvent<T>
     {

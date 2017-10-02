@@ -1,11 +1,9 @@
 ﻿using System;
 using NSubstitute;
-using Serilog;
 using Vostok.Logging;
-using Vostok.Logging.Serilog;
 using Xunit.Abstractions;
 
-namespace AirlockConsumerTest
+namespace Vostok.AirlockConsumer.Tests
 {
     internal class TestOutputLog : ILog
     {
