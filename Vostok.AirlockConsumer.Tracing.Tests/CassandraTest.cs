@@ -1,21 +1,14 @@
-﻿using Xunit;
-using Xunit.Abstractions;
+﻿using System;
+using NUnit.Framework;
 
 namespace Vostok.AirlockConsumer.Tracing.Tests
 {
     public class CassandraTest
     {
-        private readonly ITestOutputHelper output;
-
-        public CassandraTest(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        [Fact]
+        [Test]
         public void Test()
         {
-            output.WriteLine("lalala");
+            Console.Out.WriteLine("lalal");
         }
     }
 }

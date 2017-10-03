@@ -5,11 +5,11 @@ using Vostok.Logging.Serilog;
 
 namespace Vostok.AirlockConsumer.Logs
 {
-    class Program
+    public static class Program
     {
         public static ILog Log;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var logger = new LoggerConfiguration()
                 .WriteTo.Console()
