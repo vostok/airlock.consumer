@@ -7,9 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer", "V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Tests", "Vostok.AirlockConsumer.Tests\Vostok.AirlockConsumer.Tests.csproj", "{A0B4778F-1D4E-4C2A-A00A-305E64A23C5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Logs", "Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj", "{9530980E-F85B-4BBE-A9B2-1A5AFC17690D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Logs", "Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj", "{9530980E-F85B-4BBE-A9B2-1A5AFC17690D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Logs.Tests", "Vostok.AirlockConsumer.Logs.Tests\Vostok.AirlockConsumer.Logs.Tests.csproj", "{51AA0BF7-2920-4769-8B0C-F9A20ED6CEA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Logs.Tests", "Vostok.AirlockConsumer.Logs.Tests\Vostok.AirlockConsumer.Logs.Tests.csproj", "{51AA0BF7-2920-4769-8B0C-F9A20ED6CEA9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Tracing", "Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj", "{F036003D-19B4-483D-AE4F-A16E72C6A59A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Tracing.Tests", "Vostok.AirlockConsumer.Tracing.Tests\Vostok.AirlockConsumer.Tracing.Tests.csproj", "{863171CA-BE97-4931-A577-D84BFBC53299}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{51AA0BF7-2920-4769-8B0C-F9A20ED6CEA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51AA0BF7-2920-4769-8B0C-F9A20ED6CEA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51AA0BF7-2920-4769-8B0C-F9A20ED6CEA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F036003D-19B4-483D-AE4F-A16E72C6A59A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F036003D-19B4-483D-AE4F-A16E72C6A59A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F036003D-19B4-483D-AE4F-A16E72C6A59A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F036003D-19B4-483D-AE4F-A16E72C6A59A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{863171CA-BE97-4931-A577-D84BFBC53299}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{863171CA-BE97-4931-A577-D84BFBC53299}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{863171CA-BE97-4931-A577-D84BFBC53299}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{863171CA-BE97-4931-A577-D84BFBC53299}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

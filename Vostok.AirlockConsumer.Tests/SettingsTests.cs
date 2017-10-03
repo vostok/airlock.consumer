@@ -1,18 +1,10 @@
 ﻿using System.Collections.Generic;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Vostok.AirlockConsumer.Tests
 {
     public class SettingsTests
     {
-        private readonly ITestOutputHelper output;
-
-        public SettingsTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         [Fact]
         public void ReadKafkaSettings()
         {
@@ -20,14 +12,5 @@ namespace Vostok.AirlockConsumer.Tests
             Assert.True(settings.ContainsKey("fetch.wait.max.ms"));
             Assert.Equal("1000", settings["fetch.wait.max.ms"]);
         }
-/*
-
-        [Fact]
-        public void ReadLogEventSettings()
-        {
-            var settings = Util.ReadYamlSettings<AirlockLogEventSettings>("logConsumer.yaml");
-            Assert.Equal(1000, settings.BatchSize);
-        }
-*/
     }
 }

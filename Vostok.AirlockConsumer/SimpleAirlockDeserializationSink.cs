@@ -4,7 +4,7 @@ using Vostok.Commons.Binary;
 
 namespace Vostok.AirlockConsumer
 {
-    public class SimpleAirlockDeserializationSink : IAirlockDeserializationSink
+    public class SimpleAirlockDeserializationSink : IAirlockSource
     {
         public SimpleAirlockDeserializationSink(Stream stream)
         {

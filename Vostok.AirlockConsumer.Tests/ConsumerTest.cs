@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -12,24 +11,6 @@ using Xunit.Abstractions;
 
 namespace Vostok.AirlockConsumer.Tests
 {
-    internal class LogEventMessageProcessorStub : IMessageProcessor<LogEventData>
-    {
-        public LogEventData[] LastEvents;
-
-        public void Process(IEnumerable<ConsumerEvent<LogEventData>> events)
-        {
-            LastEvents = events.Select(x => x.Event).ToArray();
-        }
-    }
-
-    public class AirlockLogEventConsumerStub : AirlockConsumer<LogEventData>
-    {
-        public AirlockLogEventConsumerStub(IMessageProcessor<LogEventData> messageProcessor, ILog log) :
-            base(AirlockEventTypes.Logging, 1000, new LogEventDataAirlockDeserializer(), messageProcessor, log)
-        {
-        }
-    }
-
     public class ConsumerTest
     {
         private readonly ITestOutputHelper output;

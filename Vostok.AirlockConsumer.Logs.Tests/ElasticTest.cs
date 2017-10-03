@@ -22,7 +22,7 @@ namespace Vostok.AirlockConsumer.Logs.Tests
                 .RequestTimeout(TimeSpan.FromMinutes(2));
 
             var client = new ElasticLowLevelClient(settings);
-            IDictionary<string,string> obj = new Dictionary<string, string>
+            IDictionary<string, string> obj = new Dictionary<string, string>
             {
                 ["timestamp"] = DateTimeOffset.UtcNow.ToString("O"),
                 ["message"] = "Hello world"
@@ -34,10 +34,10 @@ namespace Vostok.AirlockConsumer.Logs.Tests
             };
             var response = client.Bulk<byte[]>(new PostData<object>(new object[]
             {
-                new { index  = new {  _index = ".kibana", _type = "LogEvent"} }, obj,
-                new { index = new { _index = ".kibana", _type = "LogEvent"} }, obj2
+                new {index = new {_index = ".kibana", _type = "LogEvent"}}, obj,
+                new {index = new {_index = ".kibana", _type = "LogEvent"}}, obj2
             }));
-            output.WriteLine($"code = {response.HttpStatusCode}, {response.ServerError?.Error?.Reason }");
+            output.WriteLine($"code = {response.HttpStatusCode}, {response.ServerError?.Error?.Reason}");
         }
     }
 }
