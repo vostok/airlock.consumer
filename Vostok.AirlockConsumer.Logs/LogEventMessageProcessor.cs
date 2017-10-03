@@ -19,6 +19,7 @@ namespace Vostok.AirlockConsumer.Logs
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
+
         public void Process(IEnumerable<ConsumerEvent<LogEventData>> events)
         {
             log.Info("Process events");
@@ -30,10 +31,36 @@ namespace Vostok.AirlockConsumer.Logs
                     _index = ".kibana",
                     _type = "LogEvent"
                 } });
+
                 var logEventData = consumerEvent.Event;
-                logEventData.Properties["@timestamp"] = DateTimeOffset.FromUnixTimeMilliseconds(consumerEvent.Timestamp).ToString("O");
-                log.Debug("LogEvent: " + string.Join(", ", logEventData.Properties.Select(x => $"{x.Key} : {x.Value}")));
-                elasticRecords.Add(logEventData.Properties);
+
+                var elasticLogEvent = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    ["@timestamp"] = logEventData.Timestamp.ToString("O"),
+                    ["Level"] = logEventData.LogLevel,
+                };
+
+                if (!string.IsNullOrEmpty(logEventData.MessageTemplate))
+                {
+                    elasticLogEvent.Add("MessageTemplate", logEventData.MessageTemplate);
+                }
+
+                if (!string.IsNullOrEmpty(logEventData.Exception))
+                {
+                    elasticLogEvent.Add("Exception", logEventData.Exception);
+                }
+
+                foreach (var kvp in logEventData.Properties)
+                {
+                    if (elasticLogEvent.ContainsKey(kvp.Key))
+                    {
+                        continue;
+                    }
+
+                    elasticLogEvent.Add(kvp.Key, kvp.Value);
+                }
+
+                elasticRecords.Add(elasticLogEvent);
             }
             log.Info($"Send {elasticRecords.Count/2} events");
             var response = elasticClient.Bulk<byte[]>(new PostData<object>(elasticRecords));

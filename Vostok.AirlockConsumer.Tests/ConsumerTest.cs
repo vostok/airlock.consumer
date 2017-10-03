@@ -40,15 +40,15 @@ namespace Vostok.AirlockConsumer.Tests
         {
             var logEventData = new LogEventData
             {
-                Properties = new Dictionary<string, string>()
+                Timestamp = DateTimeOffset.UtcNow,
+                LogLevel = "INFO",
+                MessageTemplate = "Hello",
+                Properties = new Dictionary<string, string>
                 {
-                    //["timestamp"] = DateTime.UtcNow.ToString("O"),
-                    ["message"] = "hello world!",
                     ["host"] = "superserver"
-                },
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                }
             };
-            var logEventDataBytes = SerializeForAirlock<LogEventData, LogEventDataAirlockSerializer>(logEventData);
+            var logEventDataBytes = SerializeForAirlock<LogEventData, LogEventDataSerializer>(logEventData);
             var airlockMessage = new AirlockMessage()
             {
                 EventGroups = new List<EventGroup>()
