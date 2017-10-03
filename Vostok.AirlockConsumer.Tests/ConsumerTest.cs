@@ -4,38 +4,30 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using FluentAssertions;
+using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Logging;
-using Xunit;
-using Xunit.Abstractions;
+using Vostok.Logging.Logs;
 
 namespace Vostok.AirlockConsumer.Tests
 {
     public class ConsumerTest
     {
-        private readonly ITestOutputHelper output;
-
-        public ConsumerTest(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        [Fact(Skip = "Integration test")]
+        [Test, Ignore("Integration test")]
         public void SendAndReceive()
         {
             var logEventData = SendData();
 
             var messageProcessor = new LogEventMessageProcessorStub();
-            using (var consumerStub = new AirlockLogEventConsumerStub(messageProcessor, TestSetup.GetLogMock(output)))
+            using (var consumerStub = new AirlockLogEventConsumerStub(messageProcessor, new ConsoleLog()))
             {
                 consumerStub.Start();
                 Wait(() => messageProcessor.LastEvents != null);
-                Assert.NotNull(messageProcessor.LastEvents);
-                Assert.Contains(messageProcessor.LastEvents, e => e.Timestamp == logEventData.Timestamp);
+                messageProcessor.LastEvents.Should().Contain(e => e.Timestamp == logEventData.Timestamp);
             }
         }
 
-        //[Fact(Skip = "Integration test")]
         private LogEventData SendData()
         {
             var logEventData = new LogEventData
@@ -73,9 +65,9 @@ namespace Vostok.AirlockConsumer.Tests
                 var httpContent = new ByteArrayContent(airlockMessageBytes);
                 httpContent.Headers.Add("apikey", "8bb9d519-ae52-4c17-ad7a-d871dbd665fe");
                 var responseMessage = httpClient.PostAsync("http://localhost:8888/send", httpContent).Result;
-                output.WriteLine("resp body = " + responseMessage.Content.ReadAsStringAsync().Result);
-                output.WriteLine("resp code = " + responseMessage.StatusCode);
-                Assert.Equal(HttpStatusCode.OK, responseMessage.StatusCode);
+                Console.Out.WriteLine("resp body = " + responseMessage.Content.ReadAsStringAsync().Result);
+                Console.Out.WriteLine("resp code = " + responseMessage.StatusCode);
+                Assert.That(responseMessage.StatusCode,  Is.EqualTo(HttpStatusCode.OK));
             }
             return logEventData;
         }

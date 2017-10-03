@@ -1,14 +1,15 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using NUnit.Framework;
 
 namespace Vostok.AirlockConsumer.Logs.Tests
 {
     public class AirlockLogEventSettingsTest
     {
-        [Fact]
+        [Test]
         public void ReadLogEventSettings()
         {
             var settings = Util.ReadYamlSettings<AirlockLogEventSettings>("logConsumer.yaml");
-            Assert.Equal(1000, settings.BatchSize);
+            settings.BatchSize.Should().Be(1000);
         }
     }
 }

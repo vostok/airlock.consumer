@@ -37,7 +37,6 @@ namespace Vostok.AirlockConsumer
                 throw new InvalidDataException("Could not find projects for eventType " + eventType);
             }
             events.Capacity = batchSize;
-            //var settings = kafkaSetting.Select(x => new KeyValuePair<string, object>(x.Key, x.Value));
             var consumerDeserializer = new ConsumerDeserializer<T>(deserializer);
             consumer = new Consumer<byte[], T>(settings, new ByteArrayDeserializer(), consumerDeserializer);
             consumer.OnMessage += (s, e) => OnMessage(e);

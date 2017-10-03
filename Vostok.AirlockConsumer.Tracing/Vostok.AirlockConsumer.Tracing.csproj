@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000081" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
   </ItemGroup>
 

@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
-using Xunit;
+using FluentAssertions;
+using NUnit.Framework;
 
 namespace Vostok.AirlockConsumer.Tests
 {
     public class SettingsTests
     {
-        [Fact]
+        [Test]
         public void ReadKafkaSettings()
         {
             var settings = Util.ReadYamlSettings<Dictionary<string, object>>("kafka.yaml");
-            Assert.True(settings.ContainsKey("fetch.wait.max.ms"));
-            Assert.Equal("1000", settings["fetch.wait.max.ms"]);
+            settings.Should().ContainKey("fetch.wait.max.ms");
+            settings["fetch.wait.max.ms"].Should().Be("1000");
         }
     }
 }

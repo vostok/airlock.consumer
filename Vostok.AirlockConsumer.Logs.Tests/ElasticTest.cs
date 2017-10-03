@@ -1,21 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Elasticsearch.Net;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
 
 namespace Vostok.AirlockConsumer.Logs.Tests
 {
     public class ElasticTest
     {
-        private readonly ITestOutputHelper output;
-
-        public ElasticTest(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        [Fact(Skip = "Manual test")]
+        [Test, Explicit("Manual")]
         public void IndexData()
         {
             var settings = new ConnectionConfiguration(new Uri("http://devops-consul1.dev.kontur.ru:9200/"))
@@ -37,7 +29,7 @@ namespace Vostok.AirlockConsumer.Logs.Tests
                 new {index = new {_index = ".kibana", _type = "LogEvent"}}, obj,
                 new {index = new {_index = ".kibana", _type = "LogEvent"}}, obj2
             }));
-            output.WriteLine($"code = {response.HttpStatusCode}, {response.ServerError?.Error?.Reason}");
+            Console.Out.WriteLine($"code = {response.HttpStatusCode}, {response.ServerError?.Error?.Reason}");
         }
     }
 }
