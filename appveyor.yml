@@ -2,7 +2,7 @@ version: '1.0.0-pre{build}'
 image: Visual Studio 2017
 nuget:
   project_feed: true
-  disable_publish_on_pr: true     # disable publishing of .nupkg artifacts to account/project feeds for pull request builds
+  disable_publish_on_pr: true
 install:
   - nuget sources add -name core -source https://ci.appveyor.com/nuget/core-2nbdf5dfgymf
   - dotnet restore
