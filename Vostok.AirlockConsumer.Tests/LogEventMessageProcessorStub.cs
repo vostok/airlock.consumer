@@ -8,9 +8,9 @@ namespace Vostok.AirlockConsumer.Tests
     {
         public LogEventData[] LastEvents;
 
-        public void Process(IEnumerable<ConsumerEvent<LogEventData>> events)
+        public void Process(List<AirlockEvent<LogEventData>> events)
         {
-            LastEvents = events.Select(x => x.Event).ToArray();
+            LastEvents = events.Select(x => x.Payload).ToArray();
         }
     }
 }

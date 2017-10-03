@@ -4,6 +4,6 @@ namespace Vostok.AirlockConsumer
 {
     public interface IMessageProcessor<T>
     {
-        void Process(IEnumerable<ConsumerEvent<T>> events);
+        void Process(List<AirlockEvent<T>> events);
     }
 }

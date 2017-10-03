@@ -18,7 +18,7 @@ namespace Vostok.AirlockConsumer
         private readonly ILog log;
         private readonly Consumer<byte[], T> consumer;
         private readonly CancellationTokenSource cancellationTokenSource;
-        private readonly List<ConsumerEvent<T>> events = new List<ConsumerEvent<T>>();
+        private readonly List<AirlockEvent<T>> events = new List<AirlockEvent<T>>();
         private readonly Dictionary<TopicPartition, long> lastOffsets = new Dictionary<TopicPartition, long>();
         private Task polltask;
 
@@ -114,11 +114,11 @@ namespace Vostok.AirlockConsumer
                 {
                     lastOffsets[topicPartition] = message.Offset.Value;
                 }
-                events.Add(new ConsumerEvent<T>
+                events.Add(new AirlockEvent<T>
                 {
-                    Event = message.Value,
-                    Timestamp = message.Timestamp.UnixTimestampMs,
-                    Project = project
+                    Payload = message.Value,
+                    Timestamp = message.Timestamp.UtcDateTime,
+                    RoutingKey = project
                 });
                 if (events.Count >= batchSize)
                 {
@@ -133,7 +133,7 @@ namespace Vostok.AirlockConsumer
             {
                 if (events.Count == 0)
                     return true;
-                messageProcessor.Process(events.ToArray());
+                messageProcessor.Process(events);
                 try
                 {
                     var committedOffsets = consumer.CommitAsync(lastOffsets.Select(x => new TopicPartitionOffset(x.Key, x.Value+1))).Result;

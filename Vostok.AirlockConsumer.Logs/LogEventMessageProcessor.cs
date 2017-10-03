@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.Logs
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public void Process(IEnumerable<ConsumerEvent<LogEventData>> events)
+        public void Process(List<AirlockEvent<LogEventData>> events)
         {
             log.Info("Process events");
             var elasticRecords = new List<object>();
@@ -33,7 +33,7 @@ namespace Vostok.AirlockConsumer.Logs
                     _type = "LogEvent"
                 } });
 
-                var logEventData = consumerEvent.Event;
+                var logEventData = consumerEvent.Payload;
 
                 var elasticLogEvent = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
                 {
