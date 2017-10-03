@@ -39,7 +39,7 @@ namespace Vostok.AirlockConsumer.Tests
                 Properties = new Dictionary<string, string>
                 {
                     ["host"] = "superserver"
-                }
+                },
             };
             var logEventDataBytes = SerializeForAirlock<LogEventData, LogEventDataSerializer>(logEventData);
             var airlockMessage = new AirlockMessage()

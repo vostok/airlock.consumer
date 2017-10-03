@@ -4,7 +4,7 @@ nuget:
   project_feed: true
   disable_publish_on_pr: true
 install:
-  - nuget sources add -name core -source https://ci.appveyor.com/nuget/core-2nbdf5dfgymf
+  - nuget sources add -name core -source https://ci.appveyor.com/nuget/vostok-htv1wakyrb25
   - dotnet restore
 configuration: Release
 before_build:
