@@ -1,4 +1,6 @@
-﻿using Vostok.Airlock;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Vostok.Logging;
 using Vostok.Logging.Airlock;
 
@@ -6,8 +8,8 @@ namespace Vostok.AirlockConsumer.Logs
 {
     public class AirlockLogEventConsumer : AirlockConsumer<LogEventData>
     {
-        public AirlockLogEventConsumer(AirlockLogEventSettings settings)
-            : base(AirlockEventTypes.Logging, settings.BatchSize, new LogEventDataSerializer(), new LogEventMessageProcessor(settings.ElasticUriList), Program.Log.ForContext<AirlockLogEventConsumer>())
+        public AirlockLogEventConsumer(Dictionary<string, object> settings)
+            : base(settings, new[] {"vostok:staging|logs"}, new LogEventDataSerializer(), new LogEventMessageProcessor(((List<object>)settings["airlock.consumer.elastic.endpoints"]).Cast<string>().Select(x => new Uri(x)).ToArray()), AirlockConsumerLogsEntryPoint.Log.ForContext<AirlockLogEventConsumer>())
         {
         }
     }

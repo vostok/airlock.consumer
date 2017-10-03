@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -22,23 +20,14 @@ namespace Vostok.AirlockConsumer
         private readonly Dictionary<TopicPartition, long> lastOffsets = new Dictionary<TopicPartition, long>();
         private Task polltask;
 
-        protected AirlockConsumer(int eventType, int batchSize, IAirlockDeserializer<T> deserializer,
-            IMessageProcessor<T> messageProcessor, ILog log, string settingsFileName = null)
+        protected AirlockConsumer(Dictionary<string, object> settings, string[] topics, IAirlockDeserializer<T> deserializer, IMessageProcessor<T> messageProcessor, ILog log)
         {
-            this.batchSize = batchSize;
+            batchSize = int.Parse((string)settings["airlock.consumer.batch.size"]);
             this.messageProcessor = messageProcessor;
             this.log = log;
-            var settings = Util.ReadYamlSettings<Dictionary<string, object>>(settingsFileName ?? "kafka.yaml");
-            settings["client.id"] = Dns.GetHostName();
-            settings["enable.auto.commit"] = "false";
-            var eventConsumers = Util.ReadYamlSettings<Dictionary<int, List<string>>>("eventConsumers.yaml");
-            if (!eventConsumers.TryGetValue(eventType, out var projects))
-            {
-                throw new InvalidDataException("Could not find projects for eventType " + eventType);
-            }
             events.Capacity = batchSize;
             var consumerDeserializer = new ConsumerDeserializer<T>(deserializer);
-            consumer = new Consumer<byte[], T>(settings, new ByteArrayDeserializer(), consumerDeserializer);
+            consumer = new Consumer<byte[], T>(Clean(settings), new ByteArrayDeserializer(), consumerDeserializer);
             consumer.OnMessage += (s, e) => OnMessage(e);
             consumer.OnError += (s, e) => { log.Error(e.Reason); };
             consumer.OnConsumeError += (s, e) => { log.Error(e.Error.ToString()); };
@@ -54,7 +43,17 @@ namespace Vostok.AirlockConsumer
             };
             cancellationTokenSource = new CancellationTokenSource();
 
-            consumer.Subscribe(projects.Select(x => x + "-" + eventType));
+            consumer.Subscribe(topics);
+        }
+
+        private static Dictionary<string, object> Clean(Dictionary<string, object> settings)
+        {
+            foreach (var key in settings.Keys.ToArray())
+            {
+                if (key.StartsWith("airlock.consumer"))
+                    settings.Remove(key);
+            }
+            return settings;
         }
 
         public void Start()

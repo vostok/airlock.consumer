@@ -13,10 +13,10 @@ namespace Vostok.AirlockConsumer.Logs
         private readonly ElasticLowLevelClient elasticClient;
         private readonly ILog log;
 
-        public LogEventMessageProcessor(IEnumerable<string> elasticUriList)
+        public LogEventMessageProcessor(Uri[] elasticUris)
         {
-            log = Program.Log.ForContext<LogEventMessageProcessor>();
-            var connectionPool = new StickyConnectionPool(elasticUriList.Select(x => new Uri(x)), null);
+            log = AirlockConsumerLogsEntryPoint.Log.ForContext<LogEventMessageProcessor>();
+            var connectionPool = new StickyConnectionPool(elasticUris, null);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
