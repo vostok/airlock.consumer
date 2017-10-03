@@ -1,7 +1,6 @@
 version: '1.0.0-pre{build}'
 image: Visual Studio 2017
 nuget:
-  account_feed: true
   project_feed: true
   disable_publish_on_pr: true     # disable publishing of .nupkg artifacts to account/project feeds for pull request builds
 install:
