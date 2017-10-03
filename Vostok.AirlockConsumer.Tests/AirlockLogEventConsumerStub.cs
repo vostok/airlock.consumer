@@ -1,5 +1,6 @@
 ﻿using Vostok.Airlock;
 using Vostok.Logging;
+using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Tests
 {

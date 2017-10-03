@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000081" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000091" />
   </ItemGroup>
 
   <ItemGroup>

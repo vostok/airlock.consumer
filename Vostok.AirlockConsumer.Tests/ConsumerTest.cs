@@ -8,6 +8,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Logging;
+using Vostok.Logging.Airlock;
 using Vostok.Logging.Logs;
 
 namespace Vostok.AirlockConsumer.Tests
@@ -33,8 +34,8 @@ namespace Vostok.AirlockConsumer.Tests
             var logEventData = new LogEventData
             {
                 Timestamp = DateTimeOffset.UtcNow,
-                LogLevel = "INFO",
-                MessageTemplate = "Hello",
+                Level = LogLevel.Info,
+                Message = "Hello",
                 Properties = new Dictionary<string, string>
                 {
                     ["host"] = "superserver"

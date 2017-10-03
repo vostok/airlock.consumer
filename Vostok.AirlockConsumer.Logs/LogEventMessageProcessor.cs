@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using Elasticsearch.Net;
 using Vostok.Logging;
+using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
 {
@@ -37,12 +38,12 @@ namespace Vostok.AirlockConsumer.Logs
                 var elasticLogEvent = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
                 {
                     ["@timestamp"] = logEventData.Timestamp.ToString("O"),
-                    ["Level"] = logEventData.LogLevel,
+                    ["Level"] = logEventData.Level.ToString(),
                 };
 
-                if (!string.IsNullOrEmpty(logEventData.MessageTemplate))
+                if (!string.IsNullOrEmpty(logEventData.Message))
                 {
-                    elasticLogEvent.Add("MessageTemplate", logEventData.MessageTemplate);
+                    elasticLogEvent.Add("MessageTemplate", logEventData.Message);
                 }
 
                 if (!string.IsNullOrEmpty(logEventData.Exception))
