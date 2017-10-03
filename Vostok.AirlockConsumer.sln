@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer", "Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj", "{D11DD2E1-0296-4FA1-8630-CF0A453EFF0C}"
 EndProject
@@ -11,9 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Logs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Logs.Tests", "Vostok.AirlockConsumer.Logs.Tests\Vostok.AirlockConsumer.Logs.Tests.csproj", "{51AA0BF7-2920-4769-8B0C-F9A20ED6CEA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Tracing", "Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj", "{F036003D-19B4-483D-AE4F-A16E72C6A59A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Tracing", "Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj", "{F036003D-19B4-483D-AE4F-A16E72C6A59A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Tracing.Tests", "Vostok.AirlockConsumer.Tracing.Tests\Vostok.AirlockConsumer.Tracing.Tests.csproj", "{863171CA-BE97-4931-A577-D84BFBC53299}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Tracing.Tests", "Vostok.AirlockConsumer.Tracing.Tests\Vostok.AirlockConsumer.Tracing.Tests.csproj", "{863171CA-BE97-4931-A577-D84BFBC53299}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator", "Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj", "{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator.Tests", "Vostok.AirlockConsumer.MetricsAggregator.Tests\Vostok.AirlockConsumer.MetricsAggregator.Tests.csproj", "{0F6D8A2B-2806-46F4-802F-394C944EBB43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,14 @@ Global
 		{863171CA-BE97-4931-A577-D84BFBC53299}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{863171CA-BE97-4931-A577-D84BFBC53299}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{863171CA-BE97-4931-A577-D84BFBC53299}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
