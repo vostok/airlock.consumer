@@ -5,4 +5,8 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000100" />
+  </ItemGroup>
+
 </Project>
