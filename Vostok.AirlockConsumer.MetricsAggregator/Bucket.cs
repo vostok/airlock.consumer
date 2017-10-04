@@ -8,6 +8,7 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
+    //TODO @ezsilmar Unit test this
     internal class Bucket : IBucket
     {
         private readonly IReadOnlyDictionary<string, string> tags;
@@ -65,25 +66,34 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             {
                 if (!timeBins.TryRemove(kvp.Key, out _))
                     continue;
-                var timestamp = kvp.Key;
-                var timeBin = kvp.Value;
-                var values = new Dictionary<string, double>
-                {
-                    {"count", timeBin.Counter.Reset()}
-                };
-                foreach (var m in timeBin.Meters)
-                {
-                    var meterValues = m.Value.GetValues();
-                    foreach (var mv in meterValues)
-                        values[m.Key + "_" + mv.Key] = mv.Value;
-                }
-                yield return new MetricEvent
-                {
-                    Timestamp = timestamp,
-                    Tags = tags,
-                    Values = values
-                };
+                yield return AggregateMetric(kvp.Key, kvp.Value);
             }
+        }
+
+        public IEnumerable<MetricEvent> Flush()
+        {
+            return timeBins.Select(kvp => AggregateMetric(kvp.Key, kvp.Value));
+        }
+
+        private MetricEvent AggregateMetric(DateTimeOffset timestamp, TimeBin timeBin)
+        {
+            var values = new Dictionary<string, double>
+            {
+                {"count", timeBin.Counter.GetValue()}
+            };
+            foreach (var m in timeBin.Meters)
+            {
+                var meterValues = m.Value.GetValues();
+                foreach (var mv in meterValues)
+                    values[m.Key + "_" + mv.Key] = mv.Value;
+            }
+            var metric = new MetricEvent
+            {
+                Timestamp = timestamp,
+                Tags = tags,
+                Values = values
+            };
+            return metric;
         }
 
         private Borders NormalizeBorders(Borders b)

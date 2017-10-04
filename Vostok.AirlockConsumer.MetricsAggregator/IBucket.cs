@@ -8,5 +8,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         void Consume(IReadOnlyDictionary<string, double> values, DateTimeOffset timestamp);
         IEnumerable<MetricEvent> Reset(Borders nextBorders);
+        IEnumerable<MetricEvent> Flush();
     }
 }
