@@ -69,7 +69,8 @@ namespace Vostok.AirlockConsumer.Tracing
     begin_timestamp timestamp,
     end_timestamp timestamp,
     trace_id uuid,
-    span_id text,
+    span_id uuid,
+    annotations text,
     PRIMARY KEY (trace_id_prefix, begin_timestamp, trace_id, span_id))
     WITH CLUSTERING ORDER BY (begin_timestamp ASC, trace_id ASC, span_id ASC)
     AND bloom_filter_fp_chance = 0.01
