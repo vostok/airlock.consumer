@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer", "Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj", "{D11DD2E1-0296-4FA1-8630-CF0A453EFF0C}"
 EndProject
@@ -17,7 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Trac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator", "Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj", "{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Metrics", "Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj", "{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator.Tests", "Vostok.AirlockConsumer.MetricsAggregator.Tests\Vostok.AirlockConsumer.MetricsAggregator.Tests.csproj", "{0F6D8A2B-2806-46F4-802F-394C944EBB43}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Metrics.Tests", "Vostok.AirlockConsumer.Metrics.Tests\Vostok.AirlockConsumer.Metrics.Tests.csproj", "{2A278B4D-65CF-4936-8539-3922A47FB1F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +57,18 @@ Global
 		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F6D8A2B-2806-46F4-802F-394C944EBB43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A278B4D-65CF-4936-8539-3922A47FB1F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A278B4D-65CF-4936-8539-3922A47FB1F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A278B4D-65CF-4936-8539-3922A47FB1F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A278B4D-65CF-4936-8539-3922A47FB1F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

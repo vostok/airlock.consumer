@@ -14,6 +14,7 @@ install:
       $version.AppendChild($versionText)
       $xml.Project.PropertyGroup.AppendChild($version)
       $xml.Save($xmlPath)
+  - nuget sources add -name graphiteclient -source https://ci.appveyor.com/nuget/graphiteclient-tu022ygtkvoo
   - dotnet restore
 configuration: Release
 after_build:
