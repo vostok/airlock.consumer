@@ -54,7 +54,7 @@ namespace Vostok.AirlockConsumer
         {
             foreach (var key in settings.Keys.ToArray())
             {
-                if (key.StartsWith("airlock."))
+                if (key.StartsWith("airlock.") || key.StartsWith("cassandra."))
                     settings.Remove(key);
             }
             return settings;
