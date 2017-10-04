@@ -17,11 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Trac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator", "Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj", "{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.FinalMetrics", "Vostok.AirlockConsumer.FinalMetrics\Vostok.AirlockConsumer.FinalMetrics.csproj", "{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Metrics", "Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj", "{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator.Tests", "Vostok.AirlockConsumer.MetricsAggregator.Tests\Vostok.AirlockConsumer.MetricsAggregator.Tests.csproj", "{0F6D8A2B-2806-46F4-802F-394C944EBB43}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.FinalMetrics.Tests", "Vostok.AirlockConsumer.FinalMetrics.Tests\Vostok.AirlockConsumer.FinalMetrics.Tests.csproj", "{2A278B4D-65CF-4936-8539-3922A47FB1F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Metrics.Tests", "Vostok.AirlockConsumer.Metrics.Tests\Vostok.AirlockConsumer.Metrics.Tests.csproj", "{2A278B4D-65CF-4936-8539-3922A47FB1F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,7 +2,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Vostok.AirlockConsumer.FinalMetrics.Tests
+namespace Vostok.AirlockConsumer.Metrics.Tests
 {
     public class GraphiteNameBuilder_Tests
     {

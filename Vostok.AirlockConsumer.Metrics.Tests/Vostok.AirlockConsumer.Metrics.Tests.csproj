@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vostok.AirlockConsumer.FinalMetrics\Vostok.AirlockConsumer.FinalMetrics.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj" />
   </ItemGroup>
 
 </Project>

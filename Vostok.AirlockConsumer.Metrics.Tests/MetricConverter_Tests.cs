@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Vostok.GraphiteClient;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.FinalMetrics.Tests
+namespace Vostok.AirlockConsumer.Metrics.Tests
 {
     public class MetricConverter_Tests
     {

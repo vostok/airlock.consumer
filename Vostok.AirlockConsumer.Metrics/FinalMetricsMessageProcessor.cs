@@ -2,14 +2,14 @@
 using System.Linq;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.FinalMetrics
+namespace Vostok.AirlockConsumer.Metrics
 {
-    internal class FinalMetricsMessageProcessor : IMessageProcessor<MetricEvent>
+    internal class MetricsMessageProcessor : IMessageProcessor<MetricEvent>
     {
         private readonly MetricConverter metricConverter;
         private readonly GraphiteClient.GraphiteClient graphiteClient;
 
-        public FinalMetricsMessageProcessor(string graphiteHost, int graphitePort)
+        public MetricsMessageProcessor(string graphiteHost, int graphitePort)
         {
             var graphiteNameBuidler = new GraphiteNameBuilder();
             metricConverter = new MetricConverter(graphiteNameBuidler);

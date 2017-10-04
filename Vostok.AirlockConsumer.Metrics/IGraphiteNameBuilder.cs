@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Vostok.AirlockConsumer.FinalMetrics
+namespace Vostok.AirlockConsumer.Metrics
 {
     internal interface IGraphiteNameBuilder
     {

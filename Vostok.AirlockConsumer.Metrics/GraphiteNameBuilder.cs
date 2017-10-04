@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Vostok.AirlockConsumer.FinalMetrics
+namespace Vostok.AirlockConsumer.Metrics
 {
     internal class GraphiteNameBuilder : IGraphiteNameBuilder
     {

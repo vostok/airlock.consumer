@@ -1,4 +1,4 @@
-﻿namespace Vostok.AirlockConsumer.FinalMetrics
+﻿namespace Vostok.AirlockConsumer.Metrics
 {
     public class EntryPoint
     {

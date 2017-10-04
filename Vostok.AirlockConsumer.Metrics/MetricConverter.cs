@@ -2,7 +2,7 @@
 using Vostok.GraphiteClient;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.FinalMetrics
+namespace Vostok.AirlockConsumer.Metrics
 {
     internal class MetricConverter
     {
