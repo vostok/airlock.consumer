@@ -8,16 +8,19 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     internal class MetricAggregator : IMetricAggregator
     {
+        private readonly IMetricScope metricScope;
         private readonly IBucketKeyProvider bucketKeyProvider;
         private readonly IAirlock airlock;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<BucketKey, IBucket>> buckets;
         private Borders borders;
 
         public MetricAggregator(
+            IMetricScope metricScope,
             IBucketKeyProvider bucketKeyProvider,
             IAirlock airlock,
             Borders borders)
         {
+            this.metricScope = metricScope;
             this.bucketKeyProvider = bucketKeyProvider;
             this.airlock = airlock;
             this.borders = borders;
@@ -33,7 +36,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             {
                 var bucket = byRoutingKey.GetOrAdd(
                     bucketKey,
-                    bk => new Bucket(bk.Tags, 1.Minutes(), currentBorders));
+                    bk => new Bucket(metricScope, bk.Tags, 1.Minutes(), currentBorders));
                 bucket.Consume(metricEvent.Values, metricEvent.Timestamp);
             }
         }

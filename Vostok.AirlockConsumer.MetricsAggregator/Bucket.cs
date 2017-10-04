@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
@@ -12,11 +13,12 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private readonly IReadOnlyDictionary<string, string> tags;
         private readonly TimeSpan period;
         private readonly ConcurrentDictionary<DateTimeOffset, TimeBin> timeBins;
-        private readonly Counter missedPastEvents;
-        private readonly Counter missedFutureEvents;
+        private readonly ICounter missedPastEvents;
+        private readonly ICounter missedFutureEvents;
         private Borders borders;
 
         public Bucket(
+            IMetricScope metricScope,
             IReadOnlyDictionary<string, string> tags,
             TimeSpan period,
             Borders borders)
@@ -24,8 +26,8 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             this.tags = tags;
             this.period = period;
             timeBins = new ConcurrentDictionary<DateTimeOffset, TimeBin>();
-            missedPastEvents = new Counter();
-            missedFutureEvents = new Counter();
+            missedPastEvents = metricScope.Counter(1.Minutes(), "missed_past_events");
+            missedFutureEvents = metricScope.Counter(1.Minutes(), "missed_future_events");
             this.borders = NormalizeBorders(borders);
         }
 
@@ -59,10 +61,10 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             nextBorders = NormalizeBorders(nextBorders);
             Interlocked.Exchange(ref borders, nextBorders);
-            var obsoleteTimeBins = RemoveObsoleteTimeBins(nextBorders.Past);
-            var result = new List<MetricEvent>();
-            foreach (var kvp in obsoleteTimeBins)
+            foreach (var kvp in timeBins.Where(x => x.Key < nextBorders.Past))
             {
+                if (!timeBins.TryRemove(kvp.Key, out _))
+                    continue;
                 var timestamp = kvp.Key;
                 var timeBin = kvp.Value;
                 var values = new Dictionary<string, double>
@@ -71,27 +73,17 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 };
                 foreach (var m in timeBin.Meters)
                 {
-                    var meterValues = m.Value.Reset();
+                    var meterValues = m.Value.GetValues();
                     foreach (var mv in meterValues)
                         values[m.Key + "_" + mv.Key] = mv.Value;
                 }
-                result.Add(
-                    new MetricEvent
-                    {
-                        Timestamp = timestamp,
-                        Tags = tags,
-                        Values = values
-                    });
+                yield return new MetricEvent
+                {
+                    Timestamp = timestamp,
+                    Tags = tags,
+                    Values = values
+                };
             }
-            return result;
-        }
-
-        private IEnumerable<KeyValuePair<DateTimeOffset, TimeBin>> RemoveObsoleteTimeBins(DateTimeOffset normalizedPastBorder)
-        {
-            var result = timeBins.Where(x => x.Key < normalizedPastBorder).ToList();
-            foreach (var kvp in result)
-                timeBins.TryRemove(kvp.Key, out _);
-            return result;
         }
 
         private Borders NormalizeBorders(Borders b)

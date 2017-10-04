@@ -29,7 +29,8 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 .CreateLogger();
             var log = new SerilogLog(logger);
             //TODO create IAirlock here
-            var metricAggregator = new MetricAggregator(new BucketKeyProvider(), null, CreateBorders(DateTimeOffset.UtcNow, aggregatorSettings));
+            var rootMetricScope = new RootMetricScope(new MetricConfiguration());
+            var metricAggregator = new MetricAggregator(rootMetricScope, new BucketKeyProvider(), null, CreateBorders(DateTimeOffset.UtcNow, aggregatorSettings));
             var processor = new MetricEventProcessor(metricAggregator);
             var consumer = new MetricEventConsumer(settings, processor, log);
             var clock = new MetricClock(1.Minutes());
