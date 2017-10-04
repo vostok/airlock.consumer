@@ -96,9 +96,9 @@ namespace Vostok.AirlockConsumer
             return bytes;
         }
 
-        public long Position
+        public int Position
         {
-            get => stream.Position;
+            get => (int) stream.Position;
             set => stream.Position = value;
         }
     }
