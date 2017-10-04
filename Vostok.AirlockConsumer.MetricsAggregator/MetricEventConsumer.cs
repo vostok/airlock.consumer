@@ -1,12 +1,18 @@
-﻿using Vostok.Logging;
+﻿using System.Collections.Generic;
+using Vostok.Logging;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricEventConsumer : AirlockConsumer<MetricEvent>
     {
-        public MetricEventConsumer(MetricsAggregatorSettings settings, IMessageProcessor<MetricEvent> messageProcessor)
-            : base(4, settings.BatchSize, new MetricEventSerializer(), messageProcessor, Program.Log.ForContext<MetricEventConsumer>())
+        public MetricEventConsumer(Dictionary<string, object> settings, IMessageProcessor<MetricEvent> messageProcessor, ILog log)
+            : base(
+                settings,
+                new[] {"vostok:staging:bluewater:events"},
+                new MetricEventSerializer(),
+                messageProcessor,
+                log.ForContext<MetricEventConsumer>())
         {
         }
     }

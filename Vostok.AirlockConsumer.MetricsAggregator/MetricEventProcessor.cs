@@ -12,11 +12,11 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             this.metricAggregator = metricAggregator;
         }
 
-        public void Process(IEnumerable<ConsumerEvent<MetricEvent>> events)
+        public void Process(List<AirlockEvent<MetricEvent>> events)
         {
             foreach (var consumerEvent in events)
             {
-                metricAggregator.ProcessMetricEvent(consumerEvent.Project, consumerEvent.Event);
+                metricAggregator.ProcessMetricEvent(consumerEvent.RoutingKey, consumerEvent.Payload);
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Airlock;
+using Vostok.AirlockConsumer.Deserialization;
 using Vostok.Commons.Binary;
 using Vostok.Logging;
 using Vostok.Logging.Airlock;
