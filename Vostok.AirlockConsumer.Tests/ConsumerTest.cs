@@ -13,6 +13,7 @@ using Vostok.Logging.Logs;
 
 namespace Vostok.AirlockConsumer.Tests
 {
+/*
     public class ConsumerTest
     {
         [Test, Ignore("Integration test")]
@@ -93,4 +94,5 @@ namespace Vostok.AirlockConsumer.Tests
             return memoryStream.GetBuffer();
         }
     }
+*/
 }
