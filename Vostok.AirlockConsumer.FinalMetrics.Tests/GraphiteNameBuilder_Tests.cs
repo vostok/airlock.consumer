@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Vostok.AirlockConsumer.FinalMetrics.Tests
 {
-    public class GraphiteNameBuidler_Tests
+    public class GraphiteNameBuilder_Tests
     {
         private GraphiteNameBuilder graphiteNameBuilder;
 
@@ -41,7 +41,7 @@ namespace Vostok.AirlockConsumer.FinalMetrics.Tests
                 )
                 .ToDictionary(x => x.Key, x => x.Value);
 
-            var actual = graphiteNameBuilder.Build(routingKey, tags);
+            var actual = graphiteNameBuilder.BuildPrefix(routingKey, tags);
 
             actual.Should().Be(expecting);
         }
@@ -53,7 +53,7 @@ namespace Vostok.AirlockConsumer.FinalMetrics.Tests
         {
             const string prefix = "layer1.layer2.layer3";
 
-            var actual = graphiteNameBuilder.Build(prefix, name);
+            var actual = graphiteNameBuilder.BuildName(prefix, name);
 
             actual.Should().Be(expecting);
         }

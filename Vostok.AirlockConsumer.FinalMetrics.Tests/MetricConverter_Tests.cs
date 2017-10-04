@@ -41,9 +41,9 @@ namespace Vostok.AirlockConsumer.FinalMetrics.Tests
             const string prefixName = "prefix";
             const string name1 = "Name1";
             const string name2 = "Name2";
-            graphiteNameBuilder.Build(routingKey, tags).Returns(prefixName);
-            graphiteNameBuilder.Build(prefixName, "inputName1").Returns(name1);
-            graphiteNameBuilder.Build(prefixName, "inputName2").Returns(name2);
+            graphiteNameBuilder.BuildPrefix(routingKey, tags).Returns(prefixName);
+            graphiteNameBuilder.BuildName(prefixName, "inputName1").Returns(name1);
+            graphiteNameBuilder.BuildName(prefixName, "inputName2").Returns(name2);
 
             var expectingMetrics = new []
             {
