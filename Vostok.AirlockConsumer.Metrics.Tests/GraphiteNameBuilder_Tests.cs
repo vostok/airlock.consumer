@@ -17,19 +17,19 @@ namespace Vostok.AirlockConsumer.Metrics.Tests
         [TestCase("projectName.environmentName.serviceName", "projectName:environmentName:serviceName")]
         [TestCase("projectName.environmentName.serviceName", "projectName:environmentName:serviceName:other")]
         [TestCase("project_name.environment_name.service_name", "project.name:environment.name:service.name")]
-        [TestCase("projectName.environmentName.Any", "projectName:environmentName")]
-        [TestCase("projectName.Any.Any", "projectName")]
-        [TestCase("Any.Any.Any", "")]
-        [TestCase("Any.environmentName.Any", ":environmentName")]
-        [TestCase("Any.environmentName.Any", ":environmentName:")]
-        [TestCase("Any.Any.serviceName", "::serviceName")]
+        [TestCase("projectName.environmentName.Unknown", "projectName:environmentName")]
+        [TestCase("projectName.Unknown.Unknown", "projectName")]
+        [TestCase("Unknown.Unknown.Unknown", "")]
+        [TestCase("Unknown.environmentName.Unknown", ":environmentName")]
+        [TestCase("Unknown.environmentName.Unknown", ":environmentName:")]
+        [TestCase("Unknown.Unknown.serviceName", "::serviceName")]
         [TestCase("__________._____.__________", "ИмяПроекта:Среда:ИмяСервиса")]
-        [TestCase("Any.Any.Any.TypeName.hostname.Operation.status.Value3.Value1.Value2", "",
+        [TestCase("Unknown.Unknown.Unknown.TypeName.hostname.Operation.status.Value3.Value1.Value2", "",
             "a2:Value1", "host:HOSTNAME", "a3:Value2", "type:TypeName", "operationName:Operation", "statusCode:status", "a1:Value3")]
-        [TestCase("Any.Any.Any", "", "a:")]
-        [TestCase("Any.Any.Any", "", ":v")]
-        [TestCase("Any.Any.Any.________", "", "a:Значение")]
-        [TestCase("Any.Any.Any.start_finish", "", "a:start.finish")]
+        [TestCase("Unknown.Unknown.Unknown", "", "a:")]
+        [TestCase("Unknown.Unknown.Unknown", "", ":v")]
+        [TestCase("Unknown.Unknown.Unknown.________", "", "a:Значение")]
+        [TestCase("Unknown.Unknown.Unknown.start_finish", "", "a:start.finish")]
         public void Build_should_build_name_by_routingKey_and_tags(string expecting, string routingKey, params string[] tagStrings)
         {
             var tags = tagStrings.Select(
