@@ -1,6 +1,6 @@
 ﻿namespace Vostok.AirlockConsumer.Metrics
 {
-    public class EntryPoint
+    public class MetricsAirlockConsumerEntryPoint
     {
         public static void Main()
         {

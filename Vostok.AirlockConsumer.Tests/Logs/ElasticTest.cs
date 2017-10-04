@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Elasticsearch.Net;
 using NUnit.Framework;
 
-namespace Vostok.AirlockConsumer.Logs.Tests
+namespace Vostok.AirlockConsumer.Tests.Logs
 {
     public class ElasticTest
     {

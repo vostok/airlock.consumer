@@ -21,11 +21,7 @@ after_build:
 test_script:
   - ps: |
       dotnet test "$env:appveyor_build_folder\Vostok.AirlockConsumer.Tests\Vostok.AirlockConsumer.Tests.csproj" --logger "trx;LogFileName=airlock-consumer-tests.trx"
-      dotnet test "$env:appveyor_build_folder\Vostok.AirlockConsumer.Logs.Tests\Vostok.AirlockConsumer.Logs.Tests.csproj" --logger "trx;LogFileName=airlock-consumer-logs-tests.trx"
-      dotnet test "$env:appveyor_build_folder\Vostok.AirlockConsumer.Tracing.Tests\Vostok.AirlockConsumer.Tracing.Tests.csproj" --logger "trx;LogFileName=airlock-consumer-tracing-tests.trx"
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
       $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder\Vostok.AirlockConsumer.Tests\TestResults\airlock-consumer-tests.trx")
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder\Vostok.AirlockConsumer.Logs.Tests\TestResults\airlock-consumer-logs-tests.trx")
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder\Vostok.AirlockConsumer.Tracing.Tests\TestResults\airlock-consumer-tracing-tests.trx")

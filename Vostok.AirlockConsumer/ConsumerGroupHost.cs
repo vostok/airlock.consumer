@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer
     {
         private readonly string consumerGroupId;
         private readonly string clientId;
-        private readonly IProcessorProvider processorProvider;
+        private readonly IAirlockEventProcessorProvider processorProvider;
         private readonly ILog log;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly Dictionary<string, ProcessorInfo> processorInfos = new Dictionary<string, ProcessorInfo>();
@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer
         private readonly TimeSpan kafkaConsumerPollingInterval = TimeSpan.FromMilliseconds(100);
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(string bootstrapServers, string consumerGroupId, string clientId, bool enableAutoCommit, ILog log, IProcessorProvider processorProvider)
+        public ConsumerGroupHost(string bootstrapServers, string consumerGroupId, string clientId, bool enableAutoCommit, ILog log, IAirlockEventProcessorProvider processorProvider)
         {
             this.consumerGroupId = consumerGroupId;
             this.clientId = clientId;
@@ -268,7 +268,7 @@ namespace Vostok.AirlockConsumer
         {
             private const int MaxProcessorQueueSize = int.MaxValue;
 
-            public ProcessorInfo(string routingKey, IProcessor processor, Thread processorThread)
+            public ProcessorInfo(string routingKey, IAirlockEventProcessor processor, Thread processorThread)
             {
                 RoutingKey = routingKey;
                 Processor = processor;
@@ -277,7 +277,7 @@ namespace Vostok.AirlockConsumer
 
             public string RoutingKey { get; }
             public Thread ProcessorThread { get; }
-            public IProcessor Processor { get; }
+            public IAirlockEventProcessor Processor { get; }
             public BoundedBlockingQueue<Message<Null, byte[]>> EventsQueue { get; } = new BoundedBlockingQueue<Message<Null, byte[]>>(MaxProcessorQueueSize);
             public int MaxBatchSize { get; } = 100 * 1000;
             public TimeSpan MaxDequeueTimeout { get; } = TimeSpan.FromSeconds(1);

@@ -1,8 +1,9 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using Vostok.AirlockConsumer.Metrics;
 
-namespace Vostok.AirlockConsumer.Metrics.Tests
+namespace Vostok.AirlockConsumer.Tests.Metrics
 {
     public class GraphiteNameBuilder_Tests
     {

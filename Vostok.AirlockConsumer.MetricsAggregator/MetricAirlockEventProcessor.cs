@@ -1,23 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class MetricEventProcessor : IMessageProcessor<MetricEvent>
+    internal class MetricAirlockEventProcessor : IAirlockEventProcessor<MetricEvent>
     {
         private readonly IMetricAggregator metricAggregator;
 
-        public MetricEventProcessor(IMetricAggregator metricAggregator)
+        public MetricAirlockEventProcessor(IMetricAggregator metricAggregator)
         {
             this.metricAggregator = metricAggregator;
         }
 
-        public void Process(List<AirlockEvent<MetricEvent>> events)
+        public Task ProcessAsync(List<AirlockEvent<MetricEvent>> events)
         {
             foreach (var consumerEvent in events)
-            {
                 metricAggregator.ProcessMetricEvent(consumerEvent.RoutingKey, consumerEvent.Payload);
-            }
+            return Task.CompletedTask;
         }
     }
 }

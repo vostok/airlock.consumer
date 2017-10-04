@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.AirlockConsumer.Metrics;
 using Vostok.Graphite.Client;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Metrics.Tests
+namespace Vostok.AirlockConsumer.Tests.Metrics
 {
     public class MetricConverter_Tests
     {
