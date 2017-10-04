@@ -1,33 +1,37 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Vostok.Airlock;
+using Vostok.AirlockConsumer.Deserialization;
 using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
     public class AirlockConsumer<T> : IDisposable
     {
-        private readonly int batchSize;
+        private readonly IAirlockDeserializer<T> airlockDeserializer;
         private readonly IMessageProcessor<T> messageProcessor;
         private readonly ILog log;
-        private readonly Consumer<byte[], T> consumer;
+        private readonly Consumer<byte[], byte[]> consumer;
+        private readonly int batchSize;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly List<AirlockEvent<T>> events = new List<AirlockEvent<T>>();
         private readonly Dictionary<TopicPartition, long> lastOffsets = new Dictionary<TopicPartition, long>();
         private Task polltask;
 
-        protected AirlockConsumer(Dictionary<string, object> settings, string[] topics, IAirlockDeserializer<T> deserializer, IMessageProcessor<T> messageProcessor, ILog log)
+        protected AirlockConsumer(Dictionary<string, object> settings, string[] topics, IAirlockDeserializer<T> airlockDeserializer, IMessageProcessor<T> messageProcessor, ILog log)
         {
-            batchSize = int.Parse((string)settings["airlock.consumer.batch.size"]);
+            this.airlockDeserializer = airlockDeserializer;
             this.messageProcessor = messageProcessor;
             this.log = log;
+            batchSize = int.Parse((string)settings["airlock.consumer.batch.size"]);
             events.Capacity = batchSize;
-            var consumerDeserializer = new ConsumerDeserializer<T>(deserializer);
-            consumer = new Consumer<byte[], T>(Clean(settings), new ByteArrayDeserializer(), consumerDeserializer);
+            var byteArrayDeserializer = new ByteArrayDeserializer();
+            consumer = new Consumer<byte[], byte[]>(Clean(settings), byteArrayDeserializer, byteArrayDeserializer);
             consumer.OnMessage += (s, e) => OnMessage(e);
             consumer.OnError += (s, e) => { log.Error(e.Reason); };
             consumer.OnConsumeError += (s, e) => { log.Error(e.Error.ToString()); };
@@ -50,7 +54,7 @@ namespace Vostok.AirlockConsumer
         {
             foreach (var key in settings.Keys.ToArray())
             {
-                if (key.StartsWith("airlock.consumer"))
+                if (key.StartsWith("airlock."))
                     settings.Remove(key);
             }
             return settings;
@@ -89,7 +93,7 @@ namespace Vostok.AirlockConsumer
             }
         }
 
-        private void OnMessage(Message<byte[], T> message)
+        private void OnMessage(Message<byte[], byte[]> message)
         {
             var topic = message.Topic;
             log.Debug($"Got message, topic: '{topic}', ts: '{message.Timestamp.UtcDateTime:O}'");
@@ -115,7 +119,7 @@ namespace Vostok.AirlockConsumer
                 }
                 events.Add(new AirlockEvent<T>
                 {
-                    Payload = message.Value,
+                    Payload = airlockDeserializer.Deserialize(new SimpleAirlockSource(new MemoryStream(message.Value))),
                     Timestamp = message.Timestamp.UtcDateTime,
                     RoutingKey = project
                 });

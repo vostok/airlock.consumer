@@ -2,15 +2,16 @@
 using Vostok.Airlock;
 using Vostok.Commons.Binary;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.AirlockConsumer.Deserialization
 {
-    public class SimpleAirlockDeserializationSink : IAirlockSource
+    public class SimpleAirlockSource : IAirlockSource
     {
-        public SimpleAirlockDeserializationSink(Stream stream)
+        public SimpleAirlockSource(Stream stream)
         {
             ReadStream = stream;
             Reader = new SimpleBinaryReader(stream);
         }
+
         public Stream ReadStream { get; }
         public IBinaryReader Reader { get; }
     }
