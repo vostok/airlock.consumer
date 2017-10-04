@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Vostok.GraphiteClient;
+using Vostok.Graphite.Client;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Metrics

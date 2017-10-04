@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using Vostok.GraphiteClient;
+using Vostok.Graphite.Client;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Metrics.Tests
