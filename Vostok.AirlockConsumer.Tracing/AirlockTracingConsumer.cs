@@ -7,17 +7,9 @@ namespace Vostok.AirlockConsumer.Tracing
 {
     public class AirlockTracingConsumer : AirlockConsumer<Span>
     {
-        public AirlockTracingConsumer(Dictionary<string, object> settings)
-            : base(settings, new[] { "vostok:staging|trace" }, new SpanAirlockSerializer(), new AirlockTracingProcessor(), AirlockConsumerTracingEntryPoint.Log.ForContext<AirlockTracingConsumer>())
+        public AirlockTracingConsumer(Dictionary<string, object> settings, CassandraDataScheme dataScheme)
+            : base(settings, new[] { "vostok:staging|trace" }, new SpanAirlockSerializer(), new AirlockTracingProcessor(dataScheme), AirlockConsumerTracingEntryPoint.Log.ForContext<AirlockTracingConsumer>())
         {
-        }
-    }
-
-    public class AirlockTracingProcessor : IMessageProcessor<Span>
-    {
-        public void Process(List<AirlockEvent<Span>> events)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

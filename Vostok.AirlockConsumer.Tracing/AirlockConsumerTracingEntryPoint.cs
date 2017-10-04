@@ -23,10 +23,22 @@ namespace Vostok.AirlockConsumer.Tracing
                 .MinimumLevel.Debug()
                 .CreateLogger();
             Log = new SerilogLog(logger);
-            var consumer = new AirlockTracingConsumer(settings);
-            consumer.Start();
-            Console.ReadLine();
-            consumer.Stop();
+            try
+            {
+                var sessionKeeper = new CassandraSessionKeeper(((List<object>) settings["cassandra.endpoints"]).Cast<string>(), (string)settings["cassandra.keyspace"]);
+                var dataScheme = new CassandraDataScheme(sessionKeeper.Session, (string)settings["cassandra.spans.tablename"]);
+                dataScheme.CreateTableIfNotExists();
+                var consumer = new AirlockTracingConsumer(settings, dataScheme);
+                consumer.Start();
+                Console.ReadLine();
+                consumer.Stop();
+
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                throw;
+            }
         }
 
         private static string GetSettingsFileName(string[] args)
