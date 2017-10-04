@@ -10,7 +10,7 @@ namespace Vostok.AirlockConsumer.Tracing
 {
     public class AirlockConsumerTracingEntryPoint
     {
-        private static Vostok.Logging.ILog Log;
+        public static ILog Log;
 
         private static void Main(string[] args)
         {
