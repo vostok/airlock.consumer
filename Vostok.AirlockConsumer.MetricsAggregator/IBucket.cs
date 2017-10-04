@@ -7,6 +7,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     internal interface IBucket
     {
         void Consume(IReadOnlyDictionary<string, double> values, DateTimeOffset timestamp);
-        IEnumerable<MetricEvent> Reset(DateTimeOffset border);
+        IEnumerable<MetricEvent> Reset(Borders nextBorders);
     }
 }

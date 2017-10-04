@@ -2,9 +2,23 @@
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal interface IMeter
+    internal class Meter
     {
-        void Add(double value);
-        IReadOnlyDictionary<string, double> Reset();
+        private double sum;
+
+        public void Add(double value)
+        {
+            sum += value;
+        }
+
+        public IReadOnlyDictionary<string, double> Reset()
+        {
+            var result = new Dictionary<string, double>
+            {
+                { "sum", sum }
+            };
+            sum = 0;
+            return result;
+        }
     }
 }

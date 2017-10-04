@@ -22,17 +22,22 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             Log = new SerilogLog(logger);
             var settings = Util.ReadYamlSettings<MetricsAggregatorSettings>("metricsAggregator.yaml");
             //TODO create IAirlock here
-            var metricAggregator = new MetricAggregator(new BucketKeyProvider(), null);
+            var metricAggregator = new MetricAggregator(new BucketKeyProvider(), null, CreateBorders(DateTimeOffset.UtcNow, settings));
             var processor = new MetricEventProcessor(metricAggregator);
             var consumer = new MetricEventConsumer(settings, processor);
             var clock = new MetricClock(1.Minutes());
             clock.Register(
-                timestamp => metricAggregator.Reset(timestamp - settings.MetricAggregationGap));
+                timestamp => metricAggregator.Reset(CreateBorders(timestamp, settings)));
             clock.Start();
             consumer.Start();
             Console.ReadLine();
             consumer.Stop();
             clock.Stop();
+        }
+
+        private static Borders CreateBorders(DateTimeOffset timestamp, MetricsAggregatorSettings settings)
+        {
+            return new Borders(timestamp - settings.MetricAggregationPastGap, timestamp + settings.MetricAggregationFutureGap);
         }
     }
 }
