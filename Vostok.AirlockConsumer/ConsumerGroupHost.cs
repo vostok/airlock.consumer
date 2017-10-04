@@ -56,7 +56,7 @@ namespace Vostok.AirlockConsumer
                         logLevel = LogLevel.Debug;
                         break;
                 }
-                log.Log(new LogEvent(logLevel, exception: null, messageTemplate: $"{logMessage.Name}|{logMessage.Facility}| {logMessage.Message}", messageParameters: null));
+                log.Log(logLevel, null, $"{logMessage.Name}|{logMessage.Facility}| {logMessage.Message}");
             };
             consumer.OnStatistics += (_, statJson) => { log.Info($"Statistics: {statJson}"); };
             consumer.OnPartitionEOF += (_, topicPartitionOffset) => { log.Info($"Reached end of topic/partition {topicPartitionOffset.Topic}/{topicPartitionOffset.Partition}, next message will be at offset {topicPartitionOffset.Offset}"); };
