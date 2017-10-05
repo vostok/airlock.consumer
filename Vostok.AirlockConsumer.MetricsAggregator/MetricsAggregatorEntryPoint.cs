@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Vostok.Airlock;
+using Vostok.Clusterclient.Topology;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
 
@@ -13,6 +16,8 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var settingsFromFile = Configuration.TryGetSettingsFromFile(args);
             var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
             var kafkaBootstrapEndpoints = (string)settingsFromFile?["bootstrap.servers"] ?? "devops-kafka1.dev.kontur.ru:9092";
+            var airlockApiKey = (string)settingsFromFile?["airlock.apikey"] ?? "UniversalApiKey";
+            var airlockReplicas = ((List<object>)settingsFromFile?["airlock.endpoints"] ?? new List<object> { "http://192.168.0.75:8888/" }).Cast<string>().Select(x => new Uri(x)).ToArray();
             const string consumerGroupId = nameof(MetricsAggregatorEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var settings = new MetricsAggregatorSettings
@@ -21,9 +26,13 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 MetricAggregationFutureGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.pastGap"], 1.Hours()),
                 MetricAggregationStartGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.startGap"], 10.Minutes())
             };
-            //TODO create IAirlock here
+            var airlockConfig = new AirlockConfig
+            {
+                ApiKey = airlockApiKey,
+                ClusterProvider = new FixedClusterProvider(airlockReplicas)
+            };
+            var airlock = new Airlock.Airlock(airlockConfig, log);
             var rootMetricScope = new RootMetricScope(new MetricConfiguration());
-            IAirlock airlock = null;
             var processor = new MetricAirlockEventProcessor(
                 routingKey =>
                 {

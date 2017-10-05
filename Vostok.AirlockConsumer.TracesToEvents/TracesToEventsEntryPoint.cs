@@ -15,7 +15,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             var settingsFromFile = Configuration.TryGetSettingsFromFile(args);
             var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
             var bootstrapServers = (string)settingsFromFile?["bootstrap.servers"] ?? "localhost:9092";
-            var airlockApiKey = (string)settingsFromFile?["airlock.apikey"] ?? "";
+            var airlockApiKey = (string)settingsFromFile?["airlock.apikey"] ?? "UniversalApiKey";
             var airlockReplicas = ((List<object>)settingsFromFile?["airlock.endpoints"] ?? new List<object>{"http://192.168.0.75:8888/"}).Cast<string>().Select(x => new Uri(x)).ToArray();
             const string consumerGroupId = nameof(TracesToEventsEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
