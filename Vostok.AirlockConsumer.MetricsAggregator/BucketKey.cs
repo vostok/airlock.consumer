@@ -3,9 +3,15 @@ using System.Collections.Generic;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class BucketKey : IEquatable<BucketKey>
+    public class BucketKey : IEquatable<BucketKey>
     {
+        public BucketKey(IReadOnlyDictionary<string, string> tags)
+        {
+            Tags = tags;
+        }
+
         public IReadOnlyDictionary<string, string> Tags { get; }
+
         private readonly string key;
 
         public bool Equals(BucketKey other)
@@ -30,7 +36,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         public override int GetHashCode()
         {
-            return (key != null ? key.GetHashCode() : 0);
+            return key != null ? key.GetHashCode() : 0;
         }
     }
 }

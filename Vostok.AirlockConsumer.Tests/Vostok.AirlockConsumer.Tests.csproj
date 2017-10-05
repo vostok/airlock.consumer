@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj" />
     <ProjectReference Include="..\Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj" />
     <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
     <ProjectReference Include="..\Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj" />
