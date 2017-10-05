@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Airlock;
@@ -28,7 +27,9 @@ namespace Vostok.AirlockConsumer
             {
                 RoutingKey = x.RoutingKey,
                 Timestamp = x.Timestamp,
-                Payload = airlockDeserializer.Deserialize(new SimpleAirlockSource(new MemoryStream(x.Payload))),
+                Payload = airlockDeserializer.Deserialize(
+                    
+                    new SimpleAirlockSource(x.Payload)),
             }).ToList();
             await airlockEventProcessor.ProcessAsync(airlockEvents).ConfigureAwait(false);
         }

@@ -6,13 +6,16 @@ namespace Vostok.AirlockConsumer.Deserialization
 {
     public class SimpleAirlockSource : IAirlockSource
     {
-        public SimpleAirlockSource(Stream stream)
+        private readonly byte[] buffer;
+        private Stream readStream;
+
+        public SimpleAirlockSource(byte[] buffer)
         {
-            ReadStream = stream;
-            Reader = new SimpleBinaryReader(stream);
+            this.buffer = buffer;
+            Reader = new BinaryBufferReader(buffer, 0);
         }
 
-        public Stream ReadStream { get; }
+        public Stream ReadStream => readStream ?? (readStream = new MemoryStream(buffer, false));
         public IBinaryReader Reader { get; }
     }
 }
