@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
@@ -8,6 +9,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         public BucketKey(IReadOnlyDictionary<string, string> tags)
         {
             Tags = tags;
+            key = string.Join("|", tags.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase).Select(x => $"{x.Key}={x.Value}"));
         }
 
         public IReadOnlyDictionary<string, string> Tags { get; }
