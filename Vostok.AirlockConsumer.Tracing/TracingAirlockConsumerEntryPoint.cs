@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Tracing;
 
@@ -27,7 +28,7 @@ namespace Vostok.AirlockConsumer.Tracing
                 var dataScheme = new CassandraDataScheme(sessionKeeper.Session, tableName);
                 dataScheme.CreateTableIfNotExists();
                 var processor = new TracingAirlockEventProcessor(dataScheme, retryExecutionStrategy, int.Parse(settingsFromFile?["cassandra.max.threads"]?.ToString() ?? "1000"));
-                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(".traces", processor);
+                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(RoutingKey.Separator + RoutingKey.TracesSuffix, processor);
                 var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
                 consumer.Start();
                 Console.ReadLine();

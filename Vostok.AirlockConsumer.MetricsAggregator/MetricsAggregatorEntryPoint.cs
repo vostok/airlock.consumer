@@ -32,7 +32,11 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 ClusterProvider = new FixedClusterProvider(airlockReplicas)
             };
             var airlockClient = new AirlockClient(airlockConfig, log);
-            var rootMetricScope = new RootMetricScope(new MetricConfiguration());
+            var rootMetricScope = new RootMetricScope(new MetricConfiguration
+            {
+                // todo (spaceorc 05.10.2017) get proj and env from settings
+                Reporter = new AirlockMetricReporter(airlockClient, RoutingKey.CreatePrefix("vostok", "env", "metrics-aggregator"))
+            });
             var processor = new MetricAirlockEventProcessor(
                 routingKey =>
                 {
@@ -53,7 +57,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                         initialBorders);
                 });
 
-            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(".metric-events", processor);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(RoutingKey.Separator + RoutingKey.AppEventsSuffix, processor);
             var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             
             consumer.Start();

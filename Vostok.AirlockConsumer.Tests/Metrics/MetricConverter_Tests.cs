@@ -24,7 +24,7 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
         [Test]
         public void Convert_should_build_metrics()
         {
-            const string routingKey = "routingKey";
+            const string routingKey = "routingkey";
             var tags = new Dictionary<string, string>();
             var values = new Dictionary<string, double>
             {

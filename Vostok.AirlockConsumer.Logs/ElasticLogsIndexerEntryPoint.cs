@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Vostok.Airlock;
 using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
@@ -17,7 +18,7 @@ namespace Vostok.AirlockConsumer.Logs
             const string consumerGroupId = nameof(ElasticLogsIndexerEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var processor = new LogAirlockEventProcessor(elasticUris, log);
-            var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(".logs", processor);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(RoutingKey.Separator + RoutingKey.LogsSuffix, processor);
             var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             consumer.Start();
             Console.ReadLine();

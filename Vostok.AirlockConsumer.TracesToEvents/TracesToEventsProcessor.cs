@@ -22,10 +22,8 @@ namespace Vostok.AirlockConsumer.TracesToEvents
                 .Where(x => x.Payload.EndTimestamp.HasValue);
             foreach (var @event in httpServerSpanEvents)
             {
+                var routingKey = RoutingKey.ReplaceSuffix(@event.RoutingKey, RoutingKey.TraceEventsSuffix);
                 var metricEvent = MetricEventBuilder.Build(@event.Payload);
-                @event.Payload.Annotations.TryGetValue("serviceName", out var serviceName);
-
-                var routingKey = TraceEventsRoutingKeyBuilder.Build(@event.RoutingKey, serviceName);
                 airlockClient.Push(routingKey, metricEvent);
             }
 
