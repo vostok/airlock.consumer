@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
