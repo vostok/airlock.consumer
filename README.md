@@ -5,7 +5,7 @@
 Top-level separator is `.`:
 `{part1}.{part2}.{part3}`
 
-`[a-zA-Z0-9]` and `-` are the only symbols allowed in parts. `.` inside parts must be replaced with `-`.
+`[a-z0-9]` and `-` are the only symbols allowed in parts. `.` inside parts must be replaced with `-`.
 
 ### Requirements on typical routing keys
 
