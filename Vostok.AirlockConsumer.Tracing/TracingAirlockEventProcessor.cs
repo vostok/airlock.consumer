@@ -8,13 +8,13 @@ namespace Vostok.AirlockConsumer.Tracing
 {
     public class TracingAirlockEventProcessor : IAirlockEventProcessor<Span>, IDisposable
     {
-        private readonly CassandraDataScheme dataScheme;
+        private readonly ICassandraDataScheme dataScheme;
         private readonly ICassandraRetryExecutionStrategy retryExecutionStrategy;
         private readonly BoundedBlockingQueue<Span> spanQueue;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly Task processingTask;
 
-        public TracingAirlockEventProcessor(CassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy, int maxCassandraTasks)
+        public TracingAirlockEventProcessor(ICassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy, int maxCassandraTasks)
         {
             this.dataScheme = dataScheme;
             this.retryExecutionStrategy = retryExecutionStrategy;

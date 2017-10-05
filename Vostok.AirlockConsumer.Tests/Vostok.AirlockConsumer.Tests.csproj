@@ -12,7 +12,7 @@
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
     <PackageReference Include="NSubstitute" Version="2.0.3" />
     <PackageReference Include="Vostok.Core" Version="1.0.0-pre000165" />
-    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000033" />
+    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000035" />
     <PackageReference Include="Elasticsearch.Net" Version="5.5.0" />
     <PackageReference Include="CassandraCSharpDriver" Version="3.3.2" />
   </ItemGroup>

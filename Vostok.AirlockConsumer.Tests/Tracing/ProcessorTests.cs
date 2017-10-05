@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                 Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
                 return Task.CompletedTask;
             });
-            var processor = new TracingAirlockEventProcessor(CassandraTest.DataScheme, executionStrategy, 3);
+            var processor = new TracingAirlockEventProcessor(Substitute.For<ICassandraDataScheme>(), executionStrategy, 3);
             var airlockEvents = new List<AirlockEvent<Span>>();
             const int spanCount = 10;
             for (var i = 0; i < spanCount; i++)

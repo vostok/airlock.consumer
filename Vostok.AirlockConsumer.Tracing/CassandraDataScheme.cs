@@ -9,7 +9,14 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
-    public class CassandraDataScheme 
+    public interface ICassandraDataScheme
+    {
+        Table<SpanInfo> Table { get; }
+        Statement GetInsertStatement(Span span);
+        void CreateTableIfNotExists();
+    }
+
+    public class CassandraDataScheme : ICassandraDataScheme
     {
         private readonly Lazy<PreparedStatement> preparedInsert;
         private readonly JsonSerializer jsonSerializer;
