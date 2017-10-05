@@ -50,7 +50,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             Assert.AreEqual(spanCount, counter);
         }
 
-        [Test, Explicit("Manual")]
+        [Test, Ignore("Manual")]
         public void ProcessData()
         {
             var retryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings();

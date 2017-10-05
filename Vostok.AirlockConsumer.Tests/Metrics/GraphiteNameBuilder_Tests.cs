@@ -15,22 +15,22 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
             graphiteNameBuilder = new GraphiteNameBuilder();
         }
 
-        [TestCase("projectName.environmentName.serviceName", "projectName:environmentName:serviceName")]
-        [TestCase("projectName.environmentName.serviceName", "projectName:environmentName:serviceName:other")]
-        [TestCase("project_name.environment_name.service_name", "project.name:environment.name:service.name")]
-        [TestCase("projectName.environmentName.Unknown", "projectName:environmentName")]
-        [TestCase("projectName.Unknown.Unknown", "projectName")]
-        [TestCase("Unknown.Unknown.Unknown", "")]
-        [TestCase("Unknown.environmentName.Unknown", ":environmentName")]
-        [TestCase("Unknown.environmentName.Unknown", ":environmentName:")]
-        [TestCase("Unknown.Unknown.serviceName", "::serviceName")]
-        [TestCase("__________._____.__________", "ИмяПроекта:Среда:ИмяСервиса")]
-        [TestCase("Unknown.Unknown.Unknown.TypeName.hostname.Operation.status.Value3.Value1.Value2", "",
+        [TestCase("projectName.environmentName.serviceName", "projectName.environmentName.serviceName")]
+        [TestCase("projectName.environmentName.serviceName", "projectName.environmentName.serviceName.other")]
+        [TestCase("project-name.environment-name.service-name", "project-name.environment-name.service-name")]
+        [TestCase("projectName.environmentName.unknown", "projectName.environmentName")]
+        [TestCase("projectName.unknown.unknown", "projectName")]
+        [TestCase("unknown.unknown.unknown", "")]
+        [TestCase("unknown.environmentName.unknown", ".environmentName")]
+        [TestCase("unknown.environmentName.unknown", ".environmentName.")]
+        [TestCase("unknown.unknown.serviceName", "..serviceName")]
+        [TestCase("__________._____.__________", "ИмяПроекта.Среда.ИмяСервиса")]
+        [TestCase("unknown.unknown.unknown.TypeName.hostname.Operation.status.Value3.Value1.Value2", "",
             "a2:Value1", "host:HOSTNAME", "a3:Value2", "type:TypeName", "operationName:Operation", "statusCode:status", "a1:Value3")]
-        [TestCase("Unknown.Unknown.Unknown", "", "a:")]
-        [TestCase("Unknown.Unknown.Unknown", "", ":v")]
-        [TestCase("Unknown.Unknown.Unknown.________", "", "a:Значение")]
-        [TestCase("Unknown.Unknown.Unknown.start_finish", "", "a:start.finish")]
+        [TestCase("unknown.unknown.unknown", "", "a:")]
+        [TestCase("unknown.unknown.unknown", "", ":v")]
+        [TestCase("unknown.unknown.unknown.________", "", "a:Значение")]
+        [TestCase("unknown.unknown.unknown.start_finish", "", "a:start.finish")]
         public void Build_should_build_name_by_routingKey_and_tags(string expecting, string routingKey, params string[] tagStrings)
         {
             var tags = tagStrings.Select(

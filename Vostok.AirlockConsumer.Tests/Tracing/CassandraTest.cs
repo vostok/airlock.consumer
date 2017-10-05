@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             }
         }
 
-        [Test, Explicit("Manual")]
+        [Test, Ignore("Manual")]
         public void InsertData()
         {
             var dataScheme = DataScheme;
