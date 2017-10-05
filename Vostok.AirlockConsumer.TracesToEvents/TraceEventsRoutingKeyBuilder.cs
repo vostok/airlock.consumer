@@ -6,8 +6,8 @@ namespace Vostok.AirlockConsumer.TracesToEvents
     {
         public static string Build(string tracingRoutingKey, string serviceName)
         {
-            const string suffix = "trace_events";
-            const string separator = ":";
+            const string suffix = "trace-events";
+            const string separator = ".";
             var split = tracingRoutingKey.Split(separator);
             var prefix = string.Join(separator, split.Take(split.Length - 1));
 
