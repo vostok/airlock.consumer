@@ -48,14 +48,14 @@ namespace Vostok.AirlockConsumer.Sample
         private static void RunProducer(ILog log, string routingKey)
         {
             log.Info("Producer started");
-            var airlock = new Airlock.Airlock(new AirlockConfig
+            var airlockClient = new AirlockClient(new AirlockConfig
             {
                 ApiKey = AirlockApiKey,
                 ClusterProvider = new FixedClusterProvider(new Uri(AirlockGateEndpoint)),
             }, log);
             do
             {
-                airlock.Push($"{routingKey}.{SampleDataType}", new SampleEvent
+                airlockClient.Push($"{routingKey}.{SampleDataType}", new SampleEvent
                 {
                     Message = $"hello-o-o-o-o-o-o-o-o-o!!! @{DateTimeOffset.UtcNow:O}"
                 });

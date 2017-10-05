@@ -12,7 +12,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         private readonly IMetricScope metricScope;
         private readonly IBucketKeyProvider bucketKeyProvider;
-        private readonly IAirlock airlock;
+        private readonly IAirlockClient airlockClient;
         private readonly TimeSpan cooldownPeriod;
         private readonly ConcurrentDictionary<BucketKey, IBucket> buckets;
         private Borders borders;
@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         public MetricAggregator(
             IMetricScope metricScope,
             IBucketKeyProvider bucketKeyProvider,
-            IAirlock airlock,
+            IAirlockClient airlockClient,
             TimeSpan cooldownPeriod,
             Borders borders,
             string routingKey)
@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 {"type", "aggregator"}, {"routingKey", routingKey}
             });
             this.bucketKeyProvider = bucketKeyProvider;
-            this.airlock = airlock;
+            this.airlockClient = airlockClient;
             this.cooldownPeriod = cooldownPeriod;
             this.borders = borders;
             this.routingKey = routingKey;
@@ -66,7 +66,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             foreach (var metricEvent in metrics)
             {
-                airlock.Push(routingKey, metricEvent);
+                airlockClient.Push(routingKey, metricEvent);
             }
         }
     }

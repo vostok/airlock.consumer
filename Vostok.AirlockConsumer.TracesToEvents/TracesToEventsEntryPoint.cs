@@ -25,8 +25,8 @@ namespace Vostok.AirlockConsumer.TracesToEvents
                 ApiKey = airlockApiKey,
                 ClusterProvider = new FixedClusterProvider(airlockReplicas)
             };
-            var airlock = new Airlock.Airlock(airlockConfig, log);
-            var processor = new TracesToEventsProcessor(airlock);
+            var airlockClient = new AirlockClient(airlockConfig, log);
+            var processor = new TracesToEventsProcessor(airlockClient);
             var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(".traces", processor);
             var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, true, log, processorProvider);
             consumer.Start();

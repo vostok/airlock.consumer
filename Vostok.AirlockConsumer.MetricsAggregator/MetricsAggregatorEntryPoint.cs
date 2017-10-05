@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 ApiKey = airlockApiKey,
                 ClusterProvider = new FixedClusterProvider(airlockReplicas)
             };
-            var airlock = new Airlock.Airlock(airlockConfig, log);
+            var airlockClient = new AirlockClient(airlockConfig, log);
             var rootMetricScope = new RootMetricScope(new MetricConfiguration());
             var processor = new MetricAirlockEventProcessor(
                 routingKey =>
@@ -40,7 +40,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                     var metricAggregator = new MetricAggregator(
                         rootMetricScope,
                         new BucketKeyProvider(),
-                        airlock,
+                        airlockClient,
                         settings.MetricAggregationPastGap,
                         initialBorders,
                         routingKey);

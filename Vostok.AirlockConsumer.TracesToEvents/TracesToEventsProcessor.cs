@@ -8,11 +8,11 @@ namespace Vostok.AirlockConsumer.TracesToEvents
 {
     public class TracesToEventsProcessor : IAirlockEventProcessor<Span>
     {
-        private readonly IAirlock airlock;
+        private readonly IAirlockClient airlockClient;
 
-        public TracesToEventsProcessor(IAirlock airlock)
+        public TracesToEventsProcessor(IAirlockClient airlockClient)
         {
-            this.airlock = airlock;
+            this.airlockClient = airlockClient;
         }
 
         public Task ProcessAsync(List<AirlockEvent<Span>> events)
@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
                 @event.Payload.Annotations.TryGetValue("serviceName", out var serviceName);
 
                 var routingKey = TraceEventsRoutingKeyBuilder.Build(@event.RoutingKey, serviceName);
-                airlock.Push(routingKey, metricEvent);
+                airlockClient.Push(routingKey, metricEvent);
             }
 
             return Task.CompletedTask;
