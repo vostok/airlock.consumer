@@ -1,0 +1,26 @@
+airlock.consumer.batch.size: 1000
+airlock.consumer.log.file.pattern: "..\\log\\actions-{Date}.txt"
+airlock.consumer.elastic.endpoints:
+ - 'http://devops-consul1.dev.kontur.ru:9200/'
+
+#cassandra settings
+cassandra.endpoints:
+ - 'localhost:9042'
+cassandra.keyspace: airlock
+cassandra.spans.tablename: spans
+cassandra.save.retry.max.attempts: 3
+cassandra.save.retry.min.delay: 00:00:01
+cassandra.save.retry.max.delay: 00:00:03
+
+# kafka consumer settings
+bootstrap.servers: "localhost:9092"
+queued.min.messages: 2000000
+queued.max.messages.kbytes: 50050000
+fetch.message.max.bytes: 1000000
+fetch.wait.max.ms: 1000
+receive.message.max.bytes: 52500000
+max.in.flight.requests.per.connection: 500000
+session.timeout.ms: 7500
+auto.commit.interval.ms: 3000
+enable.auto.commit: false
+group.id: airlock
