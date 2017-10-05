@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer.Tracing
         {
             var settingsFromFile = Configuration.TryGetSettingsFromFile(args);
             var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
-            var bootstrapServers = (string)settingsFromFile?["bootstrap.servers"] ?? "localhost:9092";
+            var kafkaBootstrapEndpoints = (string)settingsFromFile?["bootstrap.servers"] ?? "devops-kafka1.dev.kontur.ru:9092";
             const string consumerGroupId = nameof(TracingAirlockConsumerEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var keyspace = (string)settingsFromFile?["cassandra.keyspace"] ?? "airlock";
@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.Tracing
                 dataScheme.CreateTableIfNotExists();
                 var processor = new TracingAirlockEventProcessor(dataScheme);
                 var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(":traces", processor);
-                var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, true, log, processorProvider);
+                var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
                 consumer.Start();
                 Console.ReadLine();
                 consumer.Stop();

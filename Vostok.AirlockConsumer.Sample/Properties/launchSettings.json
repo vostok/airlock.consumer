@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "SampleConsumer": {
+      "commandName": "Project",
+      "commandLineArgs": "--consumer"
+    },
+    "SampleProducer": {
+      "commandName": "Project",
+      "commandLineArgs": "--producer"
+    },
+    "SampleProducerWithRoutingKey": {
+      "commandName": "Project",
+      "commandLineArgs": "--producer sample:staging"
+    }
+  }
+}

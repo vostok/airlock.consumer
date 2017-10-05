@@ -12,7 +12,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             var settingsFromFile = Configuration.TryGetSettingsFromFile(args);
             var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
-            var bootstrapServers = (string)settingsFromFile?["bootstrap.servers"] ?? "localhost:9092";
+            var kafkaBootstrapEndpoints = (string)settingsFromFile?["bootstrap.servers"] ?? "devops-kafka1.dev.kontur.ru:9092";
             const string consumerGroupId = nameof(MetricsAggregatorEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var settings = new MetricsAggregatorSettings
@@ -45,7 +45,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 });
 
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(":metric_events", processor);
-            var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, true, log, processorProvider);
+            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             
             consumer.Start();
             Console.ReadLine();

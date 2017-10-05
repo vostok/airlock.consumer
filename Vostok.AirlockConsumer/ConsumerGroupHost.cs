@@ -21,14 +21,14 @@ namespace Vostok.AirlockConsumer
         private readonly TimeSpan kafkaConsumerPollingInterval = TimeSpan.FromMilliseconds(100);
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(string bootstrapServers, string consumerGroupId, string clientId, bool enableAutoCommit, ILog log, IAirlockEventProcessorProvider processorProvider)
+        public ConsumerGroupHost(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, bool enableAutoCommit, ILog log, IAirlockEventProcessorProvider processorProvider)
         {
             this.consumerGroupId = consumerGroupId;
             this.clientId = clientId;
             this.processorProvider = processorProvider;
             this.log = log.ForContext(this);
 
-            var config = GetConsumerConfig(bootstrapServers, consumerGroupId, clientId, enableAutoCommit);
+            var config = GetConsumerConfig(kafkaBootstrapEndpoints, consumerGroupId, clientId, enableAutoCommit);
             consumer = new Consumer<Null, byte[]>(config, keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) => { log.Error($"CriticalError: {error.ToString()}"); };
             consumer.OnConsumeError += (_, message) => { log.Error($"ConsumeError: from topic/partition/offset/timestamp {message.Topic}/{message.Partition}/{message.Offset}/{message.Timestamp.UtcDateTime:O}: {message.Error.ToString()}"); };
@@ -135,6 +135,9 @@ namespace Vostok.AirlockConsumer
                     processorThread.Start(processorInfo);
                 }
             }
+            log.Info($"TopicsToSubscribeTo: [{string.Join(", ", topicsToSubscribeTo)}]");
+            if (!topicsToSubscribeTo.Any())
+                throw new InvalidOperationException("No topics to subscribe to");
             consumer.Subscribe(topicsToSubscribeTo);
         }
 
@@ -237,11 +240,11 @@ namespace Vostok.AirlockConsumer
             processorInfo.EventsQueue.Add(message);
         }
 
-        private static Dictionary<string, object> GetConsumerConfig(string bootstrapServers, string consumerGroupId, string clientId, bool enableAutoCommit)
+        private static Dictionary<string, object> GetConsumerConfig(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, bool enableAutoCommit)
         {
             return new Dictionary<string, object>
             {
-                {"bootstrap.servers", bootstrapServers},
+                {"bootstrap.servers", kafkaBootstrapEndpoints},
                 {"group.id", consumerGroupId},
                 {"client.id", clientId},
                 {"enable.auto.commit", enableAutoCommit},
