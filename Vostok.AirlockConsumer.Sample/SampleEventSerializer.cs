@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer.Sample
             var reader = source.Reader;
             var version = reader.ReadByte();
             if (version != FormatVersion)
-                throw new InvalidDataException("invalid format version: " + version);
+                throw new InvalidDataException("Invalid format version: " + version);
             return new SampleEvent
             {
                 Message = reader.ReadString(),

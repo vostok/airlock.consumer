@@ -44,7 +44,7 @@ namespace Vostok.AirlockConsumer.Logs
 
         private static object BuildIndexRecordMeta(AirlockEvent<LogEventData> @event)
         {
-            var indexName = string.Format("{0}-{1:yyyy.MM.dd}", @event.RoutingKey.Replace(':', '-'), @event.Payload.Timestamp.Date);
+            var indexName = string.Format("{0}-{1:yyyy.MM.dd}", @event.RoutingKey.Replace('.', '-'), @event.Payload.Timestamp.Date);
             return new
             {
                 index = new

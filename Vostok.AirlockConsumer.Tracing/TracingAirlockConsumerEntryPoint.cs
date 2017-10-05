@@ -27,7 +27,7 @@ namespace Vostok.AirlockConsumer.Tracing
                 var dataScheme = new CassandraDataScheme(sessionKeeper.Session, tableName);
                 dataScheme.CreateTableIfNotExists();
                 var processor = new TracingAirlockEventProcessor(dataScheme, retryExecutionStrategy);
-                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(":traces", processor);
+                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(".traces", processor);
                 var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
                 consumer.Start();
                 Console.ReadLine();

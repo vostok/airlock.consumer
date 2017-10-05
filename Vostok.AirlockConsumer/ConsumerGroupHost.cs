@@ -233,7 +233,7 @@ namespace Vostok.AirlockConsumer
 
         private void OnMessage(Message<Null, byte[]> message)
         {
-            if (processorInfos.TryGetValue(message.Topic, out var processorInfo))
+            if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
 
             // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api)

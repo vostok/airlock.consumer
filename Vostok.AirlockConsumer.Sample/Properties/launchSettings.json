@@ -10,7 +10,7 @@
     },
     "SampleProducerWithRoutingKey": {
       "commandName": "Project",
-      "commandLineArgs": "--producer sample:staging"
+      "commandLineArgs": "--producer sample.staging"
     }
   }
 }

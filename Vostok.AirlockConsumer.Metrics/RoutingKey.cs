@@ -15,7 +15,7 @@
 
         public static RoutingKey Parse(string routingKey)
         {
-            const char separator = ':';
+            const char separator = '.';
             var split = routingKey.Split(separator);
 
             return new RoutingKey(GetValue(split, 0), GetValue(split, 1), GetValue(split, 2));

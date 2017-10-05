@@ -53,7 +53,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                         initialBorders);
                 });
 
-            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(":metric_events", processor);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(".metric_events", processor);
             var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             
             consumer.Start();

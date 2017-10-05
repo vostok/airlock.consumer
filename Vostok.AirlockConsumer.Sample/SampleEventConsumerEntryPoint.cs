@@ -11,7 +11,7 @@ namespace Vostok.AirlockConsumer.Sample
     public static class SampleEventConsumerEntryPoint
     {
         private const string AirlockApiKey = "UniversalApiKey";
-        private const string DefaultRoutingKey = "sample:dev";
+        private const string DefaultRoutingKey = "sample.dev";
         private const string SampleDataType = "airlock-sample-data";
         private const string AirlockGateEndpoint = "http://devops-bots1.dev.kontur.ru:8888";
         private const string KafkaBootstrapEndpoints = "devops-kafka1.dev.kontur.ru:9092";
@@ -55,7 +55,7 @@ namespace Vostok.AirlockConsumer.Sample
             }, log);
             do
             {
-                airlock.Push($"{routingKey}:{SampleDataType}", new SampleEvent
+                airlock.Push($"{routingKey}.{SampleDataType}", new SampleEvent
                 {
                     Message = $"hello-o-o-o-o-o-o-o-o-o!!! @{DateTimeOffset.UtcNow:O}"
                 });
