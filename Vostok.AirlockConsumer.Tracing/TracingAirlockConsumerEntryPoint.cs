@@ -1,42 +1,41 @@
-﻿namespace Vostok.AirlockConsumer.Tracing
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using Vostok.Logging;
+using Vostok.Tracing;
+
+namespace Vostok.AirlockConsumer.Tracing
 {
     public class TracingAirlockConsumerEntryPoint
     {
-        public static ILog Log;
-
         private static void Main(string[] args)
         {
-            var settings = Util.ReadYamlSettings<Dictionary<string, object>>(GetSettingsFileName(args));
-            settings["client.id"] = Dns.GetHostName();
-
-            var logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.RollingFile((string)settings["airlock.consumer.log.file.pattern"])
-                .MinimumLevel.Debug()
-                .CreateLogger();
-            Log = new SerilogLog(logger);
+            var settingsFromFile = Configuration.TryGetSettingsFromFile(args);
+            var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
+            var bootstrapServers = (string)settingsFromFile?["bootstrap.servers"] ?? "localhost:9092";
+            const string consumerGroupId = nameof(TracingAirlockConsumerEntryPoint);
+            var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
+            var keyspace = (string)settingsFromFile?["cassandra.keyspace"] ?? "airlock";
+            var tableName = (string)settingsFromFile?["cassandra.spans.tablename"] ?? "spans";
+            var nodes = ((List<object>)settingsFromFile?["cassandra.endpoints"] ?? new List<object>{ "localhost:9042" }).Cast<string>();
             try
             {
-                var sessionKeeper = new CassandraSessionKeeper(((List<object>) settings["cassandra.endpoints"]).Cast<string>(), (string)settings["cassandra.keyspace"]);
-                var dataScheme = new CassandraDataScheme(sessionKeeper.Session, (string)settings["cassandra.spans.tablename"]);
+                var sessionKeeper = new CassandraSessionKeeper(nodes, keyspace);
+                var dataScheme = new CassandraDataScheme(sessionKeeper.Session, tableName);
                 dataScheme.CreateTableIfNotExists();
-                var consumer = new AirlockTracingConsumer(settings, dataScheme);
+                var processor = new TracingAirlockEventProcessor(dataScheme);
+                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(":traces", processor);
+                var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, true, log, processorProvider);
                 consumer.Start();
                 Console.ReadLine();
                 consumer.Stop();
-
             }
             catch (Exception e)
             {
-                Log.Error(e);
+                log.Error(e);
                 throw;
             }
         }
-
-        private static string GetSettingsFileName(string[] args)
-        {
-            return args.Any() ? args[0] : "default-settings.yaml";
-        }
-
     }
 }

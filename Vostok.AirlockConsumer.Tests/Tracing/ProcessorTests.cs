@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Vostok.AirlockConsumer.Tracing;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.Tracing.Tests
+namespace Vostok.AirlockConsumer.Tests.Tracing
 {
     public class ProcessorTests
     {
         [Test, Explicit("Manual")]
         public void ProcessData()
         {
-            var processor = new AirlockTracingProcessor(CassandraTest.DataScheme);
-            processor.Process(
+            var processor = new TracingAirlockEventProcessor(CassandraTest.DataScheme);
+            processor.ProcessAsync(
                 new List<AirlockEvent<Span>>
                 {
                     new AirlockEvent<Span>
@@ -48,7 +49,7 @@ namespace Vostok.AirlockConsumer.Tracing.Tests
                         },
                         Timestamp = DateTimeOffset.UtcNow
                     },
-                });
+                }).GetAwaiter().GetResult();
         }
     }
 }

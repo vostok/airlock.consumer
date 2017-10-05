@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cassandra;
 using Vostok.Commons.Utilities;
@@ -9,27 +8,24 @@ namespace Vostok.AirlockConsumer.Tracing
 {
     internal class CassandraRetryExecutionStrategy 
     {
+        private readonly CassandraRetryExecutionStrategySettings settings;
         private readonly ISession session;
-        private readonly int cassandraSaveRetryMaxAttempts;
-        private readonly TimeSpan cassandraSaveRetryMinDelay;
-        private readonly TimeSpan cassandraSaveRetryMaxDelay;
+        
         private readonly ILog log;
         private const double MinDelayMultiplier = 1.7;
         private const double MaxDelayMultiplier = 2.5;
 
-        public CassandraRetryExecutionStrategy(Dictionary<string, object> settings, ILog log, ISession session)
+        public CassandraRetryExecutionStrategy(CassandraRetryExecutionStrategySettings settings, ILog log, ISession session)
         {
+            this.settings = settings;
             this.session = session;
-            cassandraSaveRetryMaxAttempts = int.Parse(settings["cassandra.save.retry.max.attempts"].ToString());
-            cassandraSaveRetryMinDelay = TimeSpan.Parse(settings["cassandra.save.retry.min.delay"].ToString());
-            cassandraSaveRetryMaxDelay = TimeSpan.Parse(settings["cassandra.save.retry.max.delay"].ToString());
             this.log = log.ForContext(this);
         }
 
         public async Task ExecuteAsync(Statement statement)
         {
-            var maxAttemptsCount = 1 + Math.Max(0, cassandraSaveRetryMaxAttempts);
-            var delay = cassandraSaveRetryMinDelay;
+            var maxAttemptsCount = 1 + Math.Max(0, settings.CassandraSaveRetryMaxAttempts);
+            var delay = settings.CassandraSaveRetryMinDelay;
 
             for (var attempt = 1; attempt < maxAttemptsCount + 1; attempt++)
             {
@@ -63,12 +59,9 @@ namespace Vostok.AirlockConsumer.Tracing
 
         private TimeSpan IncreaseDelay(TimeSpan delay)
         {
-            var multiplier = MinDelayMultiplier
-                             + ThreadSafeRandom.NextDouble() * (MaxDelayMultiplier - MinDelayMultiplier);
+            var multiplier = MinDelayMultiplier + ThreadSafeRandom.NextDouble() * (MaxDelayMultiplier - MinDelayMultiplier);
             var increasedDelay = delay.Multiply(multiplier);
-            return TimeSpanExtensions.Min(
-                TimeSpanExtensions.Max(cassandraSaveRetryMinDelay, increasedDelay),
-                cassandraSaveRetryMaxDelay);
+            return TimeSpanExtensions.Min(TimeSpanExtensions.Max(settings.CassandraSaveRetryMinDelay, increasedDelay), settings.CassandraSaveRetryMaxDelay);
         }
     }
 }

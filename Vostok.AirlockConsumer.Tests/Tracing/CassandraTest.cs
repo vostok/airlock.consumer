@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Cassandra;
 using NUnit.Framework;
+using Vostok.AirlockConsumer.Tracing;
 
-namespace Vostok.AirlockConsumer.Tracing.Tests
+namespace Vostok.AirlockConsumer.Tests.Tracing
 {
     public class CassandraTest
     {

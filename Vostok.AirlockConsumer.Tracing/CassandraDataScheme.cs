@@ -2,9 +2,7 @@
 using System.Threading;
 using Cassandra;
 using Cassandra.Mapping;
-using Vostok.Tracing;
 using Cassandra.Data.Linq;
-using Confluent.Kafka;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
