@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer", "Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj", "{D11DD2E1-0296-4FA1-8630-CF0A453EFF0C}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.MetricsAggregator", "Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj", "{2EE56F16-BB70-4E79-B7F0-1055898F6DC1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Metrics", "Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj", "{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.Sample", "Vostok.AirlockConsumer.Sample\Vostok.AirlockConsumer.Sample.csproj", "{FCD81500-9B71-4641-99AE-D04F6C3047D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.TracesToEvents", "Vostok.AirlockConsumer.TracesToEvents\Vostok.AirlockConsumer.TracesToEvents.csproj", "{062894CF-9956-4540-A0E3-C342655E24A6}"
 EndProject
@@ -47,6 +49,10 @@ Global
 		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44C2BEF5-A7BA-42D7-BC2B-B4A2D0576AD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCD81500-9B71-4641-99AE-D04F6C3047D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCD81500-9B71-4641-99AE-D04F6C3047D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCD81500-9B71-4641-99AE-D04F6C3047D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCD81500-9B71-4641-99AE-D04F6C3047D7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{062894CF-9956-4540-A0E3-C342655E24A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{062894CF-9956-4540-A0E3-C342655E24A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{062894CF-9956-4540-A0E3-C342655E24A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
