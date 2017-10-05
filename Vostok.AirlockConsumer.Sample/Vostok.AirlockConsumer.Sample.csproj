@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Vostok.Core" Version="1.0.0-pre000150" />
-    <PackageReference Include="Vostok.GraphiteClient" Version="1.0.0-*" />
+    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000021" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
   </ItemGroup>
+
 </Project>

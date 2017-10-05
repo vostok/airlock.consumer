@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Elasticsearch.Net" Version="5.5.0" />
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000143" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000150" />
   </ItemGroup>
 
   <ItemGroup>
