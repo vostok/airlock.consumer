@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Cassandra;
-using Newtonsoft.Json;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
