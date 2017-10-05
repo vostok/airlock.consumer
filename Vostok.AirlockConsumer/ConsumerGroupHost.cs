@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
-using Vostok.AirlockConsumer.Deserialization;
+using Confluent.Kafka.Serialization;
 using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
