@@ -36,7 +36,7 @@ namespace Vostok.AirlockConsumer
 
         public void Dispose()
         {
-            (airlockEventProcessor as IDisposable)?.Dispose();
+            (airlockEventProcessor as IDisposable)?.Dispose(); // todo (avk, 05.10.2017): it's really questionable decision to dispose something that you don't own
         }
     }
 }
