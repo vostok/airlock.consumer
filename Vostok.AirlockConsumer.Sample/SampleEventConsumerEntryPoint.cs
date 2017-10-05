@@ -66,7 +66,7 @@ namespace Vostok.AirlockConsumer.Sample
         private static void RunConsumer(ILog log)
         {
             log.Info("Consumer started");
-            const string consumerGroupId = nameof(SampleEventConsumerEntryPoint);
+            var consumerGroupId = $"SampleConsumer-{Dns.GetHostName()}";
             var clientId = Dns.GetHostName();
             var processor = new SampleDataAirlockEventProcessor(log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(SampleDataType, processor);

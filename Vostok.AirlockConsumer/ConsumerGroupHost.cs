@@ -253,7 +253,7 @@ namespace Vostok.AirlockConsumer
                 {"client.id", clientId},
                 {"enable.auto.commit", enableAutoCommit},
                 {"auto.commit.interval.ms", 1000},
-                {"auto.offset.reset", "latest"},
+                {"auto.offset.reset", "earliest"},
                 {"session.timeout.ms", 60000},
                 {"statistics.interval.ms", 60000},
 
