@@ -2,7 +2,7 @@
 using Vostok.Airlock;
 using Vostok.Commons.Binary;
 
-namespace Vostok.AirlockConsumer.Deserialization
+namespace Vostok.AirlockConsumer
 {
     public class SimpleAirlockSource : IAirlockSource
     {

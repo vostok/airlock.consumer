@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Airlock;
-using Vostok.AirlockConsumer.Deserialization;
 
 namespace Vostok.AirlockConsumer
 {
