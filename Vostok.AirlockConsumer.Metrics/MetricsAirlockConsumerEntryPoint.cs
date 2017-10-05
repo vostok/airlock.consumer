@@ -15,7 +15,7 @@ namespace Vostok.AirlockConsumer.Metrics
             var graphitePort = (int?)settingsFromFile?["airlock.consumer.graphite.port"] ?? 2003;
             const string consumerGroupId = nameof(MetricsAirlockConsumerEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
-            var processor = new MetricsAirlockEventProcessor(graphiteHost, graphitePort);
+            var processor = new MetricsAirlockEventProcessor(graphiteHost, graphitePort, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(":metrics", processor);
             var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, true, log, processorProvider);
             consumer.Start();
