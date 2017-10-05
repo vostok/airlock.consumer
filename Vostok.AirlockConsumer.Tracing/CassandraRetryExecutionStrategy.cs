@@ -6,7 +6,12 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
-    public class CassandraRetryExecutionStrategy 
+    public interface ICassandraRetryExecutionStrategy
+    {
+        Task ExecuteAsync(Statement statement);
+    }
+
+    public class CassandraRetryExecutionStrategy : ICassandraRetryExecutionStrategy
     {
         private readonly CassandraRetryExecutionStrategySettings settings;
         private readonly ISession session;

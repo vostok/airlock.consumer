@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Cassandra;
 using Newtonsoft.Json;
@@ -8,20 +11,50 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
-    public class TracingAirlockEventProcessor : IAirlockEventProcessor<Span>
+    public class TracingAirlockEventProcessor : IAirlockEventProcessor<Span>, IDisposable
     {
         private readonly CassandraDataScheme dataScheme;
-        private readonly CassandraRetryExecutionStrategy retryExecutionStrategy;
+        private readonly ICassandraRetryExecutionStrategy retryExecutionStrategy;
+        private readonly BoundedBlockingQueue<Span> spanQueue;
+        private readonly CancellationTokenSource cancellationTokenSource;
+        private readonly Task processingTask;
 
-        public TracingAirlockEventProcessor(CassandraDataScheme dataScheme, CassandraRetryExecutionStrategy retryExecutionStrategy)
+        public TracingAirlockEventProcessor(CassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy, int maxCassandraTasks)
         {
             this.dataScheme = dataScheme;
             this.retryExecutionStrategy = retryExecutionStrategy;
+            spanQueue = new BoundedBlockingQueue<Span>(maxCassandraTasks);
+            cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+            processingTask = new Task(
+                () =>
+                {
+                    Parallel.ForEach(
+                        spanQueue.GetConsumingEnumerable(),
+                        new ParallelOptions {MaxDegreeOfParallelism = maxCassandraTasks, CancellationToken = token },
+                        ProcessSpan);
+                }, token, TaskCreationOptions.LongRunning);
+            processingTask.Start();
         }
 
         public Task ProcessAsync(List<AirlockEvent<Span>> events)
         {
-            return Task.WhenAll(events.Select(airlockEvent => retryExecutionStrategy.ExecuteAsync(dataScheme.GetInsertStatement(airlockEvent.Payload))));
+            events.ForEach(x => spanQueue.Add(x.Payload));
+            return Task.CompletedTask;
+        }
+
+        private void ProcessSpan(Span span)
+        {
+            retryExecutionStrategy.ExecuteAsync(dataScheme.GetInsertStatement(span)).Wait();
+        }
+
+        public void Dispose()
+        {
+            spanQueue.CompleteAdding();
+            processingTask.Wait();
+            cancellationTokenSource.Cancel();
+            spanQueue.Dispose();
+            cancellationTokenSource?.Dispose();
         }
     }
 }

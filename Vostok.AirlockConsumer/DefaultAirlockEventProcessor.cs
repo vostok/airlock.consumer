@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,7 +8,7 @@ using Vostok.AirlockConsumer.Deserialization;
 
 namespace Vostok.AirlockConsumer
 {
-    public class DefaultAirlockEventProcessor<T> : IAirlockEventProcessor
+    public class DefaultAirlockEventProcessor<T> : IAirlockEventProcessor, IDisposable
     {
         private readonly IAirlockDeserializer<T> airlockDeserializer;
         private readonly IAirlockEventProcessor<T> airlockEventProcessor;
@@ -30,6 +31,11 @@ namespace Vostok.AirlockConsumer
                 Payload = airlockDeserializer.Deserialize(new SimpleAirlockSource(new MemoryStream(x.Payload))),
             }).ToList();
             await airlockEventProcessor.ProcessAsync(airlockEvents).ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            (airlockEventProcessor as IDisposable)?.Dispose();
         }
     }
 }

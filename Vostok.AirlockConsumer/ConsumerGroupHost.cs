@@ -108,6 +108,10 @@ namespace Vostok.AirlockConsumer
                 return;
             cancellationTokenSource.Cancel();
             pollingThread.Join();
+            foreach (var processorInfo in processorInfos.Values)
+            {
+                (processorInfo.Processor as IDisposable)?.Dispose();
+            }
             consumer.Dispose();
             cancellationTokenSource.Dispose();
         }
