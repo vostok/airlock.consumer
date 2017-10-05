@@ -11,8 +11,8 @@ Top-level separator is `.`:
 
 Message type            | Routing key format
 ------------------------|-------------------
-Logs                    | {Project}.{Environment}.logs
-Traces                  | {Project}.{Environment}.traces
+Logs                    | {Project}.{Environment}.{ServiceName}.logs
+Traces                  | {Project}.{Environment}.{ServiceName}.traces
 Final metric            | {Project}.{Environment}.{ServiceName}.metrics
 Metric events           | {Project}.{Environment}.{ServiceName}.app-events
 Metric events by traces | {Project}.{Environment}.{ServiceName}.trace-events
