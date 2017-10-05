@@ -70,13 +70,13 @@ namespace Vostok.AirlockConsumer
             consumer.OnPartitionsAssigned += (_, topicPartitions) =>
             {
                 // todo (avk, 04.10.2017): иногда нужно процессоры создавать динамически при перебалансировке партишенов по консьюмерам
-                log.Info($"PartitionsAssigned: consumer.Name: {consumer.Name}, consumer.MemberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
+                log.Warn($"PartitionsAssigned: consumer.Name: {consumer.Name}, consumer.MemberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
                 consumer.Assign(topicPartitions.Select(x => new TopicPartitionOffset(x, Offset.Invalid)));
             };
             consumer.OnPartitionsRevoked += (_, topicPartitions) =>
             {
                 // todo (avk, 04.10.2017): иногда нужно процессоры создавать динамически при перебалансировке партишенов по консьюмерам
-                log.Info($"PartitionsRevoked: [{string.Join(", ", topicPartitions)}]");
+                log.Warn($"PartitionsRevoked: [{string.Join(", ", topicPartitions)}]");
                 consumer.Unassign();
             };
             consumer.OnMessage += (_, message) => OnMessage(message);
@@ -120,7 +120,7 @@ namespace Vostok.AirlockConsumer
         private void Subscribe()
         {
             var metadata = consumer.GetMetadata(allTopics: true);
-            log.Info($"Metadata: {metadata}");
+            log.Debug($"Metadata: {metadata}");
             var topicsToSubscribeTo = new List<string>();
             foreach (var topicMetadata in metadata.Topics)
             {
@@ -139,7 +139,7 @@ namespace Vostok.AirlockConsumer
                     processorThread.Start(processorInfo);
                 }
             }
-            log.Info($"TopicsToSubscribeTo: [{string.Join(", ", topicsToSubscribeTo)}]");
+            log.Warn($"TopicsToSubscribeTo: [{string.Join(", ", topicsToSubscribeTo)}]");
             if (!topicsToSubscribeTo.Any())
                 throw new InvalidOperationException("No topics to subscribe to");
             consumer.Subscribe(topicsToSubscribeTo);
@@ -256,6 +256,7 @@ namespace Vostok.AirlockConsumer
                 {"auto.offset.reset", "earliest"},
                 {"session.timeout.ms", 60000},
                 {"statistics.interval.ms", 60000},
+                {"partition.assignment.strategy", "roundrobin"},
 
                 //{"max.poll.records", 100*1000},
                 //{"max.partition.fetch.bytes", 10485760},

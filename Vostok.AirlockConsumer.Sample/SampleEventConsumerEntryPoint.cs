@@ -11,8 +11,8 @@ namespace Vostok.AirlockConsumer.Sample
     public static class SampleEventConsumerEntryPoint
     {
         private const string AirlockApiKey = "UniversalApiKey";
-        private const string DefaultRoutingKey = "sample.dev";
-        private const string SampleDataType = "airlock-sample-data";
+        private const string DefaultRoutingKey = "s.dev";
+        private const string SampleDataType = "asd";
         private const string AirlockGateEndpoint = "http://devops-bots1.dev.kontur.ru:8888";
         private const string KafkaBootstrapEndpoints = "devops-kafka1.dev.kontur.ru:9092";
         private static readonly ManualResetEventSlim stopSignal = new ManualResetEventSlim();
@@ -32,7 +32,7 @@ namespace Vostok.AirlockConsumer.Sample
                 if (!args.Any())
                     log.Error("Mode is not provided");
                 else if (args[0] == "--producer")
-                    RunProducer(log, routingKey: args.Length > 1 ? args[1] : DefaultRoutingKey);
+                    RunProducer(log, routingKeys: args.Skip(1).ToArray());
                 else if (args[0] == "--consumer")
                     RunConsumer(log);
                 else
@@ -45,9 +45,10 @@ namespace Vostok.AirlockConsumer.Sample
             }
         }
 
-        private static void RunProducer(ILog log, string routingKey)
+        private static void RunProducer(ILog log, string[] routingKeys)
         {
-            log.Info("Producer started");
+            routingKeys = routingKeys.Any() ? routingKeys : new[] {DefaultRoutingKey};
+            log.Info($"Producer started for routingKeys: [{string.Join(", ", routingKeys)}]");
             var airlockClient = new AirlockClient(new AirlockConfig
             {
                 ApiKey = AirlockApiKey,
@@ -55,10 +56,13 @@ namespace Vostok.AirlockConsumer.Sample
             }, log);
             do
             {
-                airlockClient.Push($"{routingKey}.{SampleDataType}", new SampleEvent
+                foreach (var routingKey in routingKeys)
                 {
-                    Message = $"hello-o-o-o-o-o-o-o-o-o!!! @{DateTimeOffset.UtcNow:O}"
-                });
+                    var key = $"{routingKey}.{SampleDataType}";
+                    var message = $"msg@{DateTimeOffset.UtcNow:O}";
+                    airlockClient.Push(key, new SampleEvent { Message = message });
+                    log.Info($"Pushed {message} into {routingKey}");
+                }
             } while (!stopSignal.Wait(TimeSpan.FromSeconds(1)));
             log.Info("Producer finished");
         }
@@ -67,14 +71,13 @@ namespace Vostok.AirlockConsumer.Sample
         {
             log.Info("Consumer started");
             var consumerGroupId = $"SampleConsumer-{Dns.GetHostName()}";
-            var clientId = Dns.GetHostName();
+            var clientId = Guid.NewGuid().GetHashCode().ToString().Replace("-", "");
             var processor = new SampleDataAirlockEventProcessor(log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(SampleDataType, processor);
             var consumer = new ConsumerGroupHost(KafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             consumer.Start();
             do
             {
-
             } while (!stopSignal.Wait(TimeSpan.FromSeconds(1)));
             consumer.Stop();
             log.Info("Consumer finished");

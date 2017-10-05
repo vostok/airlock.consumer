@@ -9,7 +9,8 @@ namespace Vostok.AirlockConsumer
         public static ILog Configure(string logFilePattern)
         {
             var logger = new LoggerConfiguration()
-                .WriteTo.Console()
+                .Enrich.With<ManagedThreadIdEnricher>()
+                .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff} {Level:u3} [{Thread}] {Message:l}{NewLine}{Exception}")
                 .WriteTo.RollingFile(logFilePattern)
                 .MinimumLevel.Debug()
                 .CreateLogger();
