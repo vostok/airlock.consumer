@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Cassandra;
 using Newtonsoft.Json;
@@ -10,24 +11,17 @@ namespace Vostok.AirlockConsumer.Tracing
     public class TracingAirlockEventProcessor : IAirlockEventProcessor<Span>
     {
         private readonly CassandraDataScheme dataScheme;
+        private readonly CassandraRetryExecutionStrategy retryExecutionStrategy;
 
-        public TracingAirlockEventProcessor(CassandraDataScheme dataScheme)
+        public TracingAirlockEventProcessor(CassandraDataScheme dataScheme, CassandraRetryExecutionStrategy retryExecutionStrategy)
         {
             this.dataScheme = dataScheme;
+            this.retryExecutionStrategy = retryExecutionStrategy;
         }
 
         public Task ProcessAsync(List<AirlockEvent<Span>> events)
         {
-            var batchStatement = new BatchStatement();
-            batchStatement.SetBatchType(BatchType.Unlogged);
-            batchStatement.SetIdempotence(true);
-            foreach (var airlockEvent in events)
-            {
-                var insertStatement = dataScheme.GetInsertStatement(airlockEvent.Payload);
-                batchStatement.Add(insertStatement);
-            }
-            dataScheme.Session.Execute(batchStatement);
-            return Task.CompletedTask;
+            return Task.WhenAll(events.Select(airlockEvent => retryExecutionStrategy.ExecuteAsync(dataScheme.GetInsertStatement(airlockEvent.Payload))));
         }
     }
 }

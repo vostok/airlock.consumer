@@ -12,7 +12,7 @@ namespace Vostok.AirlockConsumer.Tracing
     public class CassandraDataScheme 
     {
         private readonly Lazy<PreparedStatement> preparedInsert;
-        private JsonSerializer jsonSerializer;
+        private readonly JsonSerializer jsonSerializer;
 
         public CassandraDataScheme(
             ISession session,
@@ -24,20 +24,9 @@ namespace Vostok.AirlockConsumer.Tracing
             jsonSerializer = new JsonSerializer();
         }
 
-        public ISession Session { get; }
-        public string TableName { get; }
+        private ISession Session { get; }
+        private string TableName { get; }
         public Table<SpanInfo> Table => new Table<SpanInfo>(Session, MappingConfiguration.Global, TableName);
-
-        public Statement GetInsertStatement(SpanInfo span)
-        {
-            return preparedInsert.Value.Bind(
-                span.ParentSpanId,
-                span.EndTimestamp,
-                span.Annotations,
-                span.TraceId,
-                span.SpanId,
-                span.BeginTimestamp);
-        }
 
         public Statement GetInsertStatement(Span span)
         {
@@ -81,15 +70,14 @@ namespace Vostok.AirlockConsumer.Tracing
 
         private const string CreateTableQueryTemplate =
             @"CREATE TABLE IF NOT EXISTS {0} (
-    trace_id_prefix text,
     begin_timestamp timestamp,
     end_timestamp timestamp,
     trace_id uuid,
     span_id uuid,
     parent_span_id uuid,
     annotations text,
-    PRIMARY KEY (trace_id_prefix, begin_timestamp, trace_id, span_id))
-    WITH CLUSTERING ORDER BY (begin_timestamp ASC, trace_id ASC, span_id ASC)
+    PRIMARY KEY (trace_id, begin_timestamp, span_id))
+    WITH CLUSTERING ORDER BY (begin_timestamp ASC, span_id ASC)
     AND bloom_filter_fp_chance = 0.01
     AND caching = {{'keys': 'ALL', 'rows_per_partition': 'NONE'}} 
     AND comment = '' 

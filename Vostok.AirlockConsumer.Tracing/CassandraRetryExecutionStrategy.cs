@@ -6,7 +6,7 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
-    internal class CassandraRetryExecutionStrategy 
+    public class CassandraRetryExecutionStrategy 
     {
         private readonly CassandraRetryExecutionStrategySettings settings;
         private readonly ISession session;

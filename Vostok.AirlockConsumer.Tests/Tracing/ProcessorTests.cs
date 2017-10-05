@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using NSubstitute;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
+using Vostok.Logging;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tests.Tracing
@@ -11,7 +13,10 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
         [Test, Explicit("Manual")]
         public void ProcessData()
         {
-            var processor = new TracingAirlockEventProcessor(CassandraTest.DataScheme);
+            var retryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings();
+            var retryExecutionStrategy = new CassandraRetryExecutionStrategy(retryExecutionStrategySettings, Substitute.For<ILog>(), CassandraTest.Session.Value);
+
+            var processor = new TracingAirlockEventProcessor(CassandraTest.DataScheme, retryExecutionStrategy);
             processor.ProcessAsync(
                 new List<AirlockEvent<Span>>
                 {
