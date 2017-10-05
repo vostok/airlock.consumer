@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.0-sdk AS build-env
+FROM microsoft/dotnet:2.0-sdk-jessie AS build-env
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
@@ -11,12 +11,7 @@ COPY . ./
 RUN dotnet publish -c Release -o out
 
 # build runtime image
-FROM microsoft/dotnet:2.0-runtime
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        librdkafka-dev \
-    && rm -rf /var/lib/apt/lists/*
+FROM microsoft/dotnet:2.0-runtime-jessie
 
 WORKDIR /app
 COPY --from=build-env /app ./

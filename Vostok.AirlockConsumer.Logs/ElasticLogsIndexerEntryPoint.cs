@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Vostok.Airlock;
+using Vostok.Logging;
 using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
@@ -21,6 +22,7 @@ namespace Vostok.AirlockConsumer.Logs
             var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(RoutingKey.Separator + RoutingKey.LogsSuffix, processor);
             var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             consumer.Start();
+            log.Info("Airlock Logs Consumer Started");
             Console.ReadLine();
             consumer.Stop();
         }
