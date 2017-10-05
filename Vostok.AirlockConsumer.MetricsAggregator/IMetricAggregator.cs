@@ -4,7 +4,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     internal interface IMetricAggregator
     {
-        void ProcessMetricEvent(string routingKey, MetricEvent metricEvent);
+        void ProcessMetricEvent(MetricEvent metricEvent);
         void Reset(Borders nextBorders);
     }
 }

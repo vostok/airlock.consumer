@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using Vostok.Airlock;
 using Vostok.Commons.Extensions.UnitConvertions;
@@ -11,32 +13,40 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private readonly IMetricScope metricScope;
         private readonly IBucketKeyProvider bucketKeyProvider;
         private readonly IAirlock airlock;
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<BucketKey, IBucket>> buckets;
+        private readonly TimeSpan cooldownPeriod;
+        private readonly ConcurrentDictionary<BucketKey, IBucket> buckets;
         private Borders borders;
+        private readonly string routingKey;
 
         public MetricAggregator(
             IMetricScope metricScope,
             IBucketKeyProvider bucketKeyProvider,
             IAirlock airlock,
-            Borders borders)
+            TimeSpan cooldownPeriod,
+            Borders borders,
+            string routingKey)
         {
-            this.metricScope = metricScope;
+            this.metricScope = metricScope.WithTags(new Dictionary<string, string>
+            {
+                {"type", "aggregator"}, {"routingKey", routingKey}
+            });
             this.bucketKeyProvider = bucketKeyProvider;
             this.airlock = airlock;
+            this.cooldownPeriod = cooldownPeriod;
             this.borders = borders;
-            buckets = new ConcurrentDictionary<string, ConcurrentDictionary<BucketKey, IBucket>>();
+            this.routingKey = routingKey;
+            buckets = new ConcurrentDictionary<BucketKey, IBucket>();
         }
 
-        public void ProcessMetricEvent(string routingKey, MetricEvent metricEvent)
+        public void ProcessMetricEvent(MetricEvent metricEvent)
         {
-            var byRoutingKey = buckets.GetOrAdd(routingKey, _ => new ConcurrentDictionary<BucketKey, IBucket>());
             var bucketKeys = bucketKeyProvider.GetBucketKeys(metricEvent.Tags);
             var currentBorders = Interlocked.CompareExchange(ref borders, null, null);
             foreach (var bucketKey in bucketKeys)
             {
-                var bucket = byRoutingKey.GetOrAdd(
+                var bucket = buckets.GetOrAdd(
                     bucketKey,
-                    bk => new Bucket(metricScope, bk.Tags, 1.Minutes(), currentBorders));
+                    bk => new Bucket(metricScope, bk.Tags, 1.Minutes(), cooldownPeriod, currentBorders));
                 bucket.Consume(metricEvent.Values, metricEvent.Timestamp);
             }
         }
@@ -44,16 +54,19 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         public void Reset(Borders nextBorders)
         {
             Interlocked.Exchange(ref borders, nextBorders);
-            foreach (var byRoutingKey in buckets)
+
+            foreach (var bucket in buckets)
             {
-                foreach (var bucket in byRoutingKey.Value)
-                {
-                    var metrics = bucket.Value.Reset(nextBorders);
-                    foreach (var metricEvent in metrics)
-                    {
-                        airlock.Push(byRoutingKey.Key, metricEvent);
-                    }
-                }
+                var metrics = bucket.Value.Reset(nextBorders);
+                PushToAirlock(metrics);
+            }
+        }
+
+        private void PushToAirlock(IEnumerable<MetricEvent> metrics)
+        {
+            foreach (var metricEvent in metrics)
+            {
+                airlock.Push(routingKey, metricEvent);
             }
         }
     }
