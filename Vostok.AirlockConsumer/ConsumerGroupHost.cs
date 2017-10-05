@@ -279,7 +279,7 @@ namespace Vostok.AirlockConsumer
             public Thread ProcessorThread { get; }
             public IAirlockEventProcessor Processor { get; }
             public BoundedBlockingQueue<Message<Null, byte[]>> EventsQueue { get; } = new BoundedBlockingQueue<Message<Null, byte[]>>(MaxProcessorQueueSize);
-            public int MaxBatchSize { get; } = 100 * 1000;
+            public int MaxBatchSize { get; } = 100*1000;
             public TimeSpan MaxDequeueTimeout { get; } = TimeSpan.FromSeconds(1);
             public TimeSpan MinDequeueTimeout { get; } = TimeSpan.FromMilliseconds(100);
 
