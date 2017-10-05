@@ -38,30 +38,22 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
                 currentBorders = CalculateNewBorders(currentBorders);
                 aggregator.Reset(currentBorders);
-
-                var lastRegisteredTime = eventsTimestampProvider.GetLastRegisteredTime();
-                if (lastRegisteredTime.HasValue && lastRegisteredTime < DateTimeOffset.UtcNow - settings.MetricAggregationPastGap)
-                {
-                    aggregator.Flush();
-                }
             }
         }
 
         private Borders CalculateNewBorders(Borders current)
         {
-            var newFuture = DateTimeOffset.UtcNow + settings.MetricAggregationFutureGap;
+            var now = DateTimeOffset.UtcNow;
 
-            var eventsNow = eventsTimestampProvider.Now();
-            if (eventsNow == null)
-                return new Borders(current.Past, newFuture);
+            var future = now + settings.MetricAggregationFutureGap;
+            var past = eventsTimestampProvider.Now() ?? current.Past;
+            if (past < current.Past)
+                past = current.Past;
+            var maxPossiblePast = now - settings.MetricAggregationPastGap;
+            if (past > maxPossiblePast)
+                past = maxPossiblePast;
 
-            var newPast = Max(eventsNow.Value - settings.MetricAggregationPastGap, current.Past);
-            return new Borders(newPast, newFuture);
-        }
-
-        private static DateTimeOffset Max(DateTimeOffset a, DateTimeOffset b)
-        {
-            return a > b ? a : b;
+            return new Borders(past, future);
         }
 
         public void Stop()

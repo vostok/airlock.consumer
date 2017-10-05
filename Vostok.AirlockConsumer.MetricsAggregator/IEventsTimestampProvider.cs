@@ -6,6 +6,5 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         void AddTimestamp(DateTimeOffset timestamp);
         DateTimeOffset? Now();
-        DateTimeOffset? GetLastRegisteredTime();
     }
 }

@@ -7,7 +7,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         private readonly int maxCapacity;
         private readonly Queue<DateTimeOffset> offsets = new Queue<DateTimeOffset>();
-        private DateTimeOffset? lastRegisteredTime;
 
         public EventsTimestampProvider(int maxCapacity)
         {
@@ -18,28 +17,17 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             offsets.Enqueue(timestamp);
             if (offsets.Count > maxCapacity)
-            {
                 offsets.Dequeue();
-            }
-
-            lastRegisteredTime = DateTimeOffset.UtcNow;
         }
 
         public DateTimeOffset? Now()
         {
             if (offsets.Count < maxCapacity)
-            {
                 return null;
-            }
 
             var items = offsets.ToArray();
             Array.Sort(items);
             return items[items.Length/2];
-        }
-
-        public DateTimeOffset? GetLastRegisteredTime()
-        {
-            return lastRegisteredTime;
         }
     }
 }

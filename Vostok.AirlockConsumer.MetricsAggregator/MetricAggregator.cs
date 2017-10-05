@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Vostok.Airlock;
@@ -12,6 +13,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private readonly IMetricScope metricScope;
         private readonly IBucketKeyProvider bucketKeyProvider;
         private readonly IAirlock airlock;
+        private readonly TimeSpan cooldownPeriod;
         private readonly ConcurrentDictionary<BucketKey, IBucket> buckets;
         private Borders borders;
         private readonly string routingKey;
@@ -20,6 +22,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             IMetricScope metricScope,
             IBucketKeyProvider bucketKeyProvider,
             IAirlock airlock,
+            TimeSpan cooldownPeriod,
             Borders borders,
             string routingKey)
         {
@@ -29,6 +32,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             });
             this.bucketKeyProvider = bucketKeyProvider;
             this.airlock = airlock;
+            this.cooldownPeriod = cooldownPeriod;
             this.borders = borders;
             this.routingKey = routingKey;
             buckets = new ConcurrentDictionary<BucketKey, IBucket>();
@@ -42,7 +46,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             {
                 var bucket = buckets.GetOrAdd(
                     bucketKey,
-                    bk => new Bucket(metricScope, bk.Tags, 1.Minutes(), currentBorders));
+                    bk => new Bucket(metricScope, bk.Tags, 1.Minutes(), cooldownPeriod, currentBorders));
                 bucket.Consume(metricEvent.Values, metricEvent.Timestamp);
             }
         }
@@ -54,15 +58,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             foreach (var bucket in buckets)
             {
                 var metrics = bucket.Value.Reset(nextBorders);
-                PushToAirlock(metrics);
-            }
-        }
-
-        public void Flush()
-        {
-            foreach (var bucket in buckets)
-            {
-                var metrics = bucket.Value.Flush();
                 PushToAirlock(metrics);
             }
         }

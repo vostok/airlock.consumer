@@ -6,6 +6,5 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         void ProcessMetricEvent(MetricEvent metricEvent);
         void Reset(Borders nextBorders);
-        void Flush();
     }
 }

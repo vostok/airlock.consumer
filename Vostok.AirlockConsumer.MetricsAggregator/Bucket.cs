@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
@@ -13,6 +12,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         private readonly IReadOnlyDictionary<string, string> tags;
         private readonly TimeSpan period;
+        private readonly TimeSpan cooldownPeriod;
         private readonly ConcurrentDictionary<DateTimeOffset, TimeBin> timeBins;
         private readonly ICounter missedPastEvents;
         private readonly ICounter missedFutureEvents;
@@ -22,10 +22,12 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             IMetricScope metricScope,
             IReadOnlyDictionary<string, string> tags,
             TimeSpan period,
+            TimeSpan cooldownPeriod,
             Borders borders)
         {
             this.tags = tags;
             this.period = period;
+            this.cooldownPeriod = cooldownPeriod;
             timeBins = new ConcurrentDictionary<DateTimeOffset, TimeBin>();
             missedPastEvents = metricScope.Counter(1.Minutes(), "missed_past_events");
             missedFutureEvents = metricScope.Counter(1.Minutes(), "missed_future_events");
@@ -50,29 +52,25 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             }
 
             var timeBin = timeBins.GetOrAdd(normalizedTimestamp, _ => new TimeBin());
-            timeBin.Counter.Add();
-            foreach (var kvp in values)
-            {
-                var meter = timeBin.Meters.GetOrAdd(kvp.Key, _ => new Meter());
-                meter.Add(kvp.Value);
-            }
+            timeBin.Consume(values);
         }
 
         public IEnumerable<MetricEvent> Reset(Borders nextBorders)
         {
             nextBorders = NormalizeBorders(nextBorders);
             Interlocked.Exchange(ref borders, nextBorders);
-            foreach (var kvp in timeBins.Where(x => x.Key < nextBorders.Past))
+            foreach (var kvp in timeBins)
             {
-                if (!timeBins.TryRemove(kvp.Key, out _))
-                    continue;
-                yield return AggregateMetric(kvp.Key, kvp.Value);
+                var timestamp = kvp.Key;
+                var timeBin = kvp.Value;
+                if (timestamp < nextBorders.Past)
+                {
+                    if (timeBins.TryRemove(timestamp, out _))
+                        yield return AggregateMetric(timestamp, timeBin);
+                }
+                else if (timeBin.TryFlush(cooldownPeriod))
+                    yield return AggregateMetric(timestamp, timeBin);
             }
-        }
-
-        public IEnumerable<MetricEvent> Flush()
-        {
-            return timeBins.Select(kvp => AggregateMetric(kvp.Key, kvp.Value));
         }
 
         private MetricEvent AggregateMetric(DateTimeOffset timestamp, TimeBin timeBin)
@@ -108,8 +106,35 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         private class TimeBin
         {
+            private long lastConsumeTimeUtcTicks;
+            private long flushedEvents;
+
             public ConcurrentDictionary<string, Meter> Meters { get; } = new ConcurrentDictionary<string, Meter>();
             public Counter Counter { get; } = new Counter();
+
+            public bool TryFlush(TimeSpan cooldownPeriod)
+            {
+                if (GetLastConsumeTime() > DateTimeOffset.UtcNow - cooldownPeriod)
+                    return false;
+                var eventsCount = Counter.GetValue();
+                if (flushedEvents == eventsCount)
+                    return false;
+                flushedEvents = eventsCount;
+                return true;
+            }
+
+            public void Consume(IReadOnlyDictionary<string, double> values)
+            {
+                Interlocked.Exchange(ref lastConsumeTimeUtcTicks, DateTimeOffset.UtcNow.UtcTicks);
+                Counter.Add();
+                foreach (var kvp in values)
+                {
+                    var meter = Meters.GetOrAdd(kvp.Key, _ => new Meter());
+                    meter.Add(kvp.Value);
+                }
+            }
+
+            private DateTimeOffset GetLastConsumeTime() => new DateTimeOffset(Interlocked.Read(ref lastConsumeTimeUtcTicks), TimeSpan.Zero);
         }
     }
 }

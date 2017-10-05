@@ -15,7 +15,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var bootstrapServers = (string)settingsFromFile?["bootstrap.servers"] ?? "localhost:9092";
             const string consumerGroupId = nameof(MetricsAggregatorEntryPoint);
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
-            var aggregatorSettings = new MetricsAggregatorSettings
+            var settings = new MetricsAggregatorSettings
             {
                 MetricAggregationPastGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.pastGap"], 20.Seconds()),
                 MetricAggregationFutureGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.pastGap"], 1.Hours()),
@@ -27,15 +27,16 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var processor = new MetricAirlockEventProcessor(
                 routingKey =>
                 {
-                    var initialBorders = CreateBorders(DateTimeOffset.UtcNow, aggregatorSettings);
+                    var initialBorders = CreateBorders(DateTimeOffset.UtcNow, settings);
                     var metricAggregator = new MetricAggregator(
                         rootMetricScope,
                         new BucketKeyProvider(),
                         airlock,
+                        settings.MetricAggregationPastGap,
                         initialBorders,
                         routingKey);
                     var eventsTimestampProvider = new EventsTimestampProvider(1000);
-                    var metricResetDaemon = new MetricResetDaemon(eventsTimestampProvider, aggregatorSettings, metricAggregator);
+                    var metricResetDaemon = new MetricResetDaemon(eventsTimestampProvider, settings, metricAggregator);
                     return new MetricAggregationService(
                         metricAggregator,
                         eventsTimestampProvider,
