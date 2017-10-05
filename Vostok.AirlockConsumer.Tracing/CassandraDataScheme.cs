@@ -1,14 +1,18 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using Cassandra;
 using Cassandra.Mapping;
 using Cassandra.Data.Linq;
+using Newtonsoft.Json;
+using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
     public class CassandraDataScheme 
     {
         private readonly Lazy<PreparedStatement> preparedInsert;
+        private JsonSerializer jsonSerializer;
 
         public CassandraDataScheme(
             ISession session,
@@ -17,6 +21,7 @@ namespace Vostok.AirlockConsumer.Tracing
             Session = session;
             TableName = tableName;
             preparedInsert = new Lazy<PreparedStatement>(PrepareInsert, LazyThreadSafetyMode.ExecutionAndPublication);
+            jsonSerializer = new JsonSerializer();
         }
 
         public ISession Session { get; }
@@ -26,9 +31,22 @@ namespace Vostok.AirlockConsumer.Tracing
         public Statement GetInsertStatement(SpanInfo span)
         {
             return preparedInsert.Value.Bind(
+                span.ParentSpanId,
                 span.EndTimestamp,
                 span.Annotations,
-                span.TraceIdPrefix,
+                span.TraceId,
+                span.SpanId,
+                span.BeginTimestamp);
+        }
+
+        public Statement GetInsertStatement(Span span)
+        {
+            var stringWriter = new StringWriter();
+            jsonSerializer.Serialize(stringWriter, span.Annotations);
+            return preparedInsert.Value.Bind(
+                span.ParentSpanId,
+                span.EndTimestamp,
+                stringWriter.ToString(),
                 span.TraceId,
                 span.SpanId,
                 span.BeginTimestamp);
@@ -53,10 +71,10 @@ namespace Vostok.AirlockConsumer.Tracing
         private const string PreparedInsertTemplate =
             @"update {0} 
               set 
+                parent_span_id = ?,
                 end_timestamp = ?,
                 annotations = ? 
               where 
-                trace_id_prefix = ? and
                 trace_id = ? and
                 span_id = ? and
                 begin_timestamp = ?";
@@ -68,6 +86,7 @@ namespace Vostok.AirlockConsumer.Tracing
     end_timestamp timestamp,
     trace_id uuid,
     span_id uuid,
+    parent_span_id uuid,
     annotations text,
     PRIMARY KEY (trace_id_prefix, begin_timestamp, trace_id, span_id))
     WITH CLUSTERING ORDER BY (begin_timestamp ASC, trace_id ASC, span_id ASC)

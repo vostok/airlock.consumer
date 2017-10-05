@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cassandra;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
+using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tests.Tracing
 {
@@ -29,13 +31,14 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
         {
             var dataScheme = DataScheme;
             var insertStatement = dataScheme.GetInsertStatement(
-                new SpanInfo
+                new Span
                 {
-                    Annotations = "{ \"key\" : \"value\"}",
+                    Annotations = new Dictionary<string, string> { ["key"] = "value" },
                     TraceId = Guid.NewGuid(),
                     SpanId = Guid.NewGuid(),
                     BeginTimestamp = DateTimeOffset.UtcNow,
                     EndTimestamp = DateTimeOffset.UtcNow.AddMinutes(10),
+                    ParentSpanId = Guid.NewGuid()
                 });
             Session.Value.Execute(insertStatement);
         }
