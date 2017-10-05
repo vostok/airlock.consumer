@@ -20,7 +20,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 MetricAggregationPastGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.pastGap"], 20.Seconds()),
                 MetricAggregationFutureGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.pastGap"], 1.Hours()),
                 MetricAggregationStartGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.startGap"], 10.Minutes())
-                MetricAggregationStartGap = ParseTimeSpan(settings["airlock.metricsAggregator.startGap"], 10.Minutes())
             };
             //TODO create IAirlock here
             var rootMetricScope = new RootMetricScope(new MetricConfiguration());
