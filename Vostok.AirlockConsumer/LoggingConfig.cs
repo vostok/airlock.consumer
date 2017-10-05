@@ -1,6 +1,7 @@
 using Serilog;
 using Vostok.Logging;
 using Vostok.Logging.Serilog;
+using Vostok.Logging.Serilog.Enrichers;
 
 namespace Vostok.AirlockConsumer
 {
@@ -9,7 +10,7 @@ namespace Vostok.AirlockConsumer
         public static ILog Configure(string logFilePattern)
         {
             var logger = new LoggerConfiguration()
-                .Enrich.With<ManagedThreadIdEnricher>()
+                .Enrich.With<ThreadEnricher>()
                 .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff} {Level:u3} [{Thread}] {Message:l}{NewLine}{Exception}")
                 .WriteTo.RollingFile(logFilePattern)
                 .MinimumLevel.Debug()

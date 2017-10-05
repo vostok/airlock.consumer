@@ -53,7 +53,7 @@ namespace Vostok.AirlockConsumer.Sample
             {
                 ApiKey = AirlockApiKey,
                 ClusterProvider = new FixedClusterProvider(new Uri(AirlockGateEndpoint)),
-            }, log);
+            }, log.FilterByLevel(LogLevel.Warn));
             do
             {
                 foreach (var routingKey in routingKeys)
