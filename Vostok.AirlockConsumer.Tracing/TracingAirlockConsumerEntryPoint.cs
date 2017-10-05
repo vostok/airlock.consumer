@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Tracing;
@@ -31,7 +32,15 @@ namespace Vostok.AirlockConsumer.Tracing
                 var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(RoutingKey.Separator + RoutingKey.TracesSuffix, processor);
                 var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
                 consumer.Start();
-                Console.ReadLine();
+                log.Info($"Consumer '{consumerGroupId}' started");
+                var tcs = new TaskCompletionSource<int>();
+                Console.CancelKeyPress += (_, e) =>
+                {
+                    log.Info("Stop signal received");
+                    tcs.TrySetResult(0);
+                    e.Cancel = true;
+                };
+                tcs.Task.GetAwaiter().GetResult();
                 consumer.Stop();
             }
             catch (Exception e)

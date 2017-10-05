@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Commons.Extensions.UnitConvertions;
+using Vostok.Logging;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
@@ -61,7 +63,15 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
             
             consumer.Start();
-            Console.ReadLine();
+            log.Info($"Consumer '{consumerGroupId}' started");
+            var tcs = new TaskCompletionSource<int>();
+            Console.CancelKeyPress += (_, e) =>
+            {
+                log.Info("Stop signal received");
+                tcs.TrySetResult(0);
+                e.Cancel = true;
+            };
+            tcs.Task.GetAwaiter().GetResult();
             consumer.Stop();
             processor.Stop();
         }
