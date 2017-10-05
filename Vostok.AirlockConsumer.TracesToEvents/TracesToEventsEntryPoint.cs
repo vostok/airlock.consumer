@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
+using Vostok.Metrics;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
@@ -27,8 +28,10 @@ namespace Vostok.AirlockConsumer.TracesToEvents
                 ApiKey = airlockApiKey,
                 ClusterProvider = new FixedClusterProvider(airlockReplicas)
             };
+
             var airlockClient = new AirlockClient(airlockConfig, log);
-            var processor = new TracesToEventsProcessor(airlockClient);
+            AirlockSerializerRegistry.Register(new MetricEventSerializer());
+            var processor = new TracesToEventsProcessor(airlockClient, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(RoutingKey.Separator + RoutingKey.TracesSuffix, processor);
             var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, true, log, processorProvider);
             consumer.Start();
