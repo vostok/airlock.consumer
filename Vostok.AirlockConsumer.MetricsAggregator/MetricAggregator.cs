@@ -51,13 +51,13 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             }
         }
 
-        public void Reset(Borders nextBorders)
+        public void Flush(Borders nextBorders)
         {
             Interlocked.Exchange(ref borders, nextBorders);
 
             foreach (var bucket in buckets)
             {
-                var metrics = bucket.Value.Reset(nextBorders);
+                var metrics = bucket.Value.Flush(nextBorders);
                 PushToAirlock(metrics);
             }
         }

@@ -52,11 +52,11 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 return;
             }
 
-            var timeBin = timeBins.GetOrAdd(normalizedTimestamp, _ => new TimeBin());
+            var timeBin = timeBins.GetOrAdd(normalizedTimestamp, t => new TimeBin(t));
             timeBin.Consume(values);
         }
 
-        public IEnumerable<MetricEvent> Reset(Borders nextBorders)
+        public IEnumerable<MetricEvent> Flush(Borders nextBorders)
         {
             nextBorders = NormalizeBorders(nextBorders);
             Interlocked.Exchange(ref borders, nextBorders);
@@ -67,32 +67,19 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 if (timestamp < nextBorders.Past)
                 {
                     if (timeBins.TryRemove(timestamp, out _))
-                        yield return AggregateMetric(timestamp, timeBin);
+                    {
+                        var metric = timeBin.TryFlush(tags);
+                        if (metric != null)
+                            yield return metric;
+                    }
                 }
-                else if (timeBin.TryFlush(cooldownPeriod))
-                    yield return AggregateMetric(timestamp, timeBin);
+                else
+                {
+                    var metric = timeBin.TryFlush(tags, cooldownPeriod);
+                    if (metric != null)
+                        yield return metric;
+                }
             }
-        }
-
-        private MetricEvent AggregateMetric(DateTimeOffset timestamp, TimeBin timeBin)
-        {
-            var values = new Dictionary<string, double>
-            {
-                {"count", timeBin.Counter.GetValue()}
-            };
-            foreach (var m in timeBin.Meters)
-            {
-                var meterValues = m.Value.GetValues();
-                foreach (var mv in meterValues)
-                    values[m.Key + "_" + mv.Key] = mv.Value;
-            }
-            var metric = new MetricEvent
-            {
-                Timestamp = timestamp,
-                Tags = tags,
-                Values = values
-            };
-            return metric;
         }
 
         private Borders NormalizeBorders(Borders b)
@@ -103,39 +90,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private DateTimeOffset NormalizeTimestamp(DateTimeOffset timestamp)
         {
             return new DateTimeOffset(timestamp.Ticks - timestamp.Ticks%period.Ticks, TimeSpan.Zero);
-        }
-
-        private class TimeBin
-        {
-            private long lastConsumeTimeUtcTicks;
-            private long flushedEvents;
-
-            public ConcurrentDictionary<string, Meter> Meters { get; } = new ConcurrentDictionary<string, Meter>();
-            public Counter Counter { get; } = new Counter();
-
-            public bool TryFlush(TimeSpan cooldownPeriod)
-            {
-                if (GetLastConsumeTime() > DateTimeOffset.UtcNow - cooldownPeriod)
-                    return false;
-                var eventsCount = Counter.GetValue();
-                if (flushedEvents == eventsCount)
-                    return false;
-                flushedEvents = eventsCount;
-                return true;
-            }
-
-            public void Consume(IReadOnlyDictionary<string, double> values)
-            {
-                Interlocked.Exchange(ref lastConsumeTimeUtcTicks, DateTimeOffset.UtcNow.UtcTicks);
-                Counter.Add();
-                foreach (var kvp in values)
-                {
-                    var meter = Meters.GetOrAdd(kvp.Key, _ => new Meter());
-                    meter.Add(kvp.Value);
-                }
-            }
-
-            private DateTimeOffset GetLastConsumeTime() => new DateTimeOffset(Interlocked.Read(ref lastConsumeTimeUtcTicks), TimeSpan.Zero);
         }
     }
 }

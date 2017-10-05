@@ -37,7 +37,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 }
 
                 currentBorders = CalculateNewBorders(currentBorders);
-                aggregator.Reset(currentBorders);
+                aggregator.Flush(currentBorders);
             }
         }
 
