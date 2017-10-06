@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
 using Vostok.Logging;
 using Vostok.Metrics;
@@ -16,10 +15,9 @@ namespace Vostok.AirlockConsumer.Metrics
             var graphiteHost = (string)settingsFromFile?["airlock.consumer.graphite.host"] ?? "graphite-relay.skbkontur.ru";
             var graphitePort = 2003; // TODO (int?)settingsFromFile?["airlock.consumer.graphite.port"] ?? 2003;
             const string consumerGroupId = nameof(MetricsAirlockConsumerEntryPoint);
-            var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var processor = new MetricsAirlockEventProcessor(graphiteHost, graphitePort, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(Airlock.RoutingKey.Separator + Airlock.RoutingKey.MetricsSuffix, processor);
-            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, log, processorProvider);
+            var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId), log, processorProvider);
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
             var tcs = new TaskCompletionSource<int>();

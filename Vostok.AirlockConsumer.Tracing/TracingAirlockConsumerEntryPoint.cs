@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Logging;
@@ -17,7 +16,6 @@ namespace Vostok.AirlockConsumer.Tracing
             var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
             var kafkaBootstrapEndpoints = (string)settingsFromFile?["bootstrap.servers"] ?? "devops-kafka1.dev.kontur.ru:9092";
             const string consumerGroupId = nameof(TracingAirlockConsumerEntryPoint);
-            var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var keyspace = (string)settingsFromFile?["cassandra.keyspace"] ?? "airlock";
             var tableName = (string)settingsFromFile?["cassandra.spans.tablename"] ?? "spans";
             var nodes = ((List<object>)settingsFromFile?["cassandra.endpoints"] ?? new List<object>{ "localhost:9042" }).Cast<string>();
@@ -30,7 +28,7 @@ namespace Vostok.AirlockConsumer.Tracing
                 dataScheme.CreateTableIfNotExists();
                 var processor = new TracingAirlockEventProcessor(dataScheme, retryExecutionStrategy, int.Parse(settingsFromFile?["cassandra.max.threads"]?.ToString() ?? "1000"));
                 var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(RoutingKey.Separator + RoutingKey.TracesSuffix, processor);
-                var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, log, processorProvider);
+                var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId), log, processorProvider);
                 consumer.Start();
                 log.Info($"Consumer '{consumerGroupId}' started");
                 var tcs = new TaskCompletionSource<int>();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
@@ -21,7 +20,6 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             var airlockApiKey = (string)settingsFromFile?["airlock.apikey"] ?? "UniversalApiKey";
             var airlockReplicas = ((List<object>)settingsFromFile?["airlock.endpoints"] ?? new List<object>{"http://192.168.0.75:8888/"}).Cast<string>().Select(x => new Uri(x)).ToArray();
             const string consumerGroupId = nameof(TracesToEventsEntryPoint);
-            var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
 
             var airlockConfig = new AirlockConfig
             {
@@ -33,7 +31,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
             var processor = new TracesToEventsProcessor(airlockClient, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(RoutingKey.Separator + RoutingKey.TracesSuffix, processor);
-            var consumer = new ConsumerGroupHost(bootstrapServers, consumerGroupId, clientId, log, processorProvider);
+            var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(bootstrapServers, consumerGroupId), log, processorProvider);
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
             var tcs = new TaskCompletionSource<int>();

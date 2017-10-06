@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer
         private readonly BoundedBlockingQueue<Message<Null, byte[]>> eventsQueue = new BoundedBlockingQueue<Message<Null, byte[]>>(MaxProcessorQueueSize);
         private readonly Thread processorThread;
 
-        public ProcessorHost(string consumerGroupId, string clientId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log)
+        public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log)
         {
             this.routingKey = routingKey;
             this.stopSignal = stopSignal;
@@ -30,7 +30,7 @@ namespace Vostok.AirlockConsumer
             processorThread = new Thread(ProcessorThreadFunc)
             {
                 IsBackground = true,
-                Name = $"processor-{consumerGroupId}-{clientId}-{processor.ProcessorId}",
+                Name = $"processor-{consumerGroupHostId}-{processor.ProcessorId}",
             };
         }
 

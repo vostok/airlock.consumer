@@ -8,27 +8,24 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
+    // seems like we should run counsumer groups on a per project
     public class ConsumerGroupHost : IDisposable
     {
-        private readonly string consumerGroupId;
-        private readonly string clientId;
+        private readonly ConsumerGroupHostSettings settings;
         private readonly IAirlockEventProcessorProvider processorProvider;
         private readonly ILog log;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly Dictionary<string, ProcessorHost> processorHosts = new Dictionary<string, ProcessorHost>();
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private readonly TimeSpan kafkaConsumerPollingInterval = TimeSpan.FromMilliseconds(100);
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, ILog log, IAirlockEventProcessorProvider processorProvider, AutoResetOffsetPolicy autoResetOffsetPolicy = AutoResetOffsetPolicy.Latest)
+        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IAirlockEventProcessorProvider processorProvider)
         {
-            this.consumerGroupId = consumerGroupId;
-            this.clientId = clientId;
+            this.settings = settings;
             this.processorProvider = processorProvider;
             this.log = log.ForContext(this);
 
-            var config = GetConsumerConfig(kafkaBootstrapEndpoints, consumerGroupId, clientId, autoResetOffsetPolicy);
-            consumer = new Consumer<Null, byte[]>(config, keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
+            consumer = new Consumer<Null, byte[]>(settings.GetConsumerConfig(), keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) => { log.Error($"CriticalError: {error.ToString()}"); };
             consumer.OnConsumeError += (_, message) => { log.Error($"ConsumeError: from topic/partition/offset/timestamp {message.Topic}/{message.Partition}/{message.Offset}/{message.Timestamp.UtcDateTime:O}: {message.Error.ToString()}"); };
             consumer.OnLog += (_, logMessage) =>
@@ -89,7 +86,7 @@ namespace Vostok.AirlockConsumer
             pollingThread = new Thread(PollingThreadFunc)
             {
                 IsBackground = true,
-                Name = $"poll-{consumerGroupId}-{clientId}",
+                Name = $"poll-{settings.ConsumerGroupHostId}",
             };
             pollingThread.Start();
         }
@@ -124,7 +121,7 @@ namespace Vostok.AirlockConsumer
                 if (processor != null)
                 {
                     topicsToSubscribeTo.Add(routingKey);
-                    var processorHost = new ProcessorHost(consumerGroupId, clientId, routingKey, cancellationTokenSource.Token, processor, log);
+                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, cancellationTokenSource.Token, processor, log);
                     processorHosts.Add(routingKey, processorHost);
                     processorHost.Start();
                 }
@@ -140,7 +137,7 @@ namespace Vostok.AirlockConsumer
             try
             {
                 while (!cancellationTokenSource.IsCancellationRequested)
-                    consumer.Poll(kafkaConsumerPollingInterval);
+                    consumer.Poll(settings.PollingInterval);
                 foreach (var processorHost in processorHosts.Values)
                     processorHost.CompleteAdding();
                 foreach (var processorHost in processorHosts.Values)
@@ -160,48 +157,6 @@ namespace Vostok.AirlockConsumer
 
             // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api)
             processorHost.Enqueue(message);
-        }
-
-        private static Dictionary<string, object> GetConsumerConfig(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, AutoResetOffsetPolicy autoResetOffsetPolicy)
-        {
-            return new Dictionary<string, object>
-            {
-                {"bootstrap.servers", kafkaBootstrapEndpoints},
-                {"group.id", consumerGroupId},
-                {"client.id", clientId},
-                {"api.version.request", true},
-                {"enable.auto.commit", false},
-                {"enable.auto.offset.store", false},
-                {"auto.offset.reset", FormatAutoResetOffsetPolicy(autoResetOffsetPolicy)},
-                {"session.timeout.ms", 30000},
-                {"heartbeat.interval.ms", 1000},
-                {"statistics.interval.ms", 300000},
-                {"topic.metadata.refresh.interval.ms", 300000},
-                {"partition.assignment.strategy", "roundrobin"},
-                {"enable.partition.eof", true},
-                {"check.crcs", false},
-                {"offset.store.method", "broker"},
-                {"fetch.min.bytes", 1},
-                {"max.partition.fetch.bytes", 1048576},
-                {"fetch.wait.max.ms", 100},
-                {"queued.min.messages", 100000},
-                {"queued.max.messages.kbytes", 1000000},
-                {"receive.message.max.bytes", 100000000},
-                {"max.in.flight.requests.per.connection", 1000000},
-            };
-        }
-
-        private static string FormatAutoResetOffsetPolicy(AutoResetOffsetPolicy autoResetOffsetPolicy)
-        {
-            switch (autoResetOffsetPolicy)
-            {
-                case AutoResetOffsetPolicy.Latest:
-                    return "latest";
-                case AutoResetOffsetPolicy.Earliest:
-                    return "earliest";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(autoResetOffsetPolicy), autoResetOffsetPolicy, null);
-            }
         }
     }
 }

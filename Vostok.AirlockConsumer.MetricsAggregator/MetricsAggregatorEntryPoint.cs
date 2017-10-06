@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
@@ -21,7 +20,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var airlockApiKey = (string)settingsFromFile?["airlock.apikey"] ?? "UniversalApiKey";
             var airlockReplicas = ((List<object>)settingsFromFile?["airlock.endpoints"] ?? new List<object> { "http://192.168.0.75:8888/" }).Cast<string>().Select(x => new Uri(x)).ToArray();
             const string consumerGroupId = nameof(MetricsAggregatorEntryPoint);
-            var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var settings = new MetricsAggregatorSettings
             {
                 MetricAggregationPastGap = ParseTimeSpan(settingsFromFile?["airlock.metricsAggregator.pastGap"], 20.Seconds()),
@@ -61,7 +59,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>("-events", processor);
-            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, log, processorProvider);
+            var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId), log, processorProvider);
             
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
