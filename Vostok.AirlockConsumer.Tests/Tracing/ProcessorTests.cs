@@ -40,11 +40,6 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             Console.WriteLine("Start");
             processor.Process(airlockEvents);
             Console.WriteLine("Finish");
-            Assert.NotZero(counter);
-            var prevCounter = counter;
-            Thread.Sleep(3000);
-            Console.WriteLine($"counter after pause: {counter}");
-            Assert.Greater(counter, prevCounter);
             Assert.AreEqual(spanCount, counter);
         }
 
