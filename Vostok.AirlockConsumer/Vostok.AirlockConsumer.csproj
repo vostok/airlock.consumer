@@ -5,7 +5,7 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="11.0.0" />
     <PackageReference Include="Confluent.Kafka" Version="0.11.0-ci-48" />
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000174" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000175" />
     <PackageReference Include="Vostok.Logging.Serilog" Version="1.0.0-pre000057" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
