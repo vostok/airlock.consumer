@@ -1,14 +1,16 @@
+using Vostok.Airlock;
+
 namespace Vostok.AirlockConsumer
 {
     public class DefaultRoutingKeyFilter : IRoutingKeyFilter
     {
-        private readonly string routingKeySuffix;
+        private readonly string lastRoutingKeySuffix;
 
-        public DefaultRoutingKeyFilter(string routingKeySuffix)
+        public DefaultRoutingKeyFilter(string lastRoutingKeySuffix)
         {
-            this.routingKeySuffix = routingKeySuffix;
+            this.lastRoutingKeySuffix = lastRoutingKeySuffix;
         }
 
-        public bool Matches(string routingKey) => routingKey.EndsWith(routingKeySuffix);
+        public bool Matches(string routingKey) => RoutingKey.LastSuffixMatches(routingKey, lastRoutingKeySuffix);
     }
 }

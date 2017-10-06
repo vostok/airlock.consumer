@@ -20,7 +20,7 @@ namespace Vostok.AirlockConsumer.Logs
             var processor = new LogAirlockEventProcessor(elasticUris, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(processor);
             var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
-            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.Separator + RoutingKey.LogsSuffix));
+            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix));
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
             var tcs = new TaskCompletionSource<int>();

@@ -32,7 +32,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             var processor = new TracesToEventsProcessor(airlockClient, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(processor);
             var settings = new ConsumerGroupHostSettings(bootstrapServers, consumerGroupId);
-            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.Separator + RoutingKey.TracesSuffix));
+            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix));
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
             var tcs = new TaskCompletionSource<int>();

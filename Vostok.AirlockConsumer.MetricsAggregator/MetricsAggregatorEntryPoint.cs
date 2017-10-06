@@ -58,7 +58,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 });
 
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то
-            var routingKeyFilter = new DefaultRoutingKeyFilter("-events");
+            var routingKeyFilter = new DirtyRoutingKeyFilter("-events");
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(processor);
             var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
             var consumer = new ConsumerGroupHost(consumerGroupHostSettings, log, processorProvider, routingKeyFilter);
@@ -87,6 +87,18 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private static TimeSpan ParseTimeSpan(object value, TimeSpan defaultValue)
         {
             return value == null ? defaultValue : TimeSpan.Parse(value.ToString());
+        }
+
+        public class DirtyRoutingKeyFilter : IRoutingKeyFilter
+        {
+            private readonly string suffix;
+
+            public DirtyRoutingKeyFilter(string suffix)
+            {
+                this.suffix = suffix;
+            }
+
+            public bool Matches(string routingKey) => routingKey.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

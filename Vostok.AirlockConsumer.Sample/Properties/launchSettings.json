@@ -8,9 +8,9 @@
       "commandName": "Project",
       "commandLineArgs": "--producer"
     },
-    "SampleProducerWithRoutingKeys": {
+    "SampleProducerWithServices": {
       "commandName": "Project",
-      "commandLineArgs": "--producer s1.st s1.pr s2.dv"
+      "commandLineArgs": "--producer p1.e1.s1 p1.e2.s1 p2.e1.s1"
     }
   }
 }

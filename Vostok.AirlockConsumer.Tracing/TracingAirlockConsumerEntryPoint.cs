@@ -29,7 +29,7 @@ namespace Vostok.AirlockConsumer.Tracing
                 var processor = new TracingAirlockEventProcessor(dataScheme, retryExecutionStrategy, int.Parse(settingsFromFile?["cassandra.max.threads"]?.ToString() ?? "1000"));
                 var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(processor);
                 var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
-                var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.Separator + RoutingKey.TracesSuffix));
+                var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix));
                 consumer.Start();
                 log.Info($"Consumer '{consumerGroupId}' started");
                 var tcs = new TaskCompletionSource<int>();
