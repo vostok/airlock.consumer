@@ -1,12 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Vostok.Airlock;
 
 namespace Vostok.AirlockConsumer
 {
-    public class DefaultAirlockEventProcessor<T> : IAirlockEventProcessor, IDisposable
+    public class DefaultAirlockEventProcessor<T> : IAirlockEventProcessor
     {
         private readonly IAirlockDeserializer<T> airlockDeserializer;
         private readonly IAirlockEventProcessor<T> airlockEventProcessor;
@@ -20,7 +18,7 @@ namespace Vostok.AirlockConsumer
 
         public string ProcessorId { get; }
 
-        public async Task ProcessAsync(List<AirlockEvent<byte[]>> events)
+        public void Process(List<AirlockEvent<byte[]>> events)
         {
             var airlockEvents = events.Select(x => new AirlockEvent<T>
             {
@@ -30,12 +28,7 @@ namespace Vostok.AirlockConsumer
                     
                     new SimpleAirlockSource(x.Payload)),
             }).ToList();
-            await airlockEventProcessor.ProcessAsync(airlockEvents).ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            (airlockEventProcessor as IDisposable)?.Dispose(); // todo (avk, 05.10.2017): it's really questionable decision to dispose something that you don't own
+            airlockEventProcessor.Process(airlockEvents);
         }
     }
 }

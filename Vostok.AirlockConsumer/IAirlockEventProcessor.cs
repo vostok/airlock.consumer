@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Vostok.AirlockConsumer
 {
@@ -7,11 +6,11 @@ namespace Vostok.AirlockConsumer
     {
         string ProcessorId { get; }
 
-        Task ProcessAsync(List<AirlockEvent<byte[]>> events);
+        void Process(List<AirlockEvent<byte[]>> events);
     }
 
     public interface IAirlockEventProcessor<T>
     {
-        Task ProcessAsync(List<AirlockEvent<T>> events);
+        void Process(List<AirlockEvent<T>> events);
     }
 }

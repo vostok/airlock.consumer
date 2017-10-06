@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
@@ -16,19 +15,19 @@ namespace Vostok.AirlockConsumer
         private readonly IAirlockEventProcessorProvider processorProvider;
         private readonly ILog log;
         private readonly Consumer<Null, byte[]> consumer;
-        private readonly Dictionary<string, ProcessorInfo> processorInfos = new Dictionary<string, ProcessorInfo>();
+        private readonly Dictionary<string, ProcessorHost> processorHosts = new Dictionary<string, ProcessorHost>();
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly TimeSpan kafkaConsumerPollingInterval = TimeSpan.FromMilliseconds(100);
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, bool enableAutoCommit, ILog log, IAirlockEventProcessorProvider processorProvider)
+        public ConsumerGroupHost(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, ILog log, IAirlockEventProcessorProvider processorProvider, AutoResetOffsetPolicy autoResetOffsetPolicy = AutoResetOffsetPolicy.Latest)
         {
             this.consumerGroupId = consumerGroupId;
             this.clientId = clientId;
             this.processorProvider = processorProvider;
             this.log = log.ForContext(this);
 
-            var config = GetConsumerConfig(kafkaBootstrapEndpoints, consumerGroupId, clientId, enableAutoCommit);
+            var config = GetConsumerConfig(kafkaBootstrapEndpoints, consumerGroupId, clientId, autoResetOffsetPolicy);
             consumer = new Consumer<Null, byte[]>(config, keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) => { log.Error($"CriticalError: {error.ToString()}"); };
             consumer.OnConsumeError += (_, message) => { log.Error($"ConsumeError: from topic/partition/offset/timestamp {message.Topic}/{message.Partition}/{message.Offset}/{message.Timestamp.UtcDateTime:O}: {message.Error.ToString()}"); };
@@ -108,10 +107,6 @@ namespace Vostok.AirlockConsumer
                 return;
             cancellationTokenSource.Cancel();
             pollingThread.Join();
-            foreach (var processorInfo in processorInfos.Values)
-            {
-                (processorInfo.Processor as IDisposable)?.Dispose();
-            }
             consumer.Dispose();
             cancellationTokenSource.Dispose();
         }
@@ -129,14 +124,9 @@ namespace Vostok.AirlockConsumer
                 if (processor != null)
                 {
                     topicsToSubscribeTo.Add(routingKey);
-                    var processorThread = new Thread(ProcessorThreadFunc)
-                    {
-                        IsBackground = true,
-                        Name = $"processor-{consumerGroupId}-{clientId}-{processor.ProcessorId}",
-                    };
-                    var processorInfo = new ProcessorInfo(routingKey, processor, processorThread);
-                    processorInfos.Add(routingKey, processorInfo);
-                    processorThread.Start(processorInfo);
+                    var processorHost = new ProcessorHost(consumerGroupId, clientId, routingKey, cancellationTokenSource.Token, processor, log);
+                    processorHosts.Add(routingKey, processorHost);
+                    processorHost.Start();
                 }
             }
             log.Warn($"TopicsToSubscribeTo: [{string.Join(", ", topicsToSubscribeTo)}]");
@@ -151,10 +141,10 @@ namespace Vostok.AirlockConsumer
             {
                 while (!cancellationTokenSource.IsCancellationRequested)
                     consumer.Poll(kafkaConsumerPollingInterval);
-                foreach (var processorInfo in processorInfos.Values)
-                    processorInfo.EventsQueue.CompleteAdding();
-                foreach (var processorInfo in processorInfos.Values)
-                    processorInfo.ProcessorThread.Join();
+                foreach (var processorHost in processorHosts.Values)
+                    processorHost.CompleteAdding();
+                foreach (var processorHost in processorHosts.Values)
+                    processorHost.Stop();
             }
             catch (Exception e)
             {
@@ -163,99 +153,30 @@ namespace Vostok.AirlockConsumer
             }
         }
 
-        private void ProcessorThreadFunc(object arg)
-        {
-            var processorInfo = (ProcessorInfo)arg;
-            try
-            {
-                while (!processorInfo.EventsQueue.IsCompleted)
-                {
-                    var messageBatch = DequeueMessageBatch(processorInfo);
-                    if (messageBatch.Count > 0)
-                        ProcessMessageBatch(processorInfo, messageBatch);
-                }
-            }
-            catch (Exception e)
-            {
-                log.Fatal("Unhandled exception on processor thread", e);
-                throw;
-            }
-        }
-
-        private List<Message<Null, byte[]>> DequeueMessageBatch(ProcessorInfo processorInfo)
-        {
-            var sw = Stopwatch.StartNew();
-            var messageBatch = new List<Message<Null, byte[]>>();
-            var dequeueTimeout = processorInfo.MaxDequeueTimeout;
-            while (true)
-            {
-                if (processorInfo.EventsQueue.TryTake(out var message, dequeueTimeout))
-                {
-                    messageBatch.Add(message);
-                    if (messageBatch.Count >= processorInfo.MaxBatchSize)
-                        break;
-                }
-                else
-                {
-                    if (cancellationTokenSource.IsCancellationRequested)
-                    {
-                        if (processorInfo.EventsQueue.IsAddingCompleted)
-                            break;
-                        dequeueTimeout = TimeSpan.Zero;
-                    }
-                    else
-                    {
-                        var elapsed = sw.Elapsed;
-                        if (elapsed > processorInfo.MaxDequeueTimeout)
-                            break;
-                        dequeueTimeout = processorInfo.MaxDequeueTimeout - elapsed;
-                        if (dequeueTimeout < processorInfo.MinDequeueTimeout)
-                            dequeueTimeout = processorInfo.MinDequeueTimeout;
-                    }
-                }
-            }
-            return messageBatch;
-        }
-
-        private void ProcessMessageBatch(ProcessorInfo processorInfo, List<Message<Null, byte[]>> messageBatch)
-        {
-            var airlockEvents = messageBatch.Select(x => new AirlockEvent<byte[]>
-            {
-                RoutingKey = processorInfo.RoutingKey,
-                Timestamp = x.Timestamp.UtcDateTime,
-                Payload = x.Value,
-            }).ToList();
-            try
-            {
-                processorInfo.Processor.ProcessAsync(airlockEvents).GetAwaiter().GetResult();
-            }
-            catch (Exception e)
-            {
-                log.Error($"Processor failed: {processorInfo}", e);
-            }
-        }
-
         private void OnMessage(Message<Null, byte[]> message)
         {
-            if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
+            if (!processorHosts.TryGetValue(message.Topic, out var processorHost))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
 
             // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api)
-            processorInfo.EventsQueue.Add(message);
+            processorHost.Enqueue(message);
         }
 
-        private static Dictionary<string, object> GetConsumerConfig(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, bool enableAutoCommit)
+        private static Dictionary<string, object> GetConsumerConfig(string kafkaBootstrapEndpoints, string consumerGroupId, string clientId, AutoResetOffsetPolicy autoResetOffsetPolicy)
         {
             return new Dictionary<string, object>
             {
                 {"bootstrap.servers", kafkaBootstrapEndpoints},
                 {"group.id", consumerGroupId},
                 {"client.id", clientId},
-                {"enable.auto.commit", enableAutoCommit},
-                {"auto.commit.interval.ms", 5000},
-                {"auto.offset.reset", "earliest"},
+                {"api.version.request", true},
+                {"enable.auto.commit", false},
+                {"enable.auto.offset.store", false},
+                {"auto.offset.reset", FormatAutoResetOffsetPolicy(autoResetOffsetPolicy)},
                 {"session.timeout.ms", 30000},
+                {"heartbeat.interval.ms", 1000},
                 {"statistics.interval.ms", 300000},
+                {"topic.metadata.refresh.interval.ms", 300000},
                 {"partition.assignment.strategy", "roundrobin"},
                 {"enable.partition.eof", true},
                 {"check.crcs", false},
@@ -270,28 +191,16 @@ namespace Vostok.AirlockConsumer
             };
         }
 
-        private class ProcessorInfo
+        private static string FormatAutoResetOffsetPolicy(AutoResetOffsetPolicy autoResetOffsetPolicy)
         {
-            private const int MaxProcessorQueueSize = int.MaxValue;
-
-            public ProcessorInfo(string routingKey, IAirlockEventProcessor processor, Thread processorThread)
+            switch (autoResetOffsetPolicy)
             {
-                RoutingKey = routingKey;
-                Processor = processor;
-                ProcessorThread = processorThread;
-            }
-
-            public string RoutingKey { get; }
-            public Thread ProcessorThread { get; }
-            public IAirlockEventProcessor Processor { get; }
-            public BoundedBlockingQueue<Message<Null, byte[]>> EventsQueue { get; } = new BoundedBlockingQueue<Message<Null, byte[]>>(MaxProcessorQueueSize);
-            public int MaxBatchSize { get; } = 100*1000;
-            public TimeSpan MaxDequeueTimeout { get; } = TimeSpan.FromSeconds(1);
-            public TimeSpan MinDequeueTimeout { get; } = TimeSpan.FromMilliseconds(100);
-
-            public override string ToString()
-            {
-                return $"RoutingKey: {RoutingKey}, ProcessorType: {Processor.GetType().Name}, ProcessorId: {Processor.ProcessorId}";
+                case AutoResetOffsetPolicy.Latest:
+                    return "latest";
+                case AutoResetOffsetPolicy.Earliest:
+                    return "earliest";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(autoResetOffsetPolicy), autoResetOffsetPolicy, null);
             }
         }
     }

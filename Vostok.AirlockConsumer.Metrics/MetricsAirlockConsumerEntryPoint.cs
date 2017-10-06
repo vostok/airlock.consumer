@@ -19,7 +19,7 @@ namespace Vostok.AirlockConsumer.Metrics
             var clientId = (string)settingsFromFile?["client.id"] ?? Dns.GetHostName();
             var processor = new MetricsAirlockEventProcessor(graphiteHost, graphitePort, log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(Airlock.RoutingKey.Separator + Airlock.RoutingKey.MetricsSuffix, processor);
-            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
+            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, log, processorProvider);
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
             var tcs = new TaskCompletionSource<int>();

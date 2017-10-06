@@ -70,11 +70,11 @@ namespace Vostok.AirlockConsumer.Sample
         private static void RunConsumer(ILog log)
         {
             log.Info("Consumer started");
-            var consumerGroupId = $"SampleConsumer-{Dns.GetHostName()}";
-            var clientId = Guid.NewGuid().GetHashCode().ToString().Replace("-", "");
+            var consumerGroupId = $"group@{Dns.GetHostName()}"; // seems like we should run counsumer groups on a per project
+            var clientId = $"client@{Dns.GetHostName()}";
             var processor = new SampleDataAirlockEventProcessor(log);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(SampleDataType, processor);
-            var consumer = new ConsumerGroupHost(KafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
+            var consumer = new ConsumerGroupHost(KafkaBootstrapEndpoints, consumerGroupId, clientId, log, processorProvider, AutoResetOffsetPolicy.Earliest);
             consumer.Start();
             do
             {

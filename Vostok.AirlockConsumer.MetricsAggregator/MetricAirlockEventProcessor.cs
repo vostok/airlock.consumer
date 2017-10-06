@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
@@ -17,7 +16,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             services = new ConcurrentDictionary<string, MetricAggregationService>();
         }
 
-        public Task ProcessAsync(List<AirlockEvent<MetricEvent>> events)
+        public void Process(List<AirlockEvent<MetricEvent>> events)
         {
             foreach (var consumerEvent in events)
             {
@@ -25,15 +24,12 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 service.Start();
                 service.ProcessMetricEvent(consumerEvent.Payload);
             }
-            return Task.CompletedTask;
         }
 
         public void Stop()
         {
             foreach (var kvp in services)
-            {
                 kvp.Value.Stop();
-            }
         }
     }
 }

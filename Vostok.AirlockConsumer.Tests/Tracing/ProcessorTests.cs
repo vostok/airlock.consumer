@@ -38,7 +38,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                 });
             }
             Console.WriteLine("Start");
-            processor.ProcessAsync(airlockEvents).Wait();
+            processor.Process(airlockEvents);
             Console.WriteLine("Finish");
             Assert.NotZero(counter);
             var prevCounter = counter;
@@ -57,7 +57,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             var retryExecutionStrategy = new CassandraRetryExecutionStrategy(retryExecutionStrategySettings, Substitute.For<ILog>(), CassandraTest.Session.Value);
 
             var processor = new TracingAirlockEventProcessor(CassandraTest.DataScheme, retryExecutionStrategy, 1000);
-            processor.ProcessAsync(
+            processor.Process(
                 new List<AirlockEvent<Span>>
                 {
                     new AirlockEvent<Span>
@@ -94,7 +94,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                         },
                         Timestamp = DateTimeOffset.UtcNow
                     },
-                }).GetAwaiter().GetResult();
+                });
         }
     }
 }

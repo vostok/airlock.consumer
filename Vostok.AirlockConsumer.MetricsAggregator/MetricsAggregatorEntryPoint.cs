@@ -61,7 +61,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то
             var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>("-events", processor);
-            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, true, log, processorProvider);
+            var consumer = new ConsumerGroupHost(kafkaBootstrapEndpoints, consumerGroupId, clientId, log, processorProvider);
             
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
-    public class TracingAirlockEventProcessor : IAirlockEventProcessor<Span>, IDisposable
+    public class TracingAirlockEventProcessor : IAirlockEventProcessor<Span>
     {
         private readonly ICassandraDataScheme dataScheme;
         private readonly ICassandraRetryExecutionStrategy retryExecutionStrategy;
@@ -32,10 +31,9 @@ namespace Vostok.AirlockConsumer.Tracing
             processingTask.Start();
         }
 
-        public Task ProcessAsync(List<AirlockEvent<Span>> events)
+        public void Process(List<AirlockEvent<Span>> events)
         {
             events.ForEach(x => spanQueue.Add(x.Payload));
-            return Task.CompletedTask;
         }
 
         private void ProcessSpan(Span span)
@@ -43,6 +41,7 @@ namespace Vostok.AirlockConsumer.Tracing
             retryExecutionStrategy.ExecuteAsync(dataScheme.GetInsertStatement(span)).Wait();
         }
 
+        // todo (avk, 05.10.2017): simplify processors
         public void Dispose()
         {
             spanQueue.CompleteAdding();

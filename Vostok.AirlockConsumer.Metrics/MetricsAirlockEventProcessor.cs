@@ -26,18 +26,19 @@ namespace Vostok.AirlockConsumer.Metrics
             graphiteClient = new GraphiteClient(graphiteHost, graphitePort);
         }
 
-        public async Task ProcessAsync(List<AirlockEvent<MetricEvent>> events)
+        public void Process(List<AirlockEvent<MetricEvent>> events)
         {
             log.Info("Start process metrics");
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
 
             foreach (var batch in Split(metrics, BatchSize))
             {
-                await SendBatchAsync(batch, AttemptCount, sendPeriod).ConfigureAwait(false);
+                SendBatchAsync(batch, AttemptCount, sendPeriod).GetAwaiter().GetResult();
             }
             log.Info("Finished process metrics");
         }
 
+        // todo (avk, 05.10.2017): simplify processors
         private async Task SendBatchAsync(List<Metric> batchMetrics, int attemptCount, TimeSpan sendPeriod)
         {
             var attemptTimeout = TimeSpan.Zero;

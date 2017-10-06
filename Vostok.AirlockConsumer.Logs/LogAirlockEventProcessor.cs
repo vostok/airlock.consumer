@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Vostok.Logging;
 using Vostok.Logging.Airlock;
@@ -22,7 +21,7 @@ namespace Vostok.AirlockConsumer.Logs
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public Task ProcessAsync(List<AirlockEvent<LogEventData>> events)
+        public void Process(List<AirlockEvent<LogEventData>> events)
         {
             var bulkItems = new List<object>();
             foreach (var @event in events)
@@ -31,7 +30,6 @@ namespace Vostok.AirlockConsumer.Logs
                 bulkItems.Add(BuildIndexRecord(@event));
             }
             Index(bulkItems);
-            return Task.CompletedTask;
         }
 
         // todo (avk, 04.10.2017): implement retry policy
