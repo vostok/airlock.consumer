@@ -18,8 +18,9 @@ namespace Vostok.AirlockConsumer.Logs
             var elasticUris = ((List<object>)settingsFromFile?["airlock.consumer.elastic.endpoints"] ?? new List<object> {"http://devops-consul1.dev.kontur.ru:9200/"}).Cast<string>().Select(x => new Uri(x)).ToArray();
             const string consumerGroupId = nameof(ElasticLogsIndexerEntryPoint);
             var processor = new LogAirlockEventProcessor(elasticUris, log);
-            var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(RoutingKey.Separator + RoutingKey.LogsSuffix, processor);
-            var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId), log, processorProvider);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(processor);
+            var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
+            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.Separator + RoutingKey.LogsSuffix));
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");
             var tcs = new TaskCompletionSource<int>();

@@ -9,7 +9,7 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Metrics
 {
-    public class MetricsAirlockEventProcessor : IAirlockEventProcessor<MetricEvent>
+    public class MetricsAirlockEventProcessor : SimpleAirlockEventProcessorBase<MetricEvent>
     {
         private readonly ILog log;
         private readonly MetricConverter metricConverter;
@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.Metrics
             graphiteClient = new GraphiteClient(graphiteHost, graphitePort);
         }
 
-        public void Process(List<AirlockEvent<MetricEvent>> events)
+        public override void Process(List<AirlockEvent<MetricEvent>> events)
         {
             log.Info("Start process metrics");
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));

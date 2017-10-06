@@ -2,6 +2,6 @@ namespace Vostok.AirlockConsumer
 {
     public interface IAirlockEventProcessorProvider
     {
-        IAirlockEventProcessor TryGetProcessor(string routingKey);
+        IAirlockEventProcessor GetProcessor(string routingKey);
     }
 }

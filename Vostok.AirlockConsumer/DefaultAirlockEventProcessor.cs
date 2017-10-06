@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
@@ -18,17 +19,25 @@ namespace Vostok.AirlockConsumer
 
         public string ProcessorId { get; }
 
+        public DateTimeOffset? GetStartTimestampOnRebalance()
+        {
+            return airlockEventProcessor.GetStartTimestampOnRebalance();
+        }
+
         public void Process(List<AirlockEvent<byte[]>> events)
         {
             var airlockEvents = events.Select(x => new AirlockEvent<T>
             {
                 RoutingKey = x.RoutingKey,
                 Timestamp = x.Timestamp,
-                Payload = airlockDeserializer.Deserialize(
-                    
-                    new SimpleAirlockSource(x.Payload)),
+                Payload = airlockDeserializer.Deserialize(new SimpleAirlockSource(x.Payload)),
             }).ToList();
             airlockEventProcessor.Process(airlockEvents);
+        }
+
+        public void Release(string routingKey)
+        {
+            airlockEventProcessor.Release(routingKey);
         }
     }
 }

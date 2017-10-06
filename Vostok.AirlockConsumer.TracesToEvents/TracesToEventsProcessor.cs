@@ -6,7 +6,7 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
 {
-    public class TracesToEventsProcessor : IAirlockEventProcessor<Span>
+    public class TracesToEventsProcessor : SimpleAirlockEventProcessorBase<Span>
     {
         private readonly IAirlockClient airlockClient;
         private readonly ILog log;
@@ -17,7 +17,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             this.log = log;
         }
 
-        public void Process(List<AirlockEvent<Span>> events)
+        public override void Process(List<AirlockEvent<Span>> events)
         {
             var httpServerSpanEvents = events
                 .Where(x => x.Payload.Annotations.TryGetValue("kind", out var kind) && kind == "http-server")

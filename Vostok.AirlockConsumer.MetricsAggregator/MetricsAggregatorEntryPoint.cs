@@ -58,8 +58,10 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 });
 
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то
-            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>("-events", processor);
-            var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId), log, processorProvider);
+            var routingKeyFilter = new DefaultRoutingKeyFilter("-events");
+            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(processor);
+            var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
+            var consumer = new ConsumerGroupHost(consumerGroupHostSettings, log, processorProvider, routingKeyFilter);
             
             consumer.Start();
             log.Info($"Consumer '{consumerGroupId}' started");

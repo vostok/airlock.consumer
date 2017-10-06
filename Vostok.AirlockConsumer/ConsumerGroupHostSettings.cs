@@ -19,6 +19,7 @@ namespace Vostok.AirlockConsumer
         public string ClientId { get; }
         public AutoResetOffsetPolicy AutoResetOffsetPolicy { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);
+        public TimeSpan UpdateSubscriptionInterval { get; } = TimeSpan.FromSeconds(30);
         public string ConsumerGroupHostId => $"{ConsumerGroupId}-{ClientId}";
 
         public Dictionary<string, object> GetConsumerConfig()

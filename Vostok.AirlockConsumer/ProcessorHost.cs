@@ -16,17 +16,19 @@ namespace Vostok.AirlockConsumer
         private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
         private readonly ILog log;
+        private readonly Consumer<Null, byte[]> consumer;
         private readonly TimeSpan maxDequeueTimeout = TimeSpan.FromSeconds(1);
         private readonly TimeSpan minDequeueTimeout = TimeSpan.FromMilliseconds(100);
         private readonly BoundedBlockingQueue<Message<Null, byte[]>> eventsQueue = new BoundedBlockingQueue<Message<Null, byte[]>>(MaxProcessorQueueSize);
         private readonly Thread processorThread;
 
-        public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log)
+        public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
         {
             this.routingKey = routingKey;
             this.stopSignal = stopSignal;
             this.processor = processor;
             this.log = log;
+            this.consumer = consumer;
             processorThread = new Thread(ProcessorThreadFunc)
             {
                 IsBackground = true,
@@ -41,7 +43,8 @@ namespace Vostok.AirlockConsumer
 
         public void Enqueue(Message<Null, byte[]> message)
         {
-            eventsQueue.Add(message, stopSignal);
+            // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api)
+            eventsQueue.Add(message, CancellationToken.None);
         }
 
         public void CompleteAdding()
@@ -49,9 +52,10 @@ namespace Vostok.AirlockConsumer
             eventsQueue.CompleteAdding();
         }
 
-        public void Stop()
+        public void Join()
         {
             processorThread.Join();
+            processor.Release(routingKey);
         }
 
         private void ProcessorThreadFunc()
@@ -109,19 +113,29 @@ namespace Vostok.AirlockConsumer
 
         private void ProcessMessageBatch(List<Message<Null, byte[]>> messageBatch)
         {
-            var airlockEvents = messageBatch.Select(x => new AirlockEvent<byte[]>
+            var airlockEvents = new List<AirlockEvent<byte[]>>();
+            var offsetsToCommit = new Dictionary<TopicPartition, long>();
+            foreach (var x in messageBatch)
             {
-                RoutingKey = routingKey,
-                Timestamp = x.Timestamp.UtcDateTime,
-                Payload = x.Value,
-            }).ToList();
+                airlockEvents.Add(new AirlockEvent<byte[]>
+                {
+                    RoutingKey = routingKey, Timestamp = x.Timestamp.UtcDateTime, Payload = x.Value,
+                });
+                offsetsToCommit[x.TopicPartition] = x.Offset + 1;
+            }
+            DoProcessMessageBatch(airlockEvents);
+            consumer.CommitAsync(offsetsToCommit.Select(x => new TopicPartitionOffset(x.Key, x.Value))).GetAwaiter().GetResult();
+        }
+
+        private void DoProcessMessageBatch(List<AirlockEvent<byte[]>> airlockEvents)
+        {
             try
             {
                 processor.Process(airlockEvents);
             }
             catch (Exception e)
             {
-                log.Error($"Processor faild for routingKey: {routingKey}, processorType: {processor.GetType().Name}, processorId: {processor.ProcessorId}", e);
+                log.Error($"Processor failed for routingKey: {routingKey}, processorType: {processor.GetType().Name}, processorId: {processor.ProcessorId}", e);
             }
         }
     }

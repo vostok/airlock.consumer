@@ -8,7 +8,7 @@ using Vostok.Logging.Airlock;
 namespace Vostok.AirlockConsumer.Logs
 {
     // todo (avk, 04.10.2017): add metrics
-    public class LogAirlockEventProcessor : IAirlockEventProcessor<LogEventData>
+    public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
         private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.Logs
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public void Process(List<AirlockEvent<LogEventData>> events)
+        public override void Process(List<AirlockEvent<LogEventData>> events)
         {
             var bulkItems = new List<object>();
             foreach (var @event in events)

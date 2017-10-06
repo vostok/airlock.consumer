@@ -72,8 +72,9 @@ namespace Vostok.AirlockConsumer.Sample
             log.Info("Consumer started");
             var consumerGroupId = $"group@{Dns.GetHostName()}"; 
             var processor = new SampleDataAirlockEventProcessor(log);
-            var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(SampleDataType, processor);
-            var consumer = new ConsumerGroupHost(new ConsumerGroupHostSettings(KafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy:AutoResetOffsetPolicy.Earliest), log, processorProvider);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(processor);
+            var settings = new ConsumerGroupHostSettings(KafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy:AutoResetOffsetPolicy.Earliest);
+            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(SampleDataType));
             consumer.Start();
             do
             {

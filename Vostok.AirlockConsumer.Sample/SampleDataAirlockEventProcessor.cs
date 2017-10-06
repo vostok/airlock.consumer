@@ -3,7 +3,7 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer.Sample
 {
-    public class SampleDataAirlockEventProcessor : IAirlockEventProcessor<SampleEvent>
+    public class SampleDataAirlockEventProcessor : SimpleAirlockEventProcessorBase<SampleEvent>
     {
         private readonly ILog log;
 
@@ -12,9 +12,9 @@ namespace Vostok.AirlockConsumer.Sample
             this.log = log;
         }
 
-        public void Process(List<AirlockEvent<SampleEvent>> events)
+        public override void Process(List<AirlockEvent<SampleEvent>> events)
         {
-            log.Info("New events batch has arrived");
+            log.Info($"New events batch has arrived of size {events.Count}");
             foreach (var @event in events)
                 log.Info($"{@event.RoutingKey}|{@event.Timestamp:O} - {@event.Payload.Message}");
         }
