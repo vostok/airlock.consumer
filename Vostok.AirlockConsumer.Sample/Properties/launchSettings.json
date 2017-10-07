@@ -1,14 +1,18 @@
 {
   "profiles": {
-    "SampleConsumer": {
+    "Consumer": {
       "commandName": "Project",
       "commandLineArgs": "--consumer"
     },
-    "SampleProducer": {
+    "ConsumerWithRecede": {
+      "commandName": "Project",
+      "commandLineArgs": "--consumer 00:02:00"
+    },
+    "Producer": {
       "commandName": "Project",
       "commandLineArgs": "--producer"
     },
-    "SampleProducerWithServices": {
+    "ProducerForMultipleStreams": {
       "commandName": "Project",
       "commandLineArgs": "--producer pp1.ee1.ss1 pp1.ee2.ss1 pp2.ee1.ss1"
     }

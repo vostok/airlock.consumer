@@ -20,10 +20,10 @@ namespace Vostok.AirlockConsumer.Sample
         public static void Main(string[] args)
         {
             AirlockSerializerRegistry.Register(new SampleEventSerializer());
-            var log = Logging.Configure("..\\log\\actions-{Date}.txt");
+            var log = Logging.Configure("log/actions-{Date}.txt");
             Console.CancelKeyPress += (_, e) =>
             {
-                log.Info("Stop signal received");
+                log.Warn("Stop signal received");
                 stopSignal.Set();
                 e.Cancel = true;
             };
@@ -34,7 +34,7 @@ namespace Vostok.AirlockConsumer.Sample
                 else if (args[0] == "--producer")
                     RunProducer(log, routingKeyPrefixes: args.Skip(1).ToArray());
                 else if (args[0] == "--consumer")
-                    RunConsumer(log);
+                    RunConsumer(log, recedeGap: ParseRecedeGap(args.Skip(1).FirstOrDefault()));
                 else
                     log.Error($"Invalid mode: {args[0]}");
             }
@@ -43,6 +43,13 @@ namespace Vostok.AirlockConsumer.Sample
                 log.Fatal(e);
                 throw;
             }
+        }
+
+        private static TimeSpan? ParseRecedeGap(string recedeGap)
+        {
+            if (string.IsNullOrEmpty(recedeGap))
+                return null;
+            return TimeSpan.Parse(recedeGap);
         }
 
         private static void RunProducer(ILog log, string[] routingKeyPrefixes)
@@ -67,11 +74,11 @@ namespace Vostok.AirlockConsumer.Sample
             log.Info("Producer finished");
         }
 
-        private static void RunConsumer(ILog log)
+        private static void RunConsumer(ILog log, TimeSpan? recedeGap)
         {
             log.Info("Consumer started");
             var consumerGroupId = $"group@{Dns.GetHostName()}";
-            var processor = new SampleDataAirlockEventProcessor(log);
+            var processor = new SampleDataAirlockEventProcessor(log, recedeGap);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(processor);
             var settings = new ConsumerGroupHostSettings(KafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
             var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(SampleDataType));

@@ -19,9 +19,9 @@ namespace Vostok.AirlockConsumer
 
         public string ProcessorId { get; }
 
-        public DateTimeOffset? GetStartTimestampOnRebalance()
+        public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
         {
-            return airlockEventProcessor.GetStartTimestampOnRebalance();
+            return airlockEventProcessor.GetStartTimestampOnRebalance(routingKey);
         }
 
         public void Process(List<AirlockEvent<byte[]>> events)

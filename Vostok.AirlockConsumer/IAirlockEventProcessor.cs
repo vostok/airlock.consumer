@@ -8,7 +8,7 @@ namespace Vostok.AirlockConsumer
         string ProcessorId { get; }
 
         // return null to start consumption from the last commited offset
-        DateTimeOffset? GetStartTimestampOnRebalance();
+        DateTimeOffset? GetStartTimestampOnRebalance(string routingKey);
 
         void Process(List<AirlockEvent<byte[]>> events);
 
@@ -18,7 +18,7 @@ namespace Vostok.AirlockConsumer
     public interface IAirlockEventProcessor<T>
     {
         // return null to start consumption from the last commited offset
-        DateTimeOffset? GetStartTimestampOnRebalance();
+        DateTimeOffset? GetStartTimestampOnRebalance(string routingKey);
 
         void Process(List<AirlockEvent<T>> events);
 

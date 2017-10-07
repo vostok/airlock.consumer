@@ -193,7 +193,7 @@ namespace Vostok.AirlockConsumer
                 var newPartitions = partitionsToAssign.Except(processorInfo.AssignedPartitions).ToList();
                 if (newPartitions.Any())
                 {
-                    var startTimestampOnRebalance = processorInfo.Processor.GetStartTimestampOnRebalance();
+                    var startTimestampOnRebalance = processorInfo.Processor.GetStartTimestampOnRebalance(routingKey);
                     if (!startTimestampOnRebalance.HasValue)
                         topicPartitionOffsets.AddRange(newPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
                     else

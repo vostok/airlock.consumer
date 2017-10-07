@@ -5,7 +5,7 @@ namespace Vostok.AirlockConsumer
 {
     public abstract class SimpleAirlockEventProcessorBase<T> : IAirlockEventProcessor<T>
     {
-        public DateTimeOffset? GetStartTimestampOnRebalance()
+        public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
         {
             return null;
         }
