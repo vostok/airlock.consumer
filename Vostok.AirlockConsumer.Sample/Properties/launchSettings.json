@@ -8,13 +8,17 @@
       "commandName": "Project",
       "commandLineArgs": "--consumer 00:02:00"
     },
+    "ConsumerForMultipleRoutingKeys": {
+      "commandName": "Project",
+      "commandLineArgs": "--consumer xx.yy.zz xx.yy.aa bb.yy.zz"
+    },
     "Producer": {
       "commandName": "Project",
       "commandLineArgs": "--producer"
     },
-    "ProducerForMultipleStreams": {
+    "ProducerForMultipleRoutingKeys": {
       "commandName": "Project",
-      "commandLineArgs": "--producer pp1.ee1.ss1 pp1.ee2.ss1 pp2.ee1.ss1"
+      "commandLineArgs": "--producer xx.yy.zz xx.yy.aa bb.yy.zz"
     }
   }
 }

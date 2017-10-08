@@ -11,8 +11,7 @@ namespace Vostok.AirlockConsumer.Sample
     public static class SampleEventConsumerEntryPoint
     {
         private const string AirlockApiKey = "UniversalApiKey";
-        private const string DefaultRoutingKey = "prj.dev.srv";
-        private const string SampleDataType = "asd";
+        private const string DefaultRoutingKey = "prj.dev.srv.dt";
         private const string AirlockGateEndpoint = "http://devops-bots1.dev.kontur.ru:8888";
         private const string KafkaBootstrapEndpoints = "devops-kafka1.dev.kontur.ru:9092";
         private static readonly ManualResetEventSlim stopSignal = new ManualResetEventSlim();
@@ -32,9 +31,9 @@ namespace Vostok.AirlockConsumer.Sample
                 if (!args.Any())
                     log.Error("Mode is not provided");
                 else if (args[0] == "--producer")
-                    RunProducer(log, routingKeyPrefixes: args.Skip(1).ToArray());
+                    RunProducer(log, args.Skip(1).ToArray());
                 else if (args[0] == "--consumer")
-                    RunConsumer(log, recedeGap: ParseRecedeGap(args.Skip(1).FirstOrDefault()));
+                    RunConsumer(log, args.Skip(1).ToArray());
                 else
                     log.Error($"Invalid mode: {args[0]}");
             }
@@ -45,17 +44,10 @@ namespace Vostok.AirlockConsumer.Sample
             }
         }
 
-        private static TimeSpan? ParseRecedeGap(string recedeGap)
+        private static void RunProducer(ILog log, string[] args)
         {
-            if (string.IsNullOrEmpty(recedeGap))
-                return null;
-            return TimeSpan.Parse(recedeGap);
-        }
-
-        private static void RunProducer(ILog log, string[] routingKeyPrefixes)
-        {
-            routingKeyPrefixes = routingKeyPrefixes.Any() ? routingKeyPrefixes : new[] {DefaultRoutingKey};
-            log.Info($"Producer started for routingKeyPrefixes: [{string.Join(", ", routingKeyPrefixes)}]");
+            var routingKeys = args.Any() ? args : new[] {DefaultRoutingKey};
+            log.Info($"Producer started for routingKeys: [{string.Join(", ", routingKeys)}]");
             var airlockClient = new AirlockClient(new AirlockConfig
             {
                 ApiKey = AirlockApiKey,
@@ -63,31 +55,39 @@ namespace Vostok.AirlockConsumer.Sample
             }, log.FilterByLevel(LogLevel.Warn));
             do
             {
-                foreach (var routingKeyPrefix in routingKeyPrefixes)
+                foreach (var routingKey in routingKeys)
                 {
-                    var key = RoutingKey.AddSuffix(routingKeyPrefix, SampleDataType);
                     var message = $"msg@{DateTimeOffset.UtcNow:O}";
-                    airlockClient.Push(key, new SampleEvent {Message = message});
-                    log.Info($"Pushed {message} into {routingKeyPrefix}");
+                    airlockClient.Push(routingKey, new SampleEvent {Message = message});
+                    log.Info($"Pushed {message} into {routingKey}");
                 }
             } while (!stopSignal.Wait(TimeSpan.FromSeconds(1)));
             log.Info("Producer finished");
         }
 
-        private static void RunConsumer(ILog log, TimeSpan? recedeGap)
+        private static void RunConsumer(ILog log, string[] args)
         {
             log.Info("Consumer started");
             var consumerGroupId = $"group@{Dns.GetHostName()}";
+            var recedeGap = TryParseRecedeGap(args.FirstOrDefault());
+            var routingKeys = (recedeGap.HasValue ? args.Skip(1) : args).ToArray();
+            if (!routingKeys.Any())
+                routingKeys = new[] {DefaultRoutingKey};
             var processor = new SampleDataAirlockEventProcessor(log, recedeGap);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(processor);
             var settings = new ConsumerGroupHostSettings(KafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
-            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(SampleDataType));
+            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new SampleRoutingKeyFilter(routingKeys));
             consumer.Start();
             do
             {
             } while (!stopSignal.Wait(TimeSpan.FromSeconds(1)));
             consumer.Stop();
             log.Info("Consumer finished");
+        }
+
+        private static TimeSpan? TryParseRecedeGap(string recedeGap)
+        {
+            return string.IsNullOrEmpty(recedeGap) || !TimeSpan.TryParse(recedeGap, out var recedeGapTimeSpan) ? (TimeSpan?)null : recedeGapTimeSpan;
         }
     }
 }
