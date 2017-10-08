@@ -52,7 +52,7 @@ namespace Vostok.AirlockConsumer
             eventsQueue.CompleteAdding();
         }
 
-        public void Join()
+        public void WaitForTermination()
         {
             processorThread.Join();
             processor.Release(routingKey);

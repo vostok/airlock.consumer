@@ -2,6 +2,7 @@ using Vostok.Airlock;
 
 namespace Vostok.AirlockConsumer
 {
+    // todo (avk, 08.10.2017): use one processor instance per project in order to isolate airlock abuse consequences
     public class DefaultAirlockEventProcessorProvider<T, TDeserializer> : IAirlockEventProcessorProvider
         where TDeserializer : IAirlockDeserializer<T>, new()
     {

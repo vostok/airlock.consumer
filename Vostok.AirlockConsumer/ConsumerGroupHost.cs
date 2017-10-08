@@ -9,7 +9,6 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
-    // seems like we should run counsumer groups on a per project
     // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator)
     public class ConsumerGroupHost : IDisposable
     {
@@ -19,7 +18,7 @@ namespace Vostok.AirlockConsumer
         private readonly IRoutingKeyFilter routingKeyFilter;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost, int[] AssignedPartitions)> processors = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost, int[])>();
+        private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost, int[] AssignedPartitions)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost, int[])>();
         private volatile Thread pollingThread;
 
         public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IAirlockEventProcessorProvider processorProvider, IRoutingKeyFilter routingKeyFilter)
@@ -120,7 +119,9 @@ namespace Vostok.AirlockConsumer
                         sw.Restart();
                     }
                 }
-                StopProcessors(processors.Values.Select(x => x.ProcessorHost).ToList());
+                Unsubscribe();
+                // todo (avk, 08.10.2017, maybe): wait for consumer to finish outstanding fetching operations and process already fetched events
+                StopProcessors(processorInfos.Values.Select(x => x.ProcessorHost).ToList());
             }
             catch (Exception e)
             {
@@ -129,12 +130,18 @@ namespace Vostok.AirlockConsumer
             }
         }
 
+        private void Unsubscribe()
+        {
+            consumer.Unsubscribe();
+            log.Warn($"Unsubscribe: consumerName: {consumer.Name}, memberId: {consumer.MemberId} unsubscribed from all topics");
+        }
+
         private static void StopProcessors(List<ProcessorHost> processorHostsToStop)
         {
-            foreach (var processor in processorHostsToStop)
-                processor.CompleteAdding();
-            foreach (var processor in processorHostsToStop)
-                processor.Join();
+            foreach (var processorHost in processorHostsToStop)
+                processorHost.CompleteAdding();
+            foreach (var processorHost in processorHostsToStop)
+                processorHost.WaitForTermination();
         }
 
         private bool UpdateSubscrition()
@@ -150,11 +157,20 @@ namespace Vostok.AirlockConsumer
                     topicsToSubscribeTo.Add(routingKey);
             }
 
-            if (topicsToSubscribeTo.Any())
-                consumer.Subscribe(topicsToSubscribeTo);
-            log.Warn($"SubscribedToTopics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topics: [{string.Join(", ", topicsToSubscribeTo)}]");
+            var topicsAlreadySubscribedTo = processorInfos.Keys.ToList();
+            if (!topicsToSubscribeTo.Any())
+            {
+                if (topicsAlreadySubscribedTo.Any())
+                    Unsubscribe();
+                return false;
+            }
 
-            return topicsToSubscribeTo.Any();
+            if (!topicsToSubscribeTo.OrderBy(x => x).SequenceEqual(topicsAlreadySubscribedTo.OrderBy(x => x)))
+            {
+                consumer.Subscribe(topicsToSubscribeTo);
+                log.Warn($"SubscribedToTopics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topics: [{string.Join(", ", topicsToSubscribeTo)}]");
+            }
+            return true;
         }
 
         private void OnPartitionsAssigned(List<TopicPartition> topicPartitions)
@@ -180,12 +196,12 @@ namespace Vostok.AirlockConsumer
             {
                 var routingKey = topicPartitionsByRoutingKeyGroup.Key;
                 routingKeysToAssign.Add(routingKey);
-                if (!processors.TryGetValue(routingKey, out var processorInfo))
+                if (!processorInfos.TryGetValue(routingKey, out var processorInfo))
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
                     var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, cancellationTokenSource.Token, processor, log, consumer);
                     processorInfo = (processor, processorHost, AssignedPartitions: new int[0]);
-                    processors.Add(routingKey, processorInfo);
+                    processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
                 }
 
@@ -205,7 +221,13 @@ namespace Vostok.AirlockConsumer
                         {
                             if (!topicPartitionOffsetError.Error)
                             {
-                                topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffsetError.TopicPartition, topicPartitionOffsetError.Offset));
+                                var offset = topicPartitionOffsetError.Offset;
+                                if (offset == timestampToSearch.UnixTimestampMs)
+                                {
+                                    offset = Offset.Invalid; // todo (avk, 08.10.2017): we need to fix bug in kafka driver
+                                    log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} BUG in driver timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffsetError}");
+                                }
+                                topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffsetError.TopicPartition, offset));
                                 // todo (avk, 06.10.2017): maybe we need to seek consumer for these partitions
                             }
                             else
@@ -222,22 +244,24 @@ namespace Vostok.AirlockConsumer
             }
 
             var processorHostsToStop = new List<ProcessorHost>();
-            var routingKeysToUnassign = processors.Keys.Except(routingKeysToAssign).ToList();
+            var routingKeysToUnassign = processorInfos.Keys.Except(routingKeysToAssign).ToList();
             foreach (var routingKey in routingKeysToUnassign)
             {
-                processorHostsToStop.Add(processors[routingKey].ProcessorHost);
-                processors.Remove(routingKey);
+                processorHostsToStop.Add(processorInfos[routingKey].ProcessorHost);
+                processorInfos.Remove(routingKey);
             }
             StopProcessors(processorHostsToStop);
 
+            if(topicPartitionOffsets.Count != topicPartitions.Count)
+                throw new InvalidOperationException($"AssertionFailre: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
             return topicPartitionOffsets;
         }
 
         private void OnMessage(Message<Null, byte[]> message)
         {
-            if (!processors.TryGetValue(message.Topic, out var processor))
+            if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
-            processor.ProcessorHost.Enqueue(message);
+            processorInfo.ProcessorHost.Enqueue(message);
         }
     }
 }
