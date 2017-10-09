@@ -1,19 +1,25 @@
+using System;
+using System.Collections.Concurrent;
 using Vostok.Airlock;
 
 namespace Vostok.AirlockConsumer
 {
-    // todo (avk, 08.10.2017): use one processor instance per project in order to isolate airlock abuse consequences
     public class DefaultAirlockEventProcessorProvider<T, TDeserializer> : IAirlockEventProcessorProvider
         where TDeserializer : IAirlockDeserializer<T>, new()
     {
-        private readonly DefaultAirlockEventProcessor<T> processor;
+        private readonly Func<string, IAirlockEventProcessor<T>> createProcessorForProject;
         private readonly IAirlockDeserializer<T> airlockDeserializer = new TDeserializer();
+        private readonly ConcurrentDictionary<string, DefaultAirlockEventProcessor<T>> processorsByProject = new ConcurrentDictionary<string, DefaultAirlockEventProcessor<T>>();
 
-        public DefaultAirlockEventProcessorProvider(IAirlockEventProcessor<T> processor)
+        public DefaultAirlockEventProcessorProvider(Func<string, IAirlockEventProcessor<T>> createProcessorForProject)
         {
-            this.processor = new DefaultAirlockEventProcessor<T>(airlockDeserializer, processor);
+            this.createProcessorForProject = createProcessorForProject;
         }
 
-        public IAirlockEventProcessor GetProcessor(string routingKey) => processor;
+        public IAirlockEventProcessor GetProcessor(string routingKey)
+        {
+            RoutingKey.Parse(routingKey, out var project, out _, out _, out _);
+            return processorsByProject.GetOrAdd(project, x => new DefaultAirlockEventProcessor<T>(airlockDeserializer, createProcessorForProject(project)));
+        }
     }
 }

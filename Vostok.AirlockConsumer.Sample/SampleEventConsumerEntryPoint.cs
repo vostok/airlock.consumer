@@ -73,8 +73,7 @@ namespace Vostok.AirlockConsumer.Sample
             var routingKeys = (recedeGap.HasValue ? args.Skip(1) : args).ToArray();
             if (!routingKeys.Any())
                 routingKeys = new[] {DefaultRoutingKey};
-            var processor = new SampleDataAirlockEventProcessor(log, recedeGap);
-            var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(processor);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(project => new SampleDataAirlockEventProcessor(log, recedeGap));
             var settings = new ConsumerGroupHostSettings(KafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
             var consumer = new ConsumerGroupHost(settings, log, processorProvider, new SampleRoutingKeyFilter(routingKeys));
             consumer.Start();

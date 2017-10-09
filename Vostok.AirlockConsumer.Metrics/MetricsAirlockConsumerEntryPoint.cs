@@ -15,8 +15,7 @@ namespace Vostok.AirlockConsumer.Metrics
             var graphiteHost = (string)settingsFromFile?["airlock.consumer.graphite.host"] ?? "graphite-relay.skbkontur.ru";
             var graphitePort = 2003; // TODO (int?)settingsFromFile?["airlock.consumer.graphite.port"] ?? 2003;
             const string consumerGroupId = nameof(MetricsAirlockConsumerEntryPoint);
-            var processor = new MetricsAirlockEventProcessor(graphiteHost, graphitePort, log);
-            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(processor);
+            var processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => new MetricsAirlockEventProcessor(graphiteHost, graphitePort, log));
             var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
             var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(Airlock.RoutingKey.MetricsSuffix));
             consumer.Start();
