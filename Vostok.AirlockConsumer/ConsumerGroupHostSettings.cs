@@ -20,6 +20,7 @@ namespace Vostok.AirlockConsumer
         public AutoResetOffsetPolicy AutoResetOffsetPolicy { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);
         public TimeSpan UpdateSubscriptionInterval { get; } = TimeSpan.FromSeconds(30);
+        public TimeSpan OffsetsForTimesTimeout { get; } = TimeSpan.FromSeconds(10);
         public string ConsumerGroupHostId => $"{ConsumerGroupId}-{ClientId}";
 
         public Dictionary<string, object> GetConsumerConfig()
@@ -30,14 +31,17 @@ namespace Vostok.AirlockConsumer
                 {"group.id", ConsumerGroupId},
                 {"client.id", ClientId},
                 {"api.version.request", true},
+                {"api.version.request.timeout.ms", 10000},
                 {"enable.auto.commit", false},
                 {"enable.auto.offset.store", false},
                 {"offset.store.method", "broker"},
                 {"auto.offset.reset", FormatAutoResetOffsetPolicy(AutoResetOffsetPolicy)},
-                {"session.timeout.ms", 30000},
-                {"heartbeat.interval.ms", 1000},
+                {"session.timeout.ms", 10000},
+                {"heartbeat.interval.ms", 3000},
+                {"socket.timeout.ms", 60000},
                 {"statistics.interval.ms", 300000},
                 {"topic.metadata.refresh.interval.ms", 300000},
+                {"metadata.request.timeout.ms", 60000},
                 {"partition.assignment.strategy", "roundrobin"},
                 {"enable.partition.eof", true},
                 {"check.crcs", false},

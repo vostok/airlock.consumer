@@ -19,6 +19,7 @@ namespace Vostok.AirlockConsumer
         private readonly Consumer<Null, byte[]> consumer;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost, int[] AssignedPartitions)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost, int[])>();
+        private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
         public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IAirlockEventProcessorProvider processorProvider, IRoutingKeyFilter routingKeyFilter)
@@ -149,7 +150,7 @@ namespace Vostok.AirlockConsumer
             var metadata = consumer.GetMetadata(allTopics: true);
             log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
 
-            var topicsToSubscribeTo = new List<string>();
+            var topicsToSubscribeTo = new HashSet<string>();
             foreach (var topicMetadata in metadata.Topics)
             {
                 var routingKey = topicMetadata.Topic;
@@ -157,17 +158,20 @@ namespace Vostok.AirlockConsumer
                     topicsToSubscribeTo.Add(routingKey);
             }
 
-            var topicsAlreadySubscribedTo = processorInfos.Keys.ToList();
             if (!topicsToSubscribeTo.Any())
             {
                 if (topicsAlreadySubscribedTo.Any())
+                {
                     Unsubscribe();
+                    topicsAlreadySubscribedTo.Clear();
+                }
                 return false;
             }
 
-            if (!topicsToSubscribeTo.OrderBy(x => x).SequenceEqual(topicsAlreadySubscribedTo.OrderBy(x => x)))
+            if (!topicsToSubscribeTo.SetEquals(topicsAlreadySubscribedTo))
             {
                 consumer.Subscribe(topicsToSubscribeTo);
+                topicsAlreadySubscribedTo = topicsToSubscribeTo;
                 log.Warn($"SubscribedToTopics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topics: [{string.Join(", ", topicsToSubscribeTo)}]");
             }
             return true;
@@ -216,7 +220,7 @@ namespace Vostok.AirlockConsumer
                     {
                         var timestampToSearch = new Timestamp(startTimestampOnRebalance.Value.ToUnixTimeMilliseconds(), TimestampType.NotAvailable);
                         var timestampsToSearch = newPartitions.Select(x => new TopicPartitionTimestamp(routingKey, x, timestampToSearch));
-                        var offsetsForTimes = consumer.OffsetsForTimes(timestampsToSearch, timeout: Timeout.InfiniteTimeSpan);
+                        var offsetsForTimes = consumer.OffsetsForTimes(timestampsToSearch, settings.OffsetsForTimesTimeout);
                         foreach (var topicPartitionOffsetError in offsetsForTimes)
                         {
                             if (!topicPartitionOffsetError.Error)
@@ -224,8 +228,8 @@ namespace Vostok.AirlockConsumer
                                 var offset = topicPartitionOffsetError.Offset;
                                 if (offset == timestampToSearch.UnixTimestampMs)
                                 {
-                                    offset = Offset.Invalid; // todo (avk, 08.10.2017): we need to fix bug in kafka driver
-                                    log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} BUG in driver timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffsetError}");
+                                    offset = Offset.Invalid;
+                                    log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} failed to get offset for timestamp: timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffsetError}");
                                 }
                                 topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffsetError.TopicPartition, offset));
                                 // todo (avk, 06.10.2017): maybe we need to seek consumer for these partitions
