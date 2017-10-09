@@ -232,7 +232,6 @@ namespace Vostok.AirlockConsumer
                                     log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} failed to get offset for timestamp: timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffsetError}");
                                 }
                                 topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffsetError.TopicPartition, offset));
-                                // todo (avk, 06.10.2017): maybe we need to seek consumer for these partitions
                             }
                             else
                             {
