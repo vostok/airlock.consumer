@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Vostok.Airlock;
 
 namespace Vostok.AirlockConsumer
@@ -9,7 +9,7 @@ namespace Vostok.AirlockConsumer
     {
         private readonly Func<string, IAirlockEventProcessor<T>> createProcessorForProject;
         private readonly IAirlockDeserializer<T> airlockDeserializer = new TDeserializer();
-        private readonly ConcurrentDictionary<string, DefaultAirlockEventProcessor<T>> processorsByProject = new ConcurrentDictionary<string, DefaultAirlockEventProcessor<T>>();
+        private readonly Dictionary<string, DefaultAirlockEventProcessor<T>> processorsByProject = new Dictionary<string, DefaultAirlockEventProcessor<T>>();
 
         public DefaultAirlockEventProcessorProvider(Func<string, IAirlockEventProcessor<T>> createProcessorForProject)
         {
@@ -19,7 +19,12 @@ namespace Vostok.AirlockConsumer
         public IAirlockEventProcessor GetProcessor(string routingKey)
         {
             RoutingKey.Parse(routingKey, out var project, out _, out _, out _);
-            return processorsByProject.GetOrAdd(project, x => new DefaultAirlockEventProcessor<T>(airlockDeserializer, createProcessorForProject(project)));
+            if (!processorsByProject.TryGetValue(project, out var processor))
+            {
+                processor = new DefaultAirlockEventProcessor<T>(airlockDeserializer, createProcessorForProject(project));
+                processorsByProject.Add(project, processor);
+            }
+            return processor;
         }
     }
 }
