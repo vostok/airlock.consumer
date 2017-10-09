@@ -18,8 +18,8 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
         public void MultiThreadingProcess()
         {
             var counter = 0;
-            var executionStrategy = Substitute.For<ICassandraRetryExecutionStrategy>();
-            executionStrategy.ExecuteAsync(Arg.Any<Statement>()).Returns(x => 
+            var contrailsClient = Substitute.For<IContrailsClient>();
+            contrailsClient.AddSpan(Arg.Any<Span>()).Returns(x => 
             {
                 Console.WriteLine($"start process {counter} [{Thread.CurrentThread.ManagedThreadId}]");
                 Thread.Sleep(500);
@@ -27,7 +27,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                 Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
                 return Task.CompletedTask;
             });
-            var processor = new TracingAirlockEventProcessor(Substitute.For<IContrailsClient>(), 3);
+            var processor = new TracingAirlockEventProcessor(contrailsClient, 3);
             var airlockEvents = new List<AirlockEvent<Span>>();
             const int spanCount = 10;
             for (var i = 0; i < spanCount; i++)
