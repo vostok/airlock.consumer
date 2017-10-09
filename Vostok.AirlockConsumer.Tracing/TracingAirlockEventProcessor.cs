@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Vostok.Contrails.Client;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
 {
     public class TracingAirlockEventProcessor : SimpleAirlockEventProcessorBase<Span>
     {
-        private readonly ICassandraDataScheme dataScheme;
-        private readonly ICassandraRetryExecutionStrategy retryExecutionStrategy;
+        private readonly IContrailsClient contrailsClient;
         private readonly int maxCassandraTasks;
 
-        public TracingAirlockEventProcessor(ICassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy, int maxCassandraTasks)
+        public TracingAirlockEventProcessor(IContrailsClient contrailsClient, int maxCassandraTasks) // ICassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy
         {
-            this.dataScheme = dataScheme;
-            this.retryExecutionStrategy = retryExecutionStrategy;
+            this.contrailsClient = contrailsClient;
             this.maxCassandraTasks = maxCassandraTasks;
         }
 
@@ -24,7 +23,7 @@ namespace Vostok.AirlockConsumer.Tracing
 
         private void ProcessEvent(AirlockEvent<Span> @event)
         {
-            retryExecutionStrategy.ExecuteAsync(dataScheme.GetInsertStatement(@event.Payload)).Wait();
+            contrailsClient.AddSpan(@event.Payload).Wait();
         }
     }
 }

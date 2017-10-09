@@ -6,6 +6,7 @@ using Cassandra;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
+using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
 
@@ -26,7 +27,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                 Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
                 return Task.CompletedTask;
             });
-            var processor = new TracingAirlockEventProcessor(Substitute.For<ICassandraDataScheme>(), executionStrategy, 3);
+            var processor = new TracingAirlockEventProcessor(Substitute.For<IContrailsClient>(), 3);
             var airlockEvents = new List<AirlockEvent<Span>>();
             const int spanCount = 10;
             for (var i = 0; i < spanCount; i++)
@@ -46,10 +47,17 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
         [Test, Ignore("Manual")]
         public void ProcessData()
         {
-            var retryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings();
-            var retryExecutionStrategy = new CassandraRetryExecutionStrategy(retryExecutionStrategySettings, Substitute.For<ILog>(), CassandraTest.Session.Value);
+            //var retryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings();
+            //var retryExecutionStrategy = new CassandraRetryExecutionStrategy(retryExecutionStrategySettings, Substitute.For<ILog>(), CassandraTest.Session.Value);
 
-            var processor = new TracingAirlockEventProcessor(CassandraTest.DataScheme, retryExecutionStrategy, 1000);
+            var contrailsClientSettings = new ContrailsClientSettings()
+            {
+                CassandraRetryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings(),
+                Keyspace = "airlock",
+                CassandraNodes = new [] { "localhost:9042" }
+            };
+            var contrailsClient = new ContrailsClient(contrailsClientSettings, Substitute.For<ILog>());
+            var processor = new TracingAirlockEventProcessor(contrailsClient, 1000);
             processor.Process(
                 new List<AirlockEvent<Span>>
                 {

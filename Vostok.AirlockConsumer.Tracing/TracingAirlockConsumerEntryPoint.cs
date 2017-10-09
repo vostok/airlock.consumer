@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Airlock;
+using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
 
@@ -17,17 +18,18 @@ namespace Vostok.AirlockConsumer.Tracing
             var kafkaBootstrapEndpoints = (string)settingsFromFile?["bootstrap.servers"] ?? "devops-kafka1.dev.kontur.ru:9092";
             const string consumerGroupId = nameof(TracingAirlockConsumerEntryPoint);
             var keyspace = (string)settingsFromFile?["cassandra.keyspace"] ?? "airlock";
-            var tableName = (string)settingsFromFile?["cassandra.spans.tablename"] ?? "spans";
             var nodes = ((List<object>)settingsFromFile?["cassandra.endpoints"] ?? new List<object>{ "localhost:9042" }).Cast<string>();
             try
             {
-                var retryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings(settingsFromFile);
-                var sessionKeeper = new CassandraSessionKeeper(nodes, keyspace);
-                var retryExecutionStrategy = new CassandraRetryExecutionStrategy(retryExecutionStrategySettings, log, sessionKeeper.Session);
-                var dataScheme = new CassandraDataScheme(sessionKeeper.Session, tableName);
-                dataScheme.CreateTableIfNotExists();
+                var contrailsClientSettings = new ContrailsClientSettings()
+                {
+                    CassandraNodes = nodes,
+                    Keyspace = keyspace,
+                    CassandraRetryExecutionStrategySettings = GetCassandraSettings(settingsFromFile)
+                };
+                var contrailsClient = new ContrailsClient(contrailsClientSettings, log);
                 var maxCassandraTasks = int.Parse(settingsFromFile?["cassandra.max.threads"]?.ToString() ?? "1000");
-                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(dataScheme, retryExecutionStrategy, maxCassandraTasks));
+                var processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, maxCassandraTasks));
                 var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
                 var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix));
                 consumer.Start();
@@ -47,6 +49,26 @@ namespace Vostok.AirlockConsumer.Tracing
                 log.Error(e);
                 throw;
             }
+        }
+
+        private static CassandraRetryExecutionStrategySettings GetCassandraSettings(Dictionary<string, object> settings)
+        {
+            var retryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings();
+            if (settings == null)
+                return retryExecutionStrategySettings;
+            if (settings["cassandra.save.retry.max.attempts"] != null)
+            {
+                retryExecutionStrategySettings.CassandraSaveRetryMaxAttempts = int.Parse(settings["cassandra.save.retry.max.attempts"].ToString());
+            }
+            if (settings["cassandra.save.retry.min.delay"] != null)
+            {
+                retryExecutionStrategySettings.CassandraSaveRetryMinDelay = TimeSpan.Parse(settings["cassandra.save.retry.min.delay"].ToString());
+            }
+            if (settings["cassandra.save.retry.max.delay"] != null)
+            {
+                retryExecutionStrategySettings.CassandraSaveRetryMaxDelay = TimeSpan.Parse(settings["cassandra.save.retry.max.delay"].ToString());
+            }
+            return retryExecutionStrategySettings;
         }
     }
 }
