@@ -15,25 +15,25 @@ namespace Vostok.AirlockConsumer.Metrics
         private readonly MetricConverter metricConverter;
         private readonly GraphiteClient graphiteClient;
         private readonly TimeSpan sendPeriod = 10.Seconds();
-        private const int BatchSize = 10000;
-        private const int AttemptCount = 3;
+        private const int batchSize = 10000;
+        private const int attemptCount = 3;
 
-        public MetricsAirlockEventProcessor(string graphiteHost, int graphitePort, ILog log)
+        public MetricsAirlockEventProcessor(Uri graphiteUri, ILog log)
         {
             this.log = log;
             var graphiteNameBuidler = new GraphiteNameBuilder();
             metricConverter = new MetricConverter(graphiteNameBuidler);
-            graphiteClient = new GraphiteClient(graphiteHost, graphitePort);
+            graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port);
         }
 
-        public override void Process(List<AirlockEvent<MetricEvent>> events)
+        public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
         {
             log.Info("Start process metrics");
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
 
-            foreach (var batch in Split(metrics, BatchSize))
+            foreach (var batch in Split(metrics, batchSize))
             {
-                SendBatchAsync(batch, AttemptCount, sendPeriod).GetAwaiter().GetResult();
+                SendBatchAsync(batch, attemptCount, sendPeriod).GetAwaiter().GetResult();
             }
             log.Info("Finished process metrics");
         }

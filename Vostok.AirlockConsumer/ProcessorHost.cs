@@ -10,8 +10,8 @@ namespace Vostok.AirlockConsumer
 {
     public class ProcessorHost
     {
-        private const int MaxBatchSize = 100*1000;
-        private const int MaxProcessorQueueSize = int.MaxValue;
+        private const int maxBatchSize = 100*1000;
+        private const int maxProcessorQueueSize = int.MaxValue;
         private readonly string routingKey;
         private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
@@ -19,7 +19,7 @@ namespace Vostok.AirlockConsumer
         private readonly Consumer<Null, byte[]> consumer;
         private readonly TimeSpan maxDequeueTimeout = TimeSpan.FromSeconds(1);
         private readonly TimeSpan minDequeueTimeout = TimeSpan.FromMilliseconds(100);
-        private readonly BoundedBlockingQueue<Message<Null, byte[]>> eventsQueue = new BoundedBlockingQueue<Message<Null, byte[]>>(MaxProcessorQueueSize);
+        private readonly BoundedBlockingQueue<Message<Null, byte[]>> eventsQueue = new BoundedBlockingQueue<Message<Null, byte[]>>(maxProcessorQueueSize);
         private readonly Thread processorThread;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
@@ -86,7 +86,7 @@ namespace Vostok.AirlockConsumer
                 if (eventsQueue.TryTake(out var message, dequeueTimeout))
                 {
                     messageBatch.Add(message);
-                    if (messageBatch.Count >= MaxBatchSize)
+                    if (messageBatch.Count >= maxBatchSize)
                         break;
                 }
                 else

@@ -16,7 +16,7 @@ namespace Vostok.AirlockConsumer.Tracing
             this.maxCassandraTasks = maxCassandraTasks;
         }
 
-        public override void Process(List<AirlockEvent<Span>> events)
+        public sealed override void Process(List<AirlockEvent<Span>> events)
         {
             Parallel.ForEach(events, new ParallelOptions {MaxDegreeOfParallelism = maxCassandraTasks}, ProcessEvent);
         }

@@ -23,12 +23,12 @@ namespace Vostok.AirlockConsumer
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IAirlockEventProcessorProvider processorProvider, IRoutingKeyFilter routingKeyFilter)
+        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
         {
             this.settings = settings;
             this.log = log.ForContext(this);
-            this.processorProvider = processorProvider;
             this.routingKeyFilter = routingKeyFilter;
+            this.processorProvider = processorProvider;
 
             consumer = new Consumer<Null, byte[]>(settings.GetConsumerConfig(), keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) => { log.Error($"CriticalError: consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {error.ToString()}"); };

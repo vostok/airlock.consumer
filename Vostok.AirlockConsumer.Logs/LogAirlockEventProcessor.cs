@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.Logs
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public override void Process(List<AirlockEvent<LogEventData>> events)
+        public sealed override void Process(List<AirlockEvent<LogEventData>> events)
         {
             var bulkItems = new List<object>();
             foreach (var @event in events)

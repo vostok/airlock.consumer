@@ -1,36 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
 {
-    public static class ElasticLogsIndexerEntryPoint
+    public class ElasticLogsIndexerEntryPoint : ConsumerApplication
     {
-        public static void Main(string[] args)
+        private const string defaultElaticEndpoints = "http://elastic:9200";
+
+        public static void Main()
         {
-            var settingsFromFile = Configuration.TryGetSettingsFromFile(args);
-            var log = Logging.Configure((string)settingsFromFile?["airlock.consumer.log.file.pattern"] ?? "..\\log\\actions-{Date}.txt");
-            var kafkaBootstrapEndpoints = (string)settingsFromFile?["bootstrap.servers"] ?? "devops-kafka1.dev.kontur.ru:9092";
-            var elasticUris = ((List<object>)settingsFromFile?["airlock.consumer.elastic.endpoints"] ?? new List<object> {"http://devops-consul1.dev.kontur.ru:9200/"}).Cast<string>().Select(x => new Uri(x)).ToArray();
-            const string consumerGroupId = nameof(ElasticLogsIndexerEntryPoint);
-            var processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
-            var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
-            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix));
-            consumer.Start();
-            log.Info($"Consumer '{consumerGroupId}' started");
-            var tcs = new TaskCompletionSource<int>();
-            Console.CancelKeyPress += (_, e) =>
-            {
-                log.Info("Stop signal received");
-                tcs.TrySetResult(0);
-                e.Cancel = true;
-            };
-            tcs.Task.GetAwaiter().GetResult();
-            consumer.Stop();
+            new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>().Run();
+        }
+
+        protected sealed override void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        {
+            routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
+            var elasticUris = GetElasticUris(log, environmentVariables);
+            processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
+            // todo (avk, 11.10.2017): wait for elastic to start
+        }
+
+        private static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
+        {
+            if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
+                elasticEndpoints = defaultElaticEndpoints;
+            var elasticUris = elasticEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
+            log.Info($"ElasticUris: {elasticUris.ToPrettyJson()}");
+            return elasticUris;
         }
     }
 }
