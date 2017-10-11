@@ -42,13 +42,15 @@ namespace Vostok.AirlockConsumer
             };
             try
             {
-                log.Info($"Consumer application started: {typeof (TConsumerApp).Name}");
+                log.Info($"Consumer application is starting: {typeof (TConsumerApp).Name}");
                 var consumerApplication = new TConsumerApp();
                 var consumerGroupHost = consumerApplication.Initialize(log);
+                log.Info($"Consumer application is initialized: {typeof (TConsumerApp).Name}");
                 consumerGroupHost.Start();
                 stopSignal.Wait(Timeout.Infinite);
+                log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
                 consumerGroupHost.Stop();
-                log.Info($"Consumer application stopped: {typeof (TConsumerApp).Name}");
+                log.Info($"Consumer application is stopped: {typeof (TConsumerApp).Name}");
                 terminationSignal.Set();
             }
             catch (Exception e)
