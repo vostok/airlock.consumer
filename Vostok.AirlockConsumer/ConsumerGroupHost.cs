@@ -9,6 +9,7 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
+    // todo (avk, 11.10.2017): review logging levels for expected events
     // todo (avk, 09.10.2017): integration tests for airlock consumer machinery
     // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator)
     public class ConsumerGroupHost : IDisposable

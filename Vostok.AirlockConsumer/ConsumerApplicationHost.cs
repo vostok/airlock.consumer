@@ -10,6 +10,7 @@ namespace Vostok.AirlockConsumer
         where TConsumerApp : ConsumerApplication, new()
     {
         private readonly ManualResetEventSlim stopSignal = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim terminationSignal = new ManualResetEventSlim();
 
         public void Run()
         {
@@ -27,14 +28,17 @@ namespace Vostok.AirlockConsumer
             };
             Console.CancelKeyPress += (_, eventArgs) =>
             {
-                log.Warn("Ctrl+C is pressed -> terminating...");
+                log.Info("Ctrl+C is pressed -> terminating...");
                 stopSignal.Set();
                 eventArgs.Cancel = true;
             };
             AssemblyLoadContext.Default.Unloading += assemblyLoadContext =>
             {
-                log.Warn("AssemblyLoadContext.Default.Unloading event is fired -> terminating...");
+                log.Info("AssemblyLoadContext.Default.Unloading event is fired -> terminating...");
                 stopSignal.Set();
+                terminationSignal.Wait(Timeout.Infinite);
+                log.Info("Termination signal is set -> exiting...");
+                Environment.Exit(0);
             };
             try
             {
@@ -45,6 +49,7 @@ namespace Vostok.AirlockConsumer
                 stopSignal.Wait(Timeout.Infinite);
                 consumerGroupHost.Stop();
                 log.Info($"Consumer application stopped: {typeof (TConsumerApp).Name}");
+                terminationSignal.Set();
             }
             catch (Exception e)
             {
