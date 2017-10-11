@@ -14,7 +14,7 @@ namespace Vostok.AirlockConsumer
 
         public void Run()
         {
-            var log = Logging.Configure($"log/{typeof (TConsumerApp).Name}-{{Date}}.log");
+            var log = Logging.Configure($"./log/{typeof (TConsumerApp).Name}-{{Date}}.log");
             AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
             {
                 log.Fatal("Unhandled exception in curreant AppDomain", (Exception) eventArgs.ExceptionObject);

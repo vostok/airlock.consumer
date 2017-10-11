@@ -9,7 +9,7 @@ namespace Vostok.AirlockConsumer.Logs
 {
     public class ElasticLogsIndexerEntryPoint : ConsumerApplication
     {
-        private const string defaultElasticEndpoints = "http://elastic:9200";
+        private const string defaultElasticEndpoints = "http://elasticsearch:9200";
 
         public static void Main()
         {
