@@ -9,7 +9,7 @@ namespace Vostok.AirlockConsumer.Logs
 {
     public class ElasticLogsIndexerEntryPoint : ConsumerApplication
     {
-        private const string defaultElaticEndpoints = "http://elastic:9200";
+        private const string defaultElasticEndpoints = "http://elastic:9200";
 
         public static void Main()
         {
@@ -27,7 +27,7 @@ namespace Vostok.AirlockConsumer.Logs
         private static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
-                elasticEndpoints = defaultElaticEndpoints;
+                elasticEndpoints = defaultElasticEndpoints;
             var elasticUris = elasticEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
             log.Info($"ElasticUris: {elasticUris.ToPrettyJson()}");
             return elasticUris;

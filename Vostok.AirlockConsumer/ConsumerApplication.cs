@@ -13,6 +13,7 @@ namespace Vostok.AirlockConsumer
     {
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
         private const string defaultAirlockGateEndpoints = "http://gate:8888";
+        private const string defaultAirlockGateApiKey = "UniversalApiKey";
 
         public ConsumerGroupHost Initialize(ILog log)
         {
@@ -30,7 +31,7 @@ namespace Vostok.AirlockConsumer
         protected static AirlockConfig GetAirlockConfig(ILog log, Dictionary<string, string> environmentVariables)
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_GATE_API_KEY", out var airlockGateApiKey))
-                airlockGateApiKey = "UniversalApiKey";
+                airlockGateApiKey = defaultAirlockGateApiKey;
             if (!environmentVariables.TryGetValue("AIRLOCK_GATE_ENDPOINTS", out var airlockGateEndpoints))
                 airlockGateEndpoints = defaultAirlockGateEndpoints;
             var airlockGateUris = airlockGateEndpoints.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();

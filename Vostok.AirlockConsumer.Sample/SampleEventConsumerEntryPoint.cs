@@ -11,10 +11,10 @@ namespace Vostok.AirlockConsumer.Sample
 {
     public static class SampleEventConsumerEntryPoint
     {
-        private const string airlockApiKey = "UniversalApiKey";
         private const string defaultRoutingKey = "prj.dev.srv.dt";
-        private const string airlockGateEndpoint = "http://devops-bots1.dev.kontur.ru:8888";
-        private const string kafkaBootstrapEndpoints = "devops-kafka1.dev.kontur.ru:9092";
+        private const string airlockApiKey = "UniversalApiKey";
+        private const string airlockGateEndpoint = "http://gate:8888";
+        private const string kafkaBootstrapEndpoints = "kafka:9092";
         private static readonly ManualResetEventSlim stopSignal = new ManualResetEventSlim();
 
         public static void Main(string[] args)
