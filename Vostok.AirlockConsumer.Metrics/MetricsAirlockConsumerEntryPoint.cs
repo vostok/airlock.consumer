@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.Metrics
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_GRAPHITE_ENDPOINT", out var graphiteEndpoint))
                 graphiteEndpoint = defaultGraphiteEndpoint;
-            var graphiteUri = new Uri(graphiteEndpoint);
+            var graphiteUri = new Uri("tcp://" + graphiteEndpoint);
             log.Info($"GraphiteUri: {graphiteUri}");
             return graphiteUri;
         }

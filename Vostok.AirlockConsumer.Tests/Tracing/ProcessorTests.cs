@@ -44,6 +44,13 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             Assert.AreEqual(spanCount, counter);
         }
 
+        [Test]
+        public void METHOD()
+        {
+            var uri = new Uri("tcp://graphite:2003");
+            Console.Out.WriteLine("host: {0}  port: {1}  scheme: {2}", uri.Host, uri.Port, uri.Scheme);
+        }
+
         [Test, Ignore("Manual")]
         public void ProcessData()
         {
