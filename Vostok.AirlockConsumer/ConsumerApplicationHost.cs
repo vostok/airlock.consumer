@@ -24,7 +24,6 @@ namespace Vostok.AirlockConsumer
             {
                 log.Fatal("UnobservedTaskException", eventArgs.Exception);
                 eventArgs.SetObserved();
-                Environment.Exit(2);
             };
             Console.CancelKeyPress += (_, eventArgs) =>
             {
