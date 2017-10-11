@@ -17,7 +17,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             services = new ConcurrentDictionary<string, MetricAggregationService>();
         }
 
-        public override void Process(List<AirlockEvent<MetricEvent>> events)
+        public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
         {
             foreach (var consumerEvent in events)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Runtime.Loader;
 using System.Threading;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
@@ -10,10 +11,10 @@ namespace Vostok.AirlockConsumer.Sample
 {
     public static class SampleEventConsumerEntryPoint
     {
-        private const string AirlockApiKey = "UniversalApiKey";
-        private const string DefaultRoutingKey = "prj.dev.srv.dt";
-        private const string AirlockGateEndpoint = "http://devops-bots1.dev.kontur.ru:8888";
-        private const string KafkaBootstrapEndpoints = "devops-kafka1.dev.kontur.ru:9092";
+        private const string defaultRoutingKey = "prj.dev.srv.dt";
+        private const string airlockApiKey = "UniversalApiKey";
+        private const string airlockGateEndpoint = "http://gate:8888";
+        private const string kafkaBootstrapEndpoints = "kafka:9092";
         private static readonly ManualResetEventSlim stopSignal = new ManualResetEventSlim();
 
         public static void Main(string[] args)
@@ -22,9 +23,14 @@ namespace Vostok.AirlockConsumer.Sample
             var log = Logging.Configure("log/actions-{Date}.txt");
             Console.CancelKeyPress += (_, e) =>
             {
-                log.Warn("Stop signal received");
+                log.Warn("Ctrl+C is pressed -> terminating...");
                 stopSignal.Set();
                 e.Cancel = true;
+            };
+            AssemblyLoadContext.Default.Unloading += ctx =>
+            {
+                log.Warn("AssemblyLoadContext.Default.Unloading event is fired -> terminating...");
+                stopSignal.Set();
             };
             try
             {
@@ -40,18 +46,18 @@ namespace Vostok.AirlockConsumer.Sample
             catch (Exception e)
             {
                 log.Fatal(e);
-                throw;
+                Environment.Exit(1);
             }
         }
 
         private static void RunProducer(ILog log, string[] args)
         {
-            var routingKeys = args.Any() ? args : new[] {DefaultRoutingKey};
+            var routingKeys = args.Any() ? args : new[] {defaultRoutingKey};
             log.Info($"Producer started for routingKeys: [{string.Join(", ", routingKeys)}]");
             var airlockClient = new AirlockClient(new AirlockConfig
             {
-                ApiKey = AirlockApiKey,
-                ClusterProvider = new FixedClusterProvider(new Uri(AirlockGateEndpoint)),
+                ApiKey = airlockApiKey,
+                ClusterProvider = new FixedClusterProvider(new Uri(airlockGateEndpoint)),
             }, log.FilterByLevel(LogLevel.Warn));
             do
             {
@@ -72,14 +78,13 @@ namespace Vostok.AirlockConsumer.Sample
             var recedeGap = TryParseRecedeGap(args.FirstOrDefault());
             var routingKeys = (recedeGap.HasValue ? args.Skip(1) : args).ToArray();
             if (!routingKeys.Any())
-                routingKeys = new[] {DefaultRoutingKey};
+                routingKeys = new[] {defaultRoutingKey};
+            var routingKeyFilter = new SampleRoutingKeyFilter(routingKeys);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(project => new SampleDataAirlockEventProcessor(log, recedeGap));
-            var settings = new ConsumerGroupHostSettings(KafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
-            var consumer = new ConsumerGroupHost(settings, log, processorProvider, new SampleRoutingKeyFilter(routingKeys));
+            var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
+            var consumer = new ConsumerGroupHost(settings, log, routingKeyFilter, processorProvider);
             consumer.Start();
-            do
-            {
-            } while (!stopSignal.Wait(TimeSpan.FromSeconds(1)));
+            stopSignal.Wait(Timeout.Infinite);
             consumer.Stop();
             log.Info("Consumer finished");
         }

@@ -9,6 +9,7 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
+    // todo (avk, 11.10.2017): review logging levels for expected events
     // todo (avk, 09.10.2017): integration tests for airlock consumer machinery
     // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator)
     public class ConsumerGroupHost : IDisposable
@@ -23,12 +24,12 @@ namespace Vostok.AirlockConsumer
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IAirlockEventProcessorProvider processorProvider, IRoutingKeyFilter routingKeyFilter)
+        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
         {
             this.settings = settings;
             this.log = log.ForContext(this);
-            this.processorProvider = processorProvider;
             this.routingKeyFilter = routingKeyFilter;
+            this.processorProvider = processorProvider;
 
             consumer = new Consumer<Null, byte[]>(settings.GetConsumerConfig(), keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) => { log.Error($"CriticalError: consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {error.ToString()}"); };

@@ -17,7 +17,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             this.log = log;
         }
 
-        public override void Process(List<AirlockEvent<Span>> events)
+        public sealed override void Process(List<AirlockEvent<Span>> events)
         {
             var httpServerSpanEvents = events
                 .Where(x => x.Payload.Annotations.TryGetValue("kind", out var kind) && kind == "http-server")
