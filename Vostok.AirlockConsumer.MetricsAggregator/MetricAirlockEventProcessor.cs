@@ -5,7 +5,7 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    // todo (avk, 06.10.2017): we need only one MetricAggregationService per project
+    // todo (avk, 06.10.2017): we need only one MetricAggregationService per project https://github.com/vostok/airlock.consumer/issues/18
     internal class MetricAirlockEventProcessor : SimpleAirlockEventProcessorBase<MetricEvent>
     {
         private readonly Func<string, MetricAggregationService> serviceFactory;

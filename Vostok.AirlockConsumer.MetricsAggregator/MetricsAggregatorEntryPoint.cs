@@ -15,7 +15,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         protected sealed override void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
-            // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то
+            // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то https://github.com/vostok/airlock.consumer/issues/18
             routingKeyFilter = new DirtyRoutingKeyFilter("-events");
 
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var rootMetricScope = new RootMetricScope(
                 new MetricConfiguration
                 {
-                    // todo (spaceorc 05.10.2017) get proj and env from settings
+                    // todo (spaceorc 05.10.2017) get proj and env from settings https://github.com/vostok/airlock.consumer/issues/18
                     Reporter = new AirlockMetricReporter(airlockClient, RoutingKey.CreatePrefix("vostok", "env", "metrics-aggregator"))
                 });
             var processor = new MetricAirlockEventProcessor(
@@ -49,7 +49,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                         initialBorders);
                 });
             processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => processor);
-            // todo (avk, 11.10.2017): wait for airlock gate to start
+            // todo (avk, 11.10.2017): wait for airlock gate to start https://github.com/vostok/airlock.consumer/issues/11
         }
 
         private static Borders CreateBorders(DateTimeOffset timestamp, MetricsAggregatorSettings settings)
