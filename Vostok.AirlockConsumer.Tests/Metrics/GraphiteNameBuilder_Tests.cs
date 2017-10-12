@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
         [TestCase("unknown.unknown.serviceName", "..serviceName")]
         [TestCase("unknown.unknown.unknown", "ИмяПроекта.Среда.ИмяСервиса")]
         [TestCase("unknown.unknown.unknown.TypeName.hostname.Operation.status.Value3.Value1.Value2", "",
-            "a2:Value1", "host:HOSTNAME", "a3:Value2", "type:TypeName", "operationName:Operation", "statusCode:status", "a1:Value3")]
+            "a2:Value1", "host:HOSTNAME", "a3:Value2", "type:TypeName", "operation:Operation", "status:status", "a1:Value3")]
         [TestCase("unknown.unknown.unknown", "", "a:")]
         [TestCase("unknown.unknown.unknown", "", ":v")]
         [TestCase("unknown.unknown.unknown.________", "", "a:Значение")]
