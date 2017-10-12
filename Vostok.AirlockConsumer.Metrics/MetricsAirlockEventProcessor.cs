@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer.Metrics
     {
         private readonly ILog log;
         private readonly MetricConverter metricConverter;
-        private readonly GraphiteClient graphiteClient;
+        private readonly ThrowableLazy<GraphiteClient> graphiteClient;
         private readonly TimeSpan sendPeriod = 10.Seconds();
         private const int batchSize = 10000;
         private const int attemptCount = 3;
@@ -23,7 +23,7 @@ namespace Vostok.AirlockConsumer.Metrics
             this.log = log;
             var graphiteNameBuidler = new GraphiteNameBuilder();
             metricConverter = new MetricConverter(graphiteNameBuidler);
-            graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port);
+            graphiteClient = new ThrowableLazy<GraphiteClient>(() => new GraphiteClient(graphiteUri.Host, graphiteUri.Port), log);
         }
 
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
@@ -47,7 +47,7 @@ namespace Vostok.AirlockConsumer.Metrics
             {
                 try
                 {
-                    await graphiteClient.SendAsync(batchMetrics).ConfigureAwait(false);
+                    await graphiteClient.Value.SendAsync(batchMetrics).ConfigureAwait(false);
                     return;
                 }
                 catch (Exception e)

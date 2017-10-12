@@ -11,14 +11,18 @@ namespace Vostok.AirlockConsumer.Logs
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
         private readonly ILog log;
-        private readonly ElasticLowLevelClient elasticClient;
+        private readonly ThrowableLazy<ElasticLowLevelClient> elasticClientLazy;
 
         public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
             this.log = log.ForContext(this);
-            var connectionPool = new StickyConnectionPool(elasticUris);
-            var elasticConfig = new ConnectionConfiguration(connectionPool);
-            elasticClient = new ElasticLowLevelClient(elasticConfig);
+            elasticClientLazy = new ThrowableLazy<ElasticLowLevelClient>(
+                () =>
+                {
+                    var connectionPool = new StickyConnectionPool(elasticUris);
+                    var elasticConfig = new ConnectionConfiguration(connectionPool);
+                    return new ElasticLowLevelClient(elasticConfig);
+                }, log);
         }
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events)
@@ -35,7 +39,7 @@ namespace Vostok.AirlockConsumer.Logs
         // todo (avk, 04.10.2017): implement retry policy https://github.com/vostok/airlock.consumer/issues/15
         private void Index(List<object> bulkItems)
         {
-            var response = elasticClient.Bulk<byte[]>(new PostData<object>(bulkItems));
+            var response = elasticClientLazy.Value.Bulk<byte[]>(new PostData<object>(bulkItems));
             if (response.HttpStatusCode != (int)HttpStatusCode.OK)
                 log.Error($"Elasic error. code= {response.HttpStatusCode}, reason: {response.ServerError?.Error?.Reason}");
         }

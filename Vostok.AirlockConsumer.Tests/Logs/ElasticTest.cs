@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Elasticsearch.Net;
 using NUnit.Framework;
+using Vostok.Logging;
+using Vostok.Logging.Logs;
 
 namespace Vostok.AirlockConsumer.Tests.Logs
 {

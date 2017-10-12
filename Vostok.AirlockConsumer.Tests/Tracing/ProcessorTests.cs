@@ -8,6 +8,7 @@ using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
+using Vostok.Logging.Logs;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tests.Tracing
@@ -27,7 +28,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                 Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
                 return Task.CompletedTask;
             });
-            var processor = new TracingAirlockEventProcessor(contrailsClient, 3);
+            var processor = new TracingAirlockEventProcessor(new ThrowableLazy<IContrailsClient>(() => contrailsClient, new ConsoleLog()), 3);
             var airlockEvents = new List<AirlockEvent<Span>>();
             const int spanCount = 10;
             for (var i = 0; i < spanCount; i++)
@@ -63,7 +64,8 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                 Keyspace = "airlock",
                 CassandraNodes = new [] { "localhost:9042" }
             };
-            var contrailsClient = new ContrailsClient(contrailsClientSettings, Substitute.For<ILog>());
+            var log = new ConsoleLog();
+            var contrailsClient = new ThrowableLazy<IContrailsClient>(() => new ContrailsClient(contrailsClientSettings, log), log);
             var processor = new TracingAirlockEventProcessor(contrailsClient, 1000);
             processor.Process(
                 new List<AirlockEvent<Span>>

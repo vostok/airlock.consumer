@@ -20,7 +20,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
             var airlockClient = new AirlockClient(airlockConfig, log);
             processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracesToEventsProcessor(airlockClient, log));
-            // todo (avk, 11.10.2017): wait for airlock gate to start
+            // todo (avk, 11.10.2017): wait for airlock gate to start, https://github.com/vostok/airlock.consumer/issues/11
         }
     }
 }

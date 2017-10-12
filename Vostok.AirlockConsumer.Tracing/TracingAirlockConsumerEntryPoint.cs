@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.Tracing
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             var contrailsClientSettings = GetContrailsClientSettings(log, environmentVariables);
-            var contrailsClient = new ContrailsClient(contrailsClientSettings, log);
+            var contrailsClient = new ThrowableLazy<IContrailsClient>(() => new ContrailsClient(contrailsClientSettings, log), log);
             processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, maxCassandraTasks: 1000));
             // todo (avk, 11.10.2017): wait for cassandra to start https://github.com/vostok/airlock.consumer/issues/11
         }
