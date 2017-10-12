@@ -11,7 +11,7 @@ namespace Vostok.AirlockConsumer
 {
     // todo (avk, 11.10.2017): review logging levels for expected events
     // todo (avk, 09.10.2017): integration tests for airlock consumer machinery https://github.com/vostok/airlock.consumer/issues/4
-    // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator)
+    // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator) https://github.com/vostok/airlock.consumer/issues/19
     public class ConsumerGroupHost : IDisposable
     {
         private readonly ConsumerGroupHostSettings settings;
