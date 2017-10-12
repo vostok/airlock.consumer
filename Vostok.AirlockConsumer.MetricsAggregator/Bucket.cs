@@ -8,7 +8,7 @@ using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    //TODO @ezsilmar Unit test this
+    //TODO @ezsilmar Unit test this https://github.com/vostok/airlock.consumer/issues/13
     internal class Bucket : IBucket
     {
         private readonly IReadOnlyDictionary<string, string> tags;

@@ -38,7 +38,7 @@ namespace Vostok.AirlockConsumer.Metrics
             log.Info("Finished process metrics");
         }
 
-        // todo (avk, 05.10.2017): simplify processors
+        // todo (avk, 05.10.2017): simplify processors https://github.com/vostok/airlock.consumer/issues/16
         private async Task SendBatchAsync(List<Metric> batchMetrics, int attemptCount, TimeSpan sendPeriod)
         {
             var attemptTimeout = TimeSpan.Zero;

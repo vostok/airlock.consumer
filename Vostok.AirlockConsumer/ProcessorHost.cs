@@ -43,7 +43,7 @@ namespace Vostok.AirlockConsumer
 
         public void Enqueue(Message<Null, byte[]> message)
         {
-            // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api)
+            // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api) https://github.com/vostok/airlock.consumer/issues/14
             eventsQueue.Add(message, CancellationToken.None);
         }
 

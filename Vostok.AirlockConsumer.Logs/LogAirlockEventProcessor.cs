@@ -7,7 +7,7 @@ using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
 {
-    // todo (avk, 04.10.2017): add metrics
+    // todo (avk, 04.10.2017): add metrics https://github.com/vostok/airlock.consumer/issues/3
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
         private readonly ILog log;
@@ -32,7 +32,7 @@ namespace Vostok.AirlockConsumer.Logs
             Index(bulkItems);
         }
 
-        // todo (avk, 04.10.2017): implement retry policy
+        // todo (avk, 04.10.2017): implement retry policy https://github.com/vostok/airlock.consumer/issues/15
         private void Index(List<object> bulkItems)
         {
             var response = elasticClient.Bulk<byte[]>(new PostData<object>(bulkItems));
