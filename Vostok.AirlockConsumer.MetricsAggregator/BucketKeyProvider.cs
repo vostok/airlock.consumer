@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
@@ -9,7 +10,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private readonly HashSet<string> splittableTags;
 
         public BucketKeyProvider()
-            : this(new []{ "host", "status", "operation" })
+            : this(new []{ MetricsTagNames.Host, MetricsTagNames.Status, MetricsTagNames.Operation })
         {
         }
 

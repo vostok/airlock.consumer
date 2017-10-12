@@ -23,7 +23,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
         {
             return new Dictionary<string, double>
             {
-                ["duration"] = (span.EndTimestamp.Value - span.BeginTimestamp).TotalMilliseconds
+                [MetricsValueNames.Duration] = (span.EndTimestamp.Value - span.BeginTimestamp).TotalMilliseconds
             };
         }
 
@@ -31,22 +31,22 @@ namespace Vostok.AirlockConsumer.TracesToEvents
         {
             var result = new Dictionary<string, string>();
 
-            if (span.Annotations.TryGetValue("host", out var host))
+            if (span.Annotations.TryGetValue(TracingAnnotationNames.Host, out var host))
             {
-                result["host"] = host;
+                result[MetricsTagNames.Host] = host;
             }
 
-            if (span.Annotations.TryGetValue("http.code", out var httpCode))
+            if (span.Annotations.TryGetValue(TracingAnnotationNames.HttpCode, out var httpCode))
             {
-                result["status"] = httpCode;
+                result[MetricsTagNames.Status] = httpCode;
             }
 
-            if (span.Annotations.TryGetValue("operationName", out var operationName))
+            if (span.Annotations.TryGetValue(TracingAnnotationNames.Operation, out var operation))
             {
-                result["operation"] = operationName;
+                result[MetricsTagNames.Operation] = operation;
             }
 
-            result["type"] = "requests";
+            result[MetricsTagNames.Type] = "requests";
 
             return result;
         }

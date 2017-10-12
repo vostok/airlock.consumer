@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Metrics
 {
@@ -12,10 +13,10 @@ namespace Vostok.AirlockConsumer.Metrics
 
         private readonly Dictionary<string, TagInfo> defaultTagInfos = new[]
         {
-            new TagInfo("Type", 4, null),
-            new TagInfo("Host", 3, s => s.ToLower()),
-            new TagInfo("OperationName", 2, null),
-            new TagInfo("StatusCode", 1, null)
+            new TagInfo(MetricsTagNames.Type, 4, null),
+            new TagInfo(MetricsTagNames.Host, 3, s => s.ToLower()),
+            new TagInfo(MetricsTagNames.Operation, 2, null),
+            new TagInfo(MetricsTagNames.Status, 1, null)
         }.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
 
         public string BuildPrefix(string routingKey, IEnumerable<KeyValuePair<string, string>> tags)

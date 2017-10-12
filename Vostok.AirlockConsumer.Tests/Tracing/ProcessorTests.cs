@@ -74,8 +74,8 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                         {
                             Annotations = new Dictionary<string, string>
                             {
-                                ["host"] = "localhost",
-                                ["kind"] = "cluster-client",
+                                [TracingAnnotationNames.Host] = "localhost",
+                                [TracingAnnotationNames.Kind] = "cluster-client",
                             },
                             TraceId = Guid.NewGuid(),
                             BeginTimestamp = DateTimeOffset.UtcNow,
@@ -91,8 +91,8 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                         {
                             Annotations = new Dictionary<string, string>
                             {
-                                ["host"] = "localhost",
-                                ["kind"] = "http-server",
+                                [TracingAnnotationNames.Host] = "localhost",
+                                [TracingAnnotationNames.Kind] = "http-server",
                             },
                             TraceId = Guid.NewGuid(),
                             BeginTimestamp = DateTimeOffset.UtcNow,

@@ -28,7 +28,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             this.metricScope = metricScope.WithTags(new Dictionary<string, string>
             {
-                {"type", "aggregator"}, {"routingKey", eventsRoutingKey}
+                {MetricsTagNames.Type, "aggregation"}, {"routingKey", eventsRoutingKey}
             });
             this.bucketKeyProvider = bucketKeyProvider;
             this.airlockClient = airlockClient;
