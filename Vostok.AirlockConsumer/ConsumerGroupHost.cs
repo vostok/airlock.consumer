@@ -9,7 +9,6 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
-    // todo (avk, 11.10.2017): review logging levels for expected events
     // todo (avk, 09.10.2017): integration tests for airlock consumer machinery https://github.com/vostok/airlock.consumer/issues/4
     // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator) https://github.com/vostok/airlock.consumer/issues/19
     public class ConsumerGroupHost : IDisposable
@@ -27,7 +26,7 @@ namespace Vostok.AirlockConsumer
         public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
         {
             this.settings = settings;
-            this.log = log.ForContext(this);
+            this.log = log;
             this.routingKeyFilter = routingKeyFilter;
             this.processorProvider = processorProvider;
 
@@ -60,12 +59,12 @@ namespace Vostok.AirlockConsumer
                 }
                 log.Log(logLevel, null, $"consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {logMessage.Name}|{logMessage.Facility}| {logMessage.Message}");
             };
-            consumer.OnStatistics += (_, statJson) => { this.log.Info($"Statistics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, stat: {statJson}"); };
-            consumer.OnPartitionEOF += (_, topicPartitionOffset) => { log.Info($"PartitionEof: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartition: {topicPartitionOffset.TopicPartition}, next message will be at offset {topicPartitionOffset.Offset}"); };
+            consumer.OnStatistics += (_, statJson) => { log.Info($"Statistics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, stat: {statJson}"); };
+            consumer.OnPartitionEOF += (_, topicPartitionOffset) => { log.Debug($"PartitionEof: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartition: {topicPartitionOffset.TopicPartition}, next message will be at offset {topicPartitionOffset.Offset}"); };
             consumer.OnOffsetsCommitted += (_, committedOffsets) =>
             {
                 if (!committedOffsets.Error)
-                    log.Info($"OffsetsCommitted: consumerName: {consumer.Name}, memberId: {consumer.MemberId} successfully committed offsets: [{string.Join(", ", committedOffsets.Offsets)}]");
+                    log.Debug($"OffsetsCommitted: consumerName: {consumer.Name}, memberId: {consumer.MemberId} successfully committed offsets: [{string.Join(", ", committedOffsets.Offsets)}]");
                 else
                     log.Error($"OffsetsCommitted: consumerName: {consumer.Name}, memberId: {consumer.MemberId} failed to commit offsets [{string.Join(", ", committedOffsets.Offsets)}]: {committedOffsets.Error}");
             };
@@ -136,7 +135,7 @@ namespace Vostok.AirlockConsumer
         private void Unsubscribe()
         {
             consumer.Unsubscribe();
-            log.Warn($"Unsubscribe: consumerName: {consumer.Name}, memberId: {consumer.MemberId} unsubscribed from all topics");
+            log.Info($"Unsubscribe: consumerName: {consumer.Name}, memberId: {consumer.MemberId} unsubscribed from all topics");
         }
 
         private static void StopProcessors(List<ProcessorHost> processorHostsToStop)
@@ -174,24 +173,24 @@ namespace Vostok.AirlockConsumer
             {
                 consumer.Subscribe(topicsToSubscribeTo);
                 topicsAlreadySubscribedTo = topicsToSubscribeTo;
-                log.Warn($"SubscribedToTopics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topics: [{string.Join(", ", topicsToSubscribeTo)}]");
+                log.Info($"SubscribedToTopics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topics: [{string.Join(", ", topicsToSubscribeTo)}]");
             }
             return true;
         }
 
         private void OnPartitionsAssigned(List<TopicPartition> topicPartitions)
         {
-            log.Warn($"PartitionsAssignmentRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
+            log.Debug($"PartitionsAssignmentRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
             var topicPartitionOffsets = HandlePartitionsAssignment(topicPartitions);
             consumer.Assign(topicPartitionOffsets);
-            log.Warn($"PartitionsAssigned: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitionOffsets)}]");
+            log.Info($"PartitionsAssigned: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitionOffsets)}]");
         }
 
         private void OnPartitionsRevoked(List<TopicPartition> topicPartitions)
         {
-            log.Warn($"PartitionsRevokationRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
+            log.Debug($"PartitionsRevokationRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
             consumer.Unassign();
-            log.Warn($"PartitionsRevoked: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
+            log.Info($"PartitionsRevoked: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
         }
 
         private List<TopicPartitionOffset> HandlePartitionsAssignment(List<TopicPartition> topicPartitions)

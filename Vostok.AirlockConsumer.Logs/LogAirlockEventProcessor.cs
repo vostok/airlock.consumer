@@ -14,7 +14,7 @@ namespace Vostok.AirlockConsumer.Logs
 
         public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
-            this.log = log.ForContext(this);
+            this.log = log;
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             elasticClient = new ElasticLowLevelClient(elasticConfig);

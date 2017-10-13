@@ -18,7 +18,7 @@ namespace Vostok.AirlockConsumer.Sample
         public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
         {
             if (!recedeGap.HasValue)
-                return (DateTimeOffset?)null;
+                return null;
             var startTimestampOnRebalance = DateTimeOffset.UtcNow - recedeGap.Value;
             log.Warn($"Going back on {routingKey} to timestamp: {startTimestampOnRebalance}");
             return startTimestampOnRebalance;

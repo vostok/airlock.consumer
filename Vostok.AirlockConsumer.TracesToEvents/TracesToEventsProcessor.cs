@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
-using Vostok.Logging;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
@@ -9,12 +8,10 @@ namespace Vostok.AirlockConsumer.TracesToEvents
     public class TracesToEventsProcessor : SimpleAirlockEventProcessorBase<Span>
     {
         private readonly IAirlockClient airlockClient;
-        private readonly ILog log;
 
-        public TracesToEventsProcessor(IAirlockClient airlockClient, ILog log)
+        public TracesToEventsProcessor(IAirlockClient airlockClient)
         {
             this.airlockClient = airlockClient;
-            this.log = log;
         }
 
         public sealed override void Process(List<AirlockEvent<Span>> events)
@@ -23,8 +20,6 @@ namespace Vostok.AirlockConsumer.TracesToEvents
                 .Where(x => x.Payload.Annotations.TryGetValue("kind", out var kind) && kind == "http-server")
                 .Where(x => x.Payload.EndTimestamp.HasValue)
                 .ToList();
-
-            log.Info($"Got {@events.Count} spans to aggregate, server spans: {httpServerSpanEvents.Count}");
             foreach (var @event in httpServerSpanEvents)
             {
                 var routingKey = RoutingKey.ReplaceSuffix(@event.RoutingKey, RoutingKey.TraceEventsSuffix);

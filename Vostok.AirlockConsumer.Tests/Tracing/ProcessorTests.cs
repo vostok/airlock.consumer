@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Cassandra;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
@@ -42,13 +41,6 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             processor.Process(airlockEvents);
             Console.WriteLine("Finish");
             Assert.AreEqual(spanCount, counter);
-        }
-
-        [Test]
-        public void METHOD()
-        {
-            var uri = new Uri("tcp://graphite:2003");
-            Console.Out.WriteLine("host: {0}  port: {1}  scheme: {2}", uri.Host, uri.Port, uri.Scheme);
         }
 
         [Test, Ignore("Manual")]
