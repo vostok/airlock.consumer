@@ -23,9 +23,6 @@ namespace Vostok.AirlockConsumer
             return new ConsumerGroupHost(consumerGroupHostSettings, log, routingKeyFilter, processorProvider);
         }
 
-        /// <summary>
-        /// Wait for necessary environment preparation here (e.g. wait for airlock gate to start linstening its port)
-        /// </summary>
         protected abstract void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
 
         protected static AirlockConfig GetAirlockConfig(ILog log, Dictionary<string, string> environmentVariables)
