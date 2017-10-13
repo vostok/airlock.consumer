@@ -123,7 +123,7 @@ namespace Vostok.AirlockConsumer
                     }
                 }
                 Unsubscribe();
-                // todo (avk, 08.10.2017, maybe): wait for consumer to finish outstanding fetching operations and process already fetched events
+                // todo (avk, 08.10.2017, maybe): wait for consumer to finish outstanding fetching operations and process already fetched events https://github.com/vostok/airlock.consumer/issues/20
                 StopProcessors(processorInfos.Values.Select(x => x.ProcessorHost).ToList());
             }
             catch (Exception e)
