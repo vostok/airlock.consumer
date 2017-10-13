@@ -49,7 +49,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                         initialBorders);
                 });
             processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => processor);
-            // todo (avk, 11.10.2017): wait for airlock gate to start https://github.com/vostok/airlock.consumer/issues/11
         }
 
         private static Borders CreateBorders(DateTimeOffset timestamp, MetricsAggregatorSettings settings)

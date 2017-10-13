@@ -19,7 +19,6 @@ namespace Vostok.AirlockConsumer.Metrics
             routingKeyFilter = new DefaultRoutingKeyFilter(Airlock.RoutingKey.MetricsSuffix);
             var graphiteUri = GetGraphiteUri(log, environmentVariables);
             processorProvider = processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => new MetricsAirlockEventProcessor(graphiteUri, log));
-            // todo (avk, 11.10.2017): wait for graphite to start https://github.com/vostok/airlock.consumer/issues/11
         }
 
         private static Uri GetGraphiteUri(ILog log, Dictionary<string, string> environmentVariables)

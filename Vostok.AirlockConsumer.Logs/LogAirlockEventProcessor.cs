@@ -7,7 +7,6 @@ using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
 {
-    // todo (avk, 04.10.2017): add metrics https://github.com/vostok/airlock.consumer/issues/3
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
         private readonly ILog log;
