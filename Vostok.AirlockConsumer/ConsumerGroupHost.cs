@@ -107,7 +107,7 @@ namespace Vostok.AirlockConsumer
         {
             try
             {
-                var subscribedToAnything = UpdateSubscrition();
+                var subscribedToAnything = UpdateSubscription();
                 var sw = Stopwatch.StartNew();
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
@@ -118,7 +118,7 @@ namespace Vostok.AirlockConsumer
 
                     if (sw.Elapsed > settings.UpdateSubscriptionInterval)
                     {
-                        subscribedToAnything = UpdateSubscrition();
+                        subscribedToAnything = UpdateSubscription();
                         sw.Restart();
                     }
                 }
@@ -147,7 +147,7 @@ namespace Vostok.AirlockConsumer
                 processorHost.WaitForTermination();
         }
 
-        private bool UpdateSubscrition()
+        private bool UpdateSubscription()
         {
             var metadata = consumer.GetMetadata(allTopics: true);
             log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
