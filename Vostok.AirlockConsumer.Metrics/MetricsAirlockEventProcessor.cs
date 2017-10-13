@@ -28,14 +28,9 @@ namespace Vostok.AirlockConsumer.Metrics
 
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
         {
-            log.Info("Start process metrics");
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
-
             foreach (var batch in Split(metrics, batchSize))
-            {
                 SendBatchAsync(batch, attemptCount, sendPeriod).GetAwaiter().GetResult();
-            }
-            log.Info("Finished process metrics");
         }
 
         // todo (avk, 05.10.2017): simplify processors https://github.com/vostok/airlock.consumer/issues/16
