@@ -16,11 +16,16 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
         private readonly TimeSpan period = TimeSpan.FromSeconds(5);
         private readonly Dictionary<string, double> increment = new Dictionary<string, double> {["k1"] = 12, ["k2"] = 7};
         private readonly Dictionary<string, double> increment2 = new Dictionary<string, double> {["k1"] = 3, ["k2"] = 8};
-        private readonly Bucket bucket;
+        private Bucket bucket;
         private DateTimeOffset now;
-        private readonly Borders borders;
+        private Borders borders;
 
         public Bucket_Tests()
+        {
+        }
+
+        [SetUp]
+        public void Init()
         {
             var metricScope = Substitute.For<IMetricScope>();
             now = DateTimeOffset.UtcNow;
@@ -37,10 +42,10 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
             bucket.Consume(increment, now.AddSeconds(2));
             bucket.Consume(increment, now.AddSeconds(10));
             var metricEvents = bucket.Flush(new Borders(borders.Future, borders.Future.AddMinutes(10))).OrderBy(m => m.Timestamp).ToArray();
+            //Console.WriteLine(metricEvents.ToPrettyJson());
             Assert.AreEqual(2, metricEvents.Length);
             Assert.AreEqual(3, metricEvents[0].Values["count"], doubleDelta);
             Assert.AreEqual(1, metricEvents[1].Values["count"], doubleDelta);
-            Console.WriteLine(metricEvents.ToPrettyJson());
         }
 
         [Test]
