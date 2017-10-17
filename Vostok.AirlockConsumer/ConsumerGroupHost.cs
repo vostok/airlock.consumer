@@ -206,7 +206,6 @@ namespace Vostok.AirlockConsumer
         {
             log.Debug($"PartitionsRevokationRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
             consumer.Unassign();
-            HandlePartitionsAssignment(new List<TopicPartition>());
             log.Info($"PartitionsRevoked: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
         }
 
@@ -270,7 +269,7 @@ namespace Vostok.AirlockConsumer
             }
 
             var processorHostsToStop = new List<ProcessorHost>();
-            var routingKeysToUnassign = processorInfos.Keys.Except(routingKeysToAssign);
+            var routingKeysToUnassign = processorInfos.Keys.Except(routingKeysToAssign).ToList();
             foreach (var routingKey in routingKeysToUnassign)
             {
                 processorHostsToStop.Add(processorInfos[routingKey].ProcessorHost);
@@ -288,13 +287,14 @@ namespace Vostok.AirlockConsumer
 
         private void CheckPaused()
         {
-            foreach (var kvProcessorInfo in pausedProcessorInfos)
+            foreach (var kvProcessorInfo in pausedProcessorInfos.ToArray())
             {
                 var processorInfo = kvProcessorInfo.Value;
                 if (!processorInfo.ProcessorHost.IsOverflow())
                 {
                     consumer.Resume(processorInfo.AssignedPartitions.Select(p => new TopicPartition(kvProcessorInfo.Key, p)));
                     processorInfo.IsPaused = false;
+                    pausedProcessorInfos.Remove(kvProcessorInfo.Key);
                 }
             }
         }
