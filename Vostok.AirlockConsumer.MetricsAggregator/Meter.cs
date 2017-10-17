@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using Vostok.Metrics.Meters.Histograms;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
@@ -18,8 +19,24 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         public void Add(double value)
         {
-            sum += value;
+            AddInterlocked(ref sum, value);
+            //sum += value;
             histogram.Add(value);
+        }
+
+        public static double AddInterlocked(ref double location1, double value)
+        {
+            Thread.MemoryBarrier();
+            var newCurrentValue = location1;
+            while (true)
+            {
+                var currentValue = newCurrentValue;
+                var newValue = currentValue + value;
+                newCurrentValue = Interlocked.CompareExchange(ref location1, newValue, currentValue);
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (newCurrentValue == currentValue)
+                    return newValue;
+            }
         }
 
         public IReadOnlyDictionary<string, double> GetValues()
