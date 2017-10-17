@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Vostok.AirlockConsumer
     public class ProcessorHost
     {
         private const int maxBatchSize = 100*1000;
-        private const int maxProcessorQueueSize = int.MaxValue;
+        private const int overflowLimit = maxBatchSize * 10;
         private readonly string routingKey;
         private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
@@ -19,7 +20,7 @@ namespace Vostok.AirlockConsumer
         private readonly Consumer<Null, byte[]> consumer;
         private readonly TimeSpan maxDequeueTimeout = TimeSpan.FromSeconds(1);
         private readonly TimeSpan minDequeueTimeout = TimeSpan.FromMilliseconds(100);
-        private readonly BoundedBlockingQueue<Message<Null, byte[]>> eventsQueue = new BoundedBlockingQueue<Message<Null, byte[]>>(maxProcessorQueueSize);
+        private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
@@ -50,6 +51,11 @@ namespace Vostok.AirlockConsumer
         public void CompleteAdding()
         {
             eventsQueue.CompleteAdding();
+        }
+
+        public bool IsOverflow()
+        {
+            return eventsQueue.Count >= overflowLimit;
         }
 
         public void WaitForTermination()
@@ -93,7 +99,7 @@ namespace Vostok.AirlockConsumer
                 {
                     if (stopSignal.IsCancellationRequested)
                     {
-                        if (eventsQueue.IsAddingCompleted)
+                        if (eventsQueue.IsCompleted)
                             break;
                         dequeueTimeout = TimeSpan.Zero;
                     }

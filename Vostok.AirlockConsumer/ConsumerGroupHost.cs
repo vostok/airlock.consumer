@@ -9,6 +9,14 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
+    public class ProcessorInfo
+    {
+        public IAirlockEventProcessor Processor { get; set; }
+        public ProcessorHost ProcessorHost { get; set; }
+        public int[] AssignedPartitions { get; set; }
+        public bool IsPaused { get; set; }
+    }
+
     // todo (avk, 09.10.2017): integration tests for airlock consumer machinery https://github.com/vostok/airlock.consumer/issues/4
     // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator) https://github.com/vostok/airlock.consumer/issues/19
     public class ConsumerGroupHost : IDisposable
@@ -19,7 +27,8 @@ namespace Vostok.AirlockConsumer
         private readonly IRoutingKeyFilter routingKeyFilter;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost, int[] AssignedPartitions)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost, int[])>();
+        private readonly Dictionary<string, ProcessorInfo> processorInfos = new Dictionary<string, ProcessorInfo>();
+        private readonly Dictionary<string, ProcessorInfo> pausedProcessorInfos = new Dictionary<string, ProcessorInfo>();
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
@@ -107,7 +116,8 @@ namespace Vostok.AirlockConsumer
             try
             {
                 var subscribedToAnything = UpdateSubscription();
-                var sw = Stopwatch.StartNew();
+                var swUpdateSubscription = Stopwatch.StartNew();
+                var swCheckPaused = Stopwatch.StartNew();
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
                     if (subscribedToAnything)
@@ -115,10 +125,16 @@ namespace Vostok.AirlockConsumer
                     else
                         Thread.Sleep(settings.PollingInterval);
 
-                    if (sw.Elapsed > settings.UpdateSubscriptionInterval)
+                    if (swUpdateSubscription.Elapsed > settings.UpdateSubscriptionInterval)
                     {
                         subscribedToAnything = UpdateSubscription();
-                        sw.Restart();
+                        swUpdateSubscription.Restart();
+                    }
+                    if (swCheckPaused.Elapsed > settings.CheckPausedInterval)
+                    {
+                        if (pausedProcessorInfos.Count > 0)
+                            CheckPaused();
+                        swCheckPaused.Restart();
                     }
                 }
                 Unsubscribe();
@@ -190,6 +206,7 @@ namespace Vostok.AirlockConsumer
         {
             log.Debug($"PartitionsRevokationRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
             consumer.Unassign();
+            HandlePartitionsAssignment(new List<TopicPartition>());
             log.Info($"PartitionsRevoked: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
         }
 
@@ -205,7 +222,12 @@ namespace Vostok.AirlockConsumer
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
                     var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, cancellationTokenSource.Token, processor, log, consumer);
-                    processorInfo = (processor, processorHost, AssignedPartitions: new int[0]);
+                    processorInfo = new ProcessorInfo
+                    {
+                        Processor = processor,
+                        ProcessorHost = processorHost,
+                        AssignedPartitions = new int[0]
+                    };
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
                 }
@@ -248,24 +270,47 @@ namespace Vostok.AirlockConsumer
             }
 
             var processorHostsToStop = new List<ProcessorHost>();
-            var routingKeysToUnassign = processorInfos.Keys.Except(routingKeysToAssign).ToList();
+            var routingKeysToUnassign = processorInfos.Keys.Except(routingKeysToAssign);
             foreach (var routingKey in routingKeysToUnassign)
             {
                 processorHostsToStop.Add(processorInfos[routingKey].ProcessorHost);
                 processorInfos.Remove(routingKey);
+                if (pausedProcessorInfos.ContainsKey(routingKey))
+                    pausedProcessorInfos.Remove(routingKey);
             }
-            StopProcessors(processorHostsToStop);
+            if (processorHostsToStop.Count > 0)
+                StopProcessors(processorHostsToStop);
 
             if(topicPartitionOffsets.Count != topicPartitions.Count)
                 throw new InvalidOperationException($"AssertionFailre: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
             return topicPartitionOffsets;
         }
 
+        private void CheckPaused()
+        {
+            foreach (var kvProcessorInfo in pausedProcessorInfos)
+            {
+                var processorInfo = kvProcessorInfo.Value;
+                if (!processorInfo.ProcessorHost.IsOverflow())
+                {
+                    consumer.Resume(processorInfo.AssignedPartitions.Select(p => new TopicPartition(kvProcessorInfo.Key, p)));
+                    processorInfo.IsPaused = false;
+                }
+            }
+        }
+
         private void OnMessage(Message<Null, byte[]> message)
         {
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
-            processorInfo.ProcessorHost.Enqueue(message);
+            var processorHost = processorInfo.ProcessorHost;
+            if (processorHost.IsOverflow() && !processorInfo.IsPaused)
+            {
+                consumer.Pause(processorInfo.AssignedPartitions.Select(p => new TopicPartition(message.Topic, p)));
+                processorInfo.IsPaused = true;
+                pausedProcessorInfos.Add(message.Topic, processorInfo);
+            }
+            processorHost.Enqueue(message);
         }
     }
 }
