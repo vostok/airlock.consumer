@@ -9,14 +9,6 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer
 {
-    public class ProcessorInfo
-    {
-        public IAirlockEventProcessor Processor { get; set; }
-        public ProcessorHost ProcessorHost { get; set; }
-        public int[] AssignedPartitions { get; set; }
-        public bool IsPaused { get; set; }
-    }
-
     // todo (avk, 09.10.2017): integration tests for airlock consumer machinery https://github.com/vostok/airlock.consumer/issues/4
     // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator) https://github.com/vostok/airlock.consumer/issues/19
     public class ConsumerGroupHost : IDisposable
@@ -27,8 +19,7 @@ namespace Vostok.AirlockConsumer
         private readonly IRoutingKeyFilter routingKeyFilter;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private readonly Dictionary<string, ProcessorInfo> processorInfos = new Dictionary<string, ProcessorInfo>();
-        private readonly Dictionary<string, ProcessorInfo> pausedProcessorInfos = new Dictionary<string, ProcessorInfo>();
+        private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost)>();
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
@@ -115,26 +106,21 @@ namespace Vostok.AirlockConsumer
         {
             try
             {
-                var subscribedToAnything = UpdateSubscription();
+                var needToPoll = UpdateSubscription();
                 var swUpdateSubscription = Stopwatch.StartNew();
-                var swCheckPaused = Stopwatch.StartNew();
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
-                    if (subscribedToAnything)
+                    if (needToPoll)
                         consumer.Poll(settings.PollingInterval);
                     else
                         Thread.Sleep(settings.PollingInterval);
 
                     if (swUpdateSubscription.Elapsed > settings.UpdateSubscriptionInterval)
                     {
-                        subscribedToAnything = UpdateSubscription();
+                        needToPoll = UpdateSubscription();
+                        foreach (var processorInfo in processorInfos.Values)
+                            processorInfo.ProcessorHost.TryResumeConsumption();
                         swUpdateSubscription.Restart();
-                    }
-                    if (swCheckPaused.Elapsed > settings.CheckPausedInterval)
-                    {
-                        if (pausedProcessorInfos.Count > 0)
-                            CheckPaused();
-                        swCheckPaused.Restart();
                     }
                 }
                 Unsubscribe();
@@ -209,6 +195,7 @@ namespace Vostok.AirlockConsumer
             log.Info($"PartitionsRevoked: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
         }
 
+        // todo (avk, 19.10.2017), rafactoring: move AssignedPartitions initialization logic into ProcessorHost
         private List<TopicPartitionOffset> HandlePartitionsAssignment(List<TopicPartition> topicPartitions)
         {
             var routingKeysToAssign = new List<string>();
@@ -221,18 +208,13 @@ namespace Vostok.AirlockConsumer
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
                     var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, cancellationTokenSource.Token, processor, log, consumer);
-                    processorInfo = new ProcessorInfo
-                    {
-                        Processor = processor,
-                        ProcessorHost = processorHost,
-                        AssignedPartitions = new int[0]
-                    };
+                    processorInfo = (processor, processorHost);
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
                 }
 
                 var partitionsToAssign = topicPartitionsByRoutingKeyGroup.Select(x => x.Partition).ToArray();
-                var newPartitions = partitionsToAssign.Except(processorInfo.AssignedPartitions).ToList();
+                var newPartitions = partitionsToAssign.Except(processorInfo.ProcessorHost.AssignedPartitions).ToList();
                 if (newPartitions.Any())
                 {
                     var startTimestampOnRebalance = processorInfo.Processor.GetStartTimestampOnRebalance(routingKey);
@@ -265,7 +247,7 @@ namespace Vostok.AirlockConsumer
                 }
                 var remainingPartitions = partitionsToAssign.Except(topicPartitionOffsets.Select(x => x.Partition));
                 topicPartitionOffsets.AddRange(remainingPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
-                processorInfo.AssignedPartitions = partitionsToAssign;
+                processorInfo.ProcessorHost.AssignedPartitions = partitionsToAssign;
             }
 
             var processorHostsToStop = new List<ProcessorHost>();
@@ -274,45 +256,19 @@ namespace Vostok.AirlockConsumer
             {
                 processorHostsToStop.Add(processorInfos[routingKey].ProcessorHost);
                 processorInfos.Remove(routingKey);
-                if (pausedProcessorInfos.ContainsKey(routingKey))
-                    pausedProcessorInfos.Remove(routingKey);
             }
             StopProcessors(processorHostsToStop);
 
-            if(topicPartitionOffsets.Count != topicPartitions.Count)
-                throw new InvalidOperationException($"AssertionFailre: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
+            if (topicPartitionOffsets.Count != topicPartitions.Count)
+                throw new InvalidOperationException($"AssertionFailure: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
             return topicPartitionOffsets;
-        }
-
-        private void CheckPaused()
-        {
-            foreach (var kvProcessorInfo in pausedProcessorInfos.ToArray())
-            {
-                var processorInfo = kvProcessorInfo.Value;
-                if (processorInfo.ProcessorHost.CanResumeConsuming())
-                {
-                    log.Warn($"resume consuming from '{kvProcessorInfo.Key}'");
-                    consumer.Resume(processorInfo.AssignedPartitions.Select(p => new TopicPartition(kvProcessorInfo.Key, p)));
-                    processorInfo.IsPaused = false;
-                    pausedProcessorInfos.Remove(kvProcessorInfo.Key);
-                }
-            }
         }
 
         private void OnMessage(Message<Null, byte[]> message)
         {
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
-            var processorHost = processorInfo.ProcessorHost;
-            if (!processorHost.Enqueue(message))
-            {
-                if (processorInfo.IsPaused)
-                    throw new InvalidOperationException($"consuming was paused, but got message from topic '{ message.Topic }'");
-                log.Warn($"pause consuming from '{message.Topic}'");
-                consumer.Pause(processorInfo.AssignedPartitions.Select(p => new TopicPartition(message.Topic, p)));
-                processorInfo.IsPaused = true;
-                pausedProcessorInfos.Add(message.Topic, processorInfo);
-            }
+            processorInfo.ProcessorHost.Enqueue(message);
         }
     }
 }
