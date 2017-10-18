@@ -292,6 +292,7 @@ namespace Vostok.AirlockConsumer
                 var processorInfo = kvProcessorInfo.Value;
                 if (!processorInfo.ProcessorHost.IsOverflow())
                 {
+                    log.Warn($"resume consuming from '{kvProcessorInfo.Key}'");
                     consumer.Resume(processorInfo.AssignedPartitions.Select(p => new TopicPartition(kvProcessorInfo.Key, p)));
                     processorInfo.IsPaused = false;
                     pausedProcessorInfos.Remove(kvProcessorInfo.Key);
@@ -306,6 +307,7 @@ namespace Vostok.AirlockConsumer
             var processorHost = processorInfo.ProcessorHost;
             if (processorHost.IsOverflow() && !processorInfo.IsPaused)
             {
+                log.Warn($"pause consuming from '{message.Topic}'");
                 consumer.Pause(processorInfo.AssignedPartitions.Select(p => new TopicPartition(message.Topic, p)));
                 processorInfo.IsPaused = true;
                 pausedProcessorInfos.Add(message.Topic, processorInfo);
