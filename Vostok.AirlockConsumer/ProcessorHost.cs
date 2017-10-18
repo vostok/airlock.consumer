@@ -31,6 +31,7 @@ namespace Vostok.AirlockConsumer
             this.processor = processor;
             this.log = log;
             this.consumer = consumer;
+            AssignedPartitions = new int[0];
             processorThread = new Thread(ProcessorThreadFunc)
             {
                 IsBackground = true,
