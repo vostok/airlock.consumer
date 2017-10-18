@@ -277,8 +277,7 @@ namespace Vostok.AirlockConsumer
                 if (pausedProcessorInfos.ContainsKey(routingKey))
                     pausedProcessorInfos.Remove(routingKey);
             }
-            if (processorHostsToStop.Count > 0)
-                StopProcessors(processorHostsToStop);
+            StopProcessors(processorHostsToStop);
 
             if(topicPartitionOffsets.Count != topicPartitions.Count)
                 throw new InvalidOperationException($"AssertionFailre: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
@@ -290,7 +289,7 @@ namespace Vostok.AirlockConsumer
             foreach (var kvProcessorInfo in pausedProcessorInfos.ToArray())
             {
                 var processorInfo = kvProcessorInfo.Value;
-                if (!processorInfo.ProcessorHost.IsOverflow())
+                if (processorInfo.ProcessorHost.CanResumeConsuming())
                 {
                     log.Warn($"resume consuming from '{kvProcessorInfo.Key}'");
                     consumer.Resume(processorInfo.AssignedPartitions.Select(p => new TopicPartition(kvProcessorInfo.Key, p)));
@@ -305,14 +304,15 @@ namespace Vostok.AirlockConsumer
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
             var processorHost = processorInfo.ProcessorHost;
-            if (processorHost.IsOverflow() && !processorInfo.IsPaused)
+            if (!processorHost.Enqueue(message))
             {
+                if (processorInfo.IsPaused)
+                    throw new InvalidOperationException($"consuming was paused, but got message from topic '{ message.Topic }'");
                 log.Warn($"pause consuming from '{message.Topic}'");
                 consumer.Pause(processorInfo.AssignedPartitions.Select(p => new TopicPartition(message.Topic, p)));
                 processorInfo.IsPaused = true;
                 pausedProcessorInfos.Add(message.Topic, processorInfo);
             }
-            processorHost.Enqueue(message);
         }
     }
 }

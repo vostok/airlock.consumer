@@ -13,6 +13,7 @@ namespace Vostok.AirlockConsumer
     {
         private const int maxBatchSize = 100*1000;
         private const int overflowLimit = maxBatchSize * 10;
+        private const int resumeConsumingMinimum = overflowLimit / 2;
         private readonly string routingKey;
         private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
@@ -42,10 +43,11 @@ namespace Vostok.AirlockConsumer
             processorThread.Start();
         }
 
-        public void Enqueue(Message<Null, byte[]> message)
+        public bool Enqueue(Message<Null, byte[]> message)
         {
             // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api) https://github.com/vostok/airlock.consumer/issues/14
             eventsQueue.Add(message, CancellationToken.None);
+            return eventsQueue.Count >= overflowLimit;
         }
 
         public void CompleteAdding()
@@ -53,9 +55,9 @@ namespace Vostok.AirlockConsumer
             eventsQueue.CompleteAdding();
         }
 
-        public bool IsOverflow()
+        public bool CanResumeConsuming()
         {
-            return eventsQueue.Count >= overflowLimit;
+            return eventsQueue.Count <= resumeConsumingMinimum;
         }
 
         public void WaitForTermination()
