@@ -26,7 +26,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         public static double AddInterlocked(ref double location1, double value)
         {
-            Thread.MemoryBarrier();
             var newCurrentValue = location1;
             while (true)
             {
