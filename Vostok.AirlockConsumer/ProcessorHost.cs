@@ -12,7 +12,7 @@ namespace Vostok.AirlockConsumer
     public class ProcessorHost
     {
         private const int maxBatchSize = 100*1000;
-        private const int overflowLimit = maxBatchSize*10;
+        private const int maxProcessorQueueSize = maxBatchSize*10;
         private readonly string routingKey;
         private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
@@ -51,7 +51,7 @@ namespace Vostok.AirlockConsumer
             if (pausedPartitions != null)
                 throw new InvalidOperationException($"ProcessorHost is paused for routingKey: {routingKey}");
             eventsQueue.Add(message, CancellationToken.None);
-            if (eventsQueue.Count >= overflowLimit)
+            if (eventsQueue.Count >= maxProcessorQueueSize)
             {
                 var partitionsToPause = AssignedPartitions.ToArray();
                 consumer.Pause(partitionsToPause.Select(p => new TopicPartition(message.Topic, p)));
@@ -147,13 +147,13 @@ namespace Vostok.AirlockConsumer
             var offsetsToCommit = new Dictionary<TopicPartition, long>();
             foreach (var x in messageBatch)
             {
-                airlockEvents.Add(
-                    new AirlockEvent<byte[]>
-                    {
-                        RoutingKey = routingKey,
-                        Timestamp = x.Timestamp.UtcDateTime,
-                        Payload = x.Value,
-                    });
+                var airlockEvent = new AirlockEvent<byte[]>
+                {
+                    RoutingKey = routingKey,
+                    Timestamp = x.Timestamp.UtcDateTime,
+                    Payload = x.Value,
+                };
+                airlockEvents.Add(airlockEvent);
                 offsetsToCommit[x.TopicPartition] = x.Offset + 1;
             }
             DoProcessMessageBatch(airlockEvents);
