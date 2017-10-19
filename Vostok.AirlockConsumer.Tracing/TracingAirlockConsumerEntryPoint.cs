@@ -5,6 +5,7 @@ using Vostok.Airlock;
 using Vostok.Airlock.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
+using Vostok.Metrics;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
@@ -18,7 +19,9 @@ namespace Vostok.AirlockConsumer.Tracing
             new ConsumerApplicationHost<TracingAirlockConsumerEntryPoint>().Run();
         }
 
-        protected sealed override void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected override string ServiceName => "consumer-tracing";
+
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             var contrailsClientSettings = GetContrailsClientSettings(log, environmentVariables);

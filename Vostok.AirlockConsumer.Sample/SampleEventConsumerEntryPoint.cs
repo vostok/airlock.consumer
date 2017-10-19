@@ -6,9 +6,21 @@ using System.Threading;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Sample
 {
+    public class FakeMetricReporter : IMetricEventReporter
+    {
+        public void SendEvent(MetricEvent metricEvent)
+        {
+        }
+
+        public void SendMetric(MetricEvent metricEvent)
+        {
+        }
+    }
+
     public static class SampleEventConsumerEntryPoint
     {
         private const string defaultRoutingKey = "prj.dev.srv.dt";
@@ -82,7 +94,14 @@ namespace Vostok.AirlockConsumer.Sample
             var routingKeyFilter = new SampleRoutingKeyFilter(routingKeys);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(project => new SampleDataAirlockEventProcessor(log, recedeGap));
             var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
-            var consumer = new ConsumerGroupHost(settings, log, routingKeyFilter, processorProvider);
+
+            IMetricScope rootMetricScope = new RootMetricScope(
+                new MetricConfiguration
+                {
+                    Reporter = new FakeMetricReporter()
+                });
+
+            var consumer = new ConsumerGroupHost(settings, log, rootMetricScope, routingKeyFilter, processorProvider);
             consumer.Start();
             stopSignal.Wait(Timeout.Infinite);
             consumer.Stop();

@@ -6,6 +6,7 @@ using System.Net;
 using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
@@ -18,12 +19,26 @@ namespace Vostok.AirlockConsumer
         public ConsumerGroupHost Initialize(ILog log)
         {
             var environmentVariables = GetEnvironmentVariables(log);
+            if (!environmentVariables.TryGetValue("VOSTOK_ENV", out var envName))
+                envName = "dev";
+
+            var airlockConfig = GetAirlockConfig(log, environmentVariables);
+            var airlockClient = new AirlockClient(airlockConfig, log);
+
+            IMetricScope rootMetricScope = new RootMetricScope(
+                new MetricConfiguration
+                {
+                    Reporter = new AirlockMetricReporter(airlockClient, RoutingKey.CreatePrefix("vostok", envName, ServiceName))
+                });
+
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables);
-            DoInitialize(log, environmentVariables, out var routingKeyFilter, out var processorProvider);
-            return new ConsumerGroupHost(consumerGroupHostSettings, log, routingKeyFilter, processorProvider);
+            DoInitialize(log, rootMetricScope,  environmentVariables, out var routingKeyFilter, out var processorProvider);
+            return new ConsumerGroupHost(consumerGroupHostSettings, log, rootMetricScope, routingKeyFilter, processorProvider);
         }
 
-        protected abstract void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
+        protected abstract string ServiceName { get; }
+
+        protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
 
         protected static AirlockConfig GetAirlockConfig(ILog log, Dictionary<string, string> environmentVariables)
         {
