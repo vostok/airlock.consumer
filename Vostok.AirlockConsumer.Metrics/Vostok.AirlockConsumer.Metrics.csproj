@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000202" />
-    <PackageReference Include="Vostok.GraphiteClient" Version="1.0.0-pre000054" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000258" />
+    <PackageReference Include="Vostok.GraphiteClient" Version="1.0.0-pre000055" />
   </ItemGroup>
 
   <ItemGroup>
