@@ -19,7 +19,7 @@ namespace Vostok.AirlockConsumer
         private readonly IRoutingKeyFilter routingKeyFilter;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost, int[] AssignedPartitions)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost, int[])>();
+        private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost)>();
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
@@ -106,19 +106,21 @@ namespace Vostok.AirlockConsumer
         {
             try
             {
-                var subscribedToAnything = UpdateSubscription();
-                var sw = Stopwatch.StartNew();
+                var needToPoll = UpdateSubscription();
+                var swUpdateSubscription = Stopwatch.StartNew();
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
-                    if (subscribedToAnything)
+                    if (needToPoll)
                         consumer.Poll(settings.PollingInterval);
                     else
                         Thread.Sleep(settings.PollingInterval);
 
-                    if (sw.Elapsed > settings.UpdateSubscriptionInterval)
+                    if (swUpdateSubscription.Elapsed > settings.UpdateSubscriptionInterval)
                     {
-                        subscribedToAnything = UpdateSubscription();
-                        sw.Restart();
+                        needToPoll = UpdateSubscription();
+                        foreach (var processorInfo in processorInfos.Values)
+                            processorInfo.ProcessorHost.TryResumeConsumption();
+                        swUpdateSubscription.Restart();
                     }
                 }
                 Unsubscribe();
@@ -193,6 +195,7 @@ namespace Vostok.AirlockConsumer
             log.Info($"PartitionsRevoked: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
         }
 
+        // todo (avk, 19.10.2017), rafactoring: move AssignedPartitions initialization logic into ProcessorHost
         private List<TopicPartitionOffset> HandlePartitionsAssignment(List<TopicPartition> topicPartitions)
         {
             var routingKeysToAssign = new List<string>();
@@ -205,13 +208,13 @@ namespace Vostok.AirlockConsumer
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
                     var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, cancellationTokenSource.Token, processor, log, consumer);
-                    processorInfo = (processor, processorHost, AssignedPartitions: new int[0]);
+                    processorInfo = (processor, processorHost);
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
                 }
 
                 var partitionsToAssign = topicPartitionsByRoutingKeyGroup.Select(x => x.Partition).ToArray();
-                var newPartitions = partitionsToAssign.Except(processorInfo.AssignedPartitions).ToList();
+                var newPartitions = partitionsToAssign.Except(processorInfo.ProcessorHost.AssignedPartitions).ToList();
                 if (newPartitions.Any())
                 {
                     var startTimestampOnRebalance = processorInfo.Processor.GetStartTimestampOnRebalance(routingKey);
@@ -244,7 +247,7 @@ namespace Vostok.AirlockConsumer
                 }
                 var remainingPartitions = partitionsToAssign.Except(topicPartitionOffsets.Select(x => x.Partition));
                 topicPartitionOffsets.AddRange(remainingPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
-                processorInfo.AssignedPartitions = partitionsToAssign;
+                processorInfo.ProcessorHost.AssignedPartitions = partitionsToAssign;
             }
 
             var processorHostsToStop = new List<ProcessorHost>();
@@ -256,8 +259,8 @@ namespace Vostok.AirlockConsumer
             }
             StopProcessors(processorHostsToStop);
 
-            if(topicPartitionOffsets.Count != topicPartitions.Count)
-                throw new InvalidOperationException($"AssertionFailre: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
+            if (topicPartitionOffsets.Count != topicPartitions.Count)
+                throw new InvalidOperationException($"AssertionFailure: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
             return topicPartitionOffsets;
         }
 

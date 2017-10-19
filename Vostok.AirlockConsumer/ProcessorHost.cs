@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Vostok.AirlockConsumer
     public class ProcessorHost
     {
         private const int maxBatchSize = 100*1000;
-        private const int maxProcessorQueueSize = int.MaxValue;
+        private const int maxProcessorQueueSize = maxBatchSize*10;
         private readonly string routingKey;
         private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
@@ -19,8 +20,9 @@ namespace Vostok.AirlockConsumer
         private readonly Consumer<Null, byte[]> consumer;
         private readonly TimeSpan maxDequeueTimeout = TimeSpan.FromSeconds(1);
         private readonly TimeSpan minDequeueTimeout = TimeSpan.FromMilliseconds(100);
-        private readonly BoundedBlockingQueue<Message<Null, byte[]>> eventsQueue = new BoundedBlockingQueue<Message<Null, byte[]>>(maxProcessorQueueSize);
+        private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
+        private int[] pausedPartitions;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
         {
@@ -29,12 +31,15 @@ namespace Vostok.AirlockConsumer
             this.processor = processor;
             this.log = log;
             this.consumer = consumer;
+            AssignedPartitions = new int[0];
             processorThread = new Thread(ProcessorThreadFunc)
             {
                 IsBackground = true,
                 Name = $"processor-{consumerGroupHostId}-{processor.ProcessorId}",
             };
         }
+
+        public int[] AssignedPartitions { get; set; }
 
         public void Start()
         {
@@ -43,8 +48,33 @@ namespace Vostok.AirlockConsumer
 
         public void Enqueue(Message<Null, byte[]> message)
         {
-            // todo (avk, 04.10.2017): не блокироваться из-за неуспевающих обработчиков (use consumer.Pause() api) https://github.com/vostok/airlock.consumer/issues/14
+            if (pausedPartitions != null)
+                throw new InvalidOperationException($"ProcessorHost is paused for routingKey: {routingKey}");
             eventsQueue.Add(message, CancellationToken.None);
+            if (eventsQueue.Count >= maxProcessorQueueSize)
+            {
+                var partitionsToPause = AssignedPartitions.ToArray();
+                consumer.Pause(partitionsToPause.Select(p => new TopicPartition(message.Topic, p)));
+                log.Warn($"PausedConsumption: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, routingKey: {message.Topic}, processorId: {processor.ProcessorId}, pausedPartitions: [{string.Join(", ", partitionsToPause)}]");
+                pausedPartitions = partitionsToPause;
+            }
+        }
+
+        public void TryResumeConsumption()
+        {
+            if (pausedPartitions == null)
+                return;
+            if (eventsQueue.Count > 0)
+                return;
+            var partitionsToResume = pausedPartitions.Intersect(AssignedPartitions).ToArray();
+            if (!partitionsToResume.Any())
+                log.Warn($"NothingToResume: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, routingKey: {routingKey}, processorId: {processor.ProcessorId}");
+            else
+            {
+                consumer.Resume(partitionsToResume.Select(partition => new TopicPartition(routingKey, partition)));
+                log.Warn($"ResumedConsumption: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, routingKey: {routingKey}, processorId: {processor.ProcessorId}, resumedPartitions: [{string.Join(", ", partitionsToResume)}]");
+            }
+            pausedPartitions = null;
         }
 
         public void CompleteAdding()
@@ -93,7 +123,7 @@ namespace Vostok.AirlockConsumer
                 {
                     if (stopSignal.IsCancellationRequested)
                     {
-                        if (eventsQueue.IsAddingCompleted)
+                        if (eventsQueue.IsCompleted)
                             break;
                         dequeueTimeout = TimeSpan.Zero;
                     }
@@ -117,10 +147,13 @@ namespace Vostok.AirlockConsumer
             var offsetsToCommit = new Dictionary<TopicPartition, long>();
             foreach (var x in messageBatch)
             {
-                airlockEvents.Add(new AirlockEvent<byte[]>
+                var airlockEvent = new AirlockEvent<byte[]>
                 {
-                    RoutingKey = routingKey, Timestamp = x.Timestamp.UtcDateTime, Payload = x.Value,
-                });
+                    RoutingKey = routingKey,
+                    Timestamp = x.Timestamp.UtcDateTime,
+                    Payload = x.Value,
+                };
+                airlockEvents.Add(airlockEvent);
                 offsetsToCommit[x.TopicPartition] = x.Offset + 1;
             }
             DoProcessMessageBatch(airlockEvents);
