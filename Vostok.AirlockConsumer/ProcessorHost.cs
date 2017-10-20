@@ -14,20 +14,19 @@ namespace Vostok.AirlockConsumer
         private const int maxBatchSize = 100*1000;
         private const int maxProcessorQueueSize = maxBatchSize*10;
         private readonly string routingKey;
-        private readonly CancellationToken stopSignal;
         private readonly IAirlockEventProcessor processor;
         private readonly ILog log;
         private readonly Consumer<Null, byte[]> consumer;
         private readonly TimeSpan maxDequeueTimeout = TimeSpan.FromSeconds(1);
         private readonly TimeSpan minDequeueTimeout = TimeSpan.FromMilliseconds(100);
+        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
         private int[] pausedPartitions;
 
-        public ProcessorHost(string consumerGroupHostId, string routingKey, CancellationToken stopSignal, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
+        public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
         {
             this.routingKey = routingKey;
-            this.stopSignal = stopSignal;
             this.processor = processor;
             this.log = log;
             this.consumer = consumer;
@@ -77,24 +76,27 @@ namespace Vostok.AirlockConsumer
             pausedPartitions = null;
         }
 
-        public void CompleteAdding()
+        public void Stop()
         {
-            eventsQueue.CompleteAdding();
+            cancellationTokenSource.Cancel();
         }
 
         public void WaitForTermination()
         {
             processorThread.Join();
             processor.Release(routingKey);
+            cancellationTokenSource.Dispose();
         }
 
         private void ProcessorThreadFunc()
         {
             try
             {
-                while (!eventsQueue.IsCompleted)
+                while (true)
                 {
                     var messageBatch = DequeueMessageBatch();
+                    if (cancellationTokenSource.IsCancellationRequested)
+                        break;
                     if (messageBatch.Count > 0)
                         ProcessMessageBatch(messageBatch);
                 }
@@ -111,9 +113,9 @@ namespace Vostok.AirlockConsumer
             var sw = Stopwatch.StartNew();
             var messageBatch = new List<Message<Null, byte[]>>();
             var dequeueTimeout = maxDequeueTimeout;
-            while (true)
+            while (!cancellationTokenSource.IsCancellationRequested)
             {
-                if (eventsQueue.TryTake(out var message, dequeueTimeout))
+                if (TryDequeueSingleMessage(dequeueTimeout, out var message))
                 {
                     messageBatch.Add(message);
                     if (messageBatch.Count >= maxBatchSize)
@@ -121,24 +123,28 @@ namespace Vostok.AirlockConsumer
                 }
                 else
                 {
-                    if (stopSignal.IsCancellationRequested)
-                    {
-                        if (eventsQueue.IsCompleted)
-                            break;
-                        dequeueTimeout = TimeSpan.Zero;
-                    }
-                    else
-                    {
-                        var elapsed = sw.Elapsed;
-                        if (elapsed > maxDequeueTimeout)
-                            break;
-                        dequeueTimeout = maxDequeueTimeout - elapsed;
-                        if (dequeueTimeout < minDequeueTimeout)
-                            dequeueTimeout = minDequeueTimeout;
-                    }
+                    var elapsed = sw.Elapsed;
+                    if (elapsed > maxDequeueTimeout)
+                        break;
+                    dequeueTimeout = maxDequeueTimeout - elapsed;
+                    if (dequeueTimeout < minDequeueTimeout)
+                        dequeueTimeout = minDequeueTimeout;
                 }
             }
             return messageBatch;
+        }
+
+        private bool TryDequeueSingleMessage(TimeSpan dequeueTimeout, out Message<Null, byte[]> message)
+        {
+            message = null;
+            try
+            {
+                return eventsQueue.TryTake(out message, (int) dequeueTimeout.TotalMilliseconds, cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
         }
 
         private void ProcessMessageBatch(List<Message<Null, byte[]>> messageBatch)
