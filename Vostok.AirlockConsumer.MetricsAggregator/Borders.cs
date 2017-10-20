@@ -2,7 +2,7 @@
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class Borders
+    public class Borders
     {
         public Borders(DateTimeOffset past, DateTimeOffset future)
         {

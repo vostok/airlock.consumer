@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using Vostok.Commons.Synchronization;
 using Vostok.Metrics.Meters.Histograms;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
@@ -7,18 +9,17 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         private static readonly double[] percentiles = {0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999};
 
-        private double sum;
+        private readonly AtomicDouble sum = new AtomicDouble(0);
         private readonly UniformHistogramReservoir histogram;
 
         public Meter()
         {
-            sum = 0;
             histogram = new UniformHistogramReservoir();
         }
 
         public void Add(double value)
         {
-            sum += value;
+            sum.Add(value);
             histogram.Add(value);
         }
 
