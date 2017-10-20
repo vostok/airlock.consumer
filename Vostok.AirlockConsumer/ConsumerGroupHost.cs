@@ -142,7 +142,7 @@ namespace Vostok.AirlockConsumer
         private static void StopProcessors(List<ProcessorHost> processorHostsToStop)
         {
             foreach (var processorHost in processorHostsToStop)
-                processorHost.CompleteAdding();
+                processorHost.Stop();
             foreach (var processorHost in processorHostsToStop)
                 processorHost.WaitForTermination();
         }
@@ -206,7 +206,7 @@ namespace Vostok.AirlockConsumer
                 if (!processorInfos.TryGetValue(routingKey, out var processorInfo))
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
-                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, cancellationTokenSource.Token, processor, log, consumer);
+                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer);
                     processorInfo = (processor, processorHost);
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
