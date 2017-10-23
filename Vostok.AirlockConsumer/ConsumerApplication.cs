@@ -12,7 +12,7 @@ namespace Vostok.AirlockConsumer
     public abstract class ConsumerApplication
     {
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
-        private const string defaultAirlockGateEndpoints = "http://gate:8888";
+        private const string defaultAirlockGateEndpoints = "http://gate:6306";
         private const string defaultAirlockGateApiKey = "UniversalApiKey";
 
         public ConsumerGroupHost Initialize(ILog log)

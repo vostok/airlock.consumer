@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer.Sample
     {
         private const string defaultRoutingKey = "prj.dev.srv.dt";
         private const string airlockApiKey = "UniversalApiKey";
-        private const string airlockGateEndpoint = "http://gate:8888";
+        private const string airlockGateEndpoint = "http://gate:6306";
         private const string kafkaBootstrapEndpoints = "kafka:9092";
         private static readonly ManualResetEventSlim stopSignal = new ManualResetEventSlim();
 
