@@ -39,6 +39,8 @@ namespace Vostok.AirlockConsumer
         }
 
         public int[] AssignedPartitions { get; set; }
+        public bool Paused => pausedPartitions != null;
+        public int QueueSize => eventsQueue.Count;
 
         public void Start()
         {
