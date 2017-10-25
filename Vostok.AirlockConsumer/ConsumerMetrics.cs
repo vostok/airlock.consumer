@@ -33,7 +33,7 @@ namespace Vostok.AirlockConsumer
         public void WriteKafkaStat(string statJson)
         {
             dynamic jStat = JObject.Parse(statJson);
-            var now = GetNormalizedNow();
+            var now = DateTimeOffset.UtcNow;
             statScope
                 .WriteMetric()
                 .SetTimestamp(now)
