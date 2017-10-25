@@ -1,5 +1,7 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
@@ -7,49 +9,77 @@ namespace Vostok.AirlockConsumer
 {
     internal class ConsumerMetrics
     {
-        public int QueueSize { get; set; }
-        public int RebalanceAge { get; set; }
-        public int RebalanceCnt { get; set; }
-        public int AssignmentSize { get; set; }
-        public int PausedProcessors { private get; set; }
-        public int ProcessorCount { private get; set; }
-
-        public readonly TimeSpan MetricsFlushPeriod = TimeSpan.FromSeconds(5);
-        public readonly ICounter MessagesCounter;
         public readonly ICounter CriticalErrorCounter;
         public readonly ICounter ConsumeErrorCounter;
-        private readonly IMetricScope processorsScope;
-        private readonly ConcurrentDictionary<string, int> processorQueueSize = new ConcurrentDictionary<string, int>();
 
-        public ConsumerMetrics(IMetricScope rootMetricScope)
+        private readonly TimeSpan flushMetricsInterval;
+        private readonly IMetricScope rootMetricScope;
+        private readonly IMetricScope processorsScope;
+        private readonly IMetricScope statScope;
+        private int messagesCounter;
+        private readonly Dictionary<string,int> countersByRoutingKey = new Dictionary<string, int>();
+
+        public ConsumerMetrics(TimeSpan flushMetricsInterval, IMetricScope rootMetricScope)
         {
-            var gaugesScope = rootMetricScope.WithTag(MetricsTagNames.Type, "gauges");
-            gaugesScope.Gauge(MetricsFlushPeriod, "queue-size", () => QueueSize);
-            gaugesScope.Gauge(MetricsFlushPeriod, "rebalance-age", () => RebalanceAge);
-            gaugesScope.Gauge(MetricsFlushPeriod, "rebalance-cnt", () => RebalanceCnt);
-            gaugesScope.Gauge(MetricsFlushPeriod, "assignment-size", () => AssignmentSize);
-            gaugesScope.Gauge(MetricsFlushPeriod, "paused-processors", () => PausedProcessors);
-            gaugesScope.Gauge(MetricsFlushPeriod, "processor-count", () => ProcessorCount);
+            this.flushMetricsInterval = flushMetricsInterval;
+            this.rootMetricScope = rootMetricScope;
+            statScope = rootMetricScope.WithTag(MetricsTagNames.Type, "stat");
             processorsScope = rootMetricScope.WithTag(MetricsTagNames.Type, "processors");
-            MessagesCounter = rootMetricScope.Counter(MetricsFlushPeriod, "messages");
             var errorsScope = rootMetricScope.WithTag(MetricsTagNames.Type, "error");
-            CriticalErrorCounter = errorsScope.Counter(MetricsFlushPeriod, "critical");
-            ConsumeErrorCounter = errorsScope.Counter(MetricsFlushPeriod, "consume");
+            CriticalErrorCounter = errorsScope.Counter(this.flushMetricsInterval, "critical");
+            ConsumeErrorCounter = errorsScope.Counter(this.flushMetricsInterval, "consume");
         }
 
-        public void SetProcessorQueueSize(string routingKey, int size)
+        public void WriteKafkaStat(string statJson)
         {
-            processorQueueSize.AddOrUpdate(routingKey, k =>
+            dynamic jStat = JObject.Parse(statJson);
+            var now = GetNormalizedNow();
+            statScope
+                .WriteMetric()
+                .SetTimestamp(now)
+                .SetValue("queue_size", jStat.replyq)
+                .SetValue("assignment_size", jStat.cgrp.assignment_size)
+                .SetValue("rebalance_age", jStat.cgrp.rebalance_age)
+                .SetValue("rebalance_cnt", jStat.cgrp.rebalance_cnt)
+                .Commit();
+        }
+
+        public void IncrementMessage(string routingKey)
+        {
+            messagesCounter++;
+            if (!countersByRoutingKey.TryGetValue(routingKey, out var counter))
+                counter = 0;
+            countersByRoutingKey[routingKey] = counter + 1;
+        }
+
+        public void WriteProcessorMetric(Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost)> processorInfos)
+        {
+            var now = GetNormalizedNow();
+            processorsScope.WriteMetric().SetTimestamp(now)
+                .SetValue("count", processorInfos.Count)
+                .SetValue("paused", processorInfos.Values.Count(x => x.ProcessorHost.Paused))
+                .Commit();
+            rootMetricScope.WriteMetric().SetTimestamp(now).SetValue("message-count", messagesCounter).Commit();
+            foreach (var processorInfoKv in processorInfos)
             {
-                processorsScope.Gauge(MetricsFlushPeriod, routingKey,
-                    () =>
-                    {
-                        if (!processorQueueSize.TryGetValue(routingKey, out var curSize))
-                            curSize = 0;
-                        return curSize;
-                    });
-                return size;
-            }, (k, v) => size);
+                var processorInfo = processorInfoKv.Value;
+                processorsScope.WriteMetric().SetTimestamp(now).SetTag("routingKey", processorInfoKv.Key).SetValue("queue-size", processorInfo.ProcessorHost.QueueSize).Commit();
+            }
+            foreach (var counterKv in countersByRoutingKey.ToArray())
+            {
+                if (counterKv.Value <= 0)
+                    countersByRoutingKey.Remove(counterKv.Key);
+                processorsScope.WriteMetric().SetTimestamp(now).SetTag("routingKey", counterKv.Key).SetValue("messages", counterKv.Value).Commit();
+                if (counterKv.Value > 0)
+                    countersByRoutingKey[counterKv.Key] = 0;
+            }
+            messagesCounter = 0;
+        }
+
+        private DateTimeOffset GetNormalizedNow()
+        {
+            var now = DateTimeOffset.UtcNow;
+            return new DateTimeOffset(now.Ticks - now.Ticks % flushMetricsInterval.Ticks, TimeSpan.Zero);
         }
     }
 }

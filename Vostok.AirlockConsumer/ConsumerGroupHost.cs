@@ -18,7 +18,6 @@ namespace Vostok.AirlockConsumer
     {
         private readonly ConsumerGroupHostSettings settings;
         private readonly ILog log;
-        private readonly IMetricScope processorMetricScope;
         private readonly IAirlockEventProcessorProvider processorProvider;
         private readonly IRoutingKeyFilter routingKeyFilter;
         private readonly Consumer<Null, byte[]> consumer;
@@ -34,8 +33,7 @@ namespace Vostok.AirlockConsumer
             this.log = log;
             this.routingKeyFilter = routingKeyFilter;
             this.processorProvider = processorProvider;
-            processorMetricScope = rootMetricScope.WithTag(MetricsTagNames.Type, "processors");
-            metrics = new ConsumerMetrics(rootMetricScope);
+            metrics = new ConsumerMetrics(settings.FlushMetricsInterval, rootMetricScope);
 
             consumer = new Consumer<Null, byte[]>(settings.GetConsumerConfig(), keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) =>
@@ -75,7 +73,7 @@ namespace Vostok.AirlockConsumer
                 log.Log(logLevel, null, $"consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {logMessage.Name}|{logMessage.Facility}| {logMessage.Message}");
             };
 
-            consumer.OnStatistics += OnConsumerOnOnStatistics;
+            consumer.OnStatistics += OnConsumerStatistics;
             consumer.OnPartitionEOF += (_, topicPartitionOffset) => { log.Debug($"PartitionEof: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartition: {topicPartitionOffset.TopicPartition}, next message will be at offset {topicPartitionOffset.Offset}"); };
             consumer.OnOffsetsCommitted += (_, committedOffsets) =>
             {
@@ -124,6 +122,7 @@ namespace Vostok.AirlockConsumer
             {
                 var needToPoll = UpdateSubscription();
                 var swUpdateSubscription = Stopwatch.StartNew();
+                var swSaveProcessorMetrics = Stopwatch.StartNew();
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
                     if (needToPoll)
@@ -134,19 +133,16 @@ namespace Vostok.AirlockConsumer
                     if (swUpdateSubscription.Elapsed > settings.UpdateSubscriptionInterval)
                     {
                         needToPoll = UpdateSubscription();
-                        var pausedProcessors = 0;
-                        metrics.ProcessorCount = processorInfos.Count;
-                        foreach (var processorInfoKv in processorInfos)
+                        foreach (var processorHost in processorInfos.Values.Select(x => x.ProcessorHost))
                         {
-                            var processorInfo = processorInfoKv.Value;
-                            var processorHost = processorInfo.ProcessorHost;
                             processorHost.TryResumeConsumption();
-                            if (processorHost.Paused)
-                                pausedProcessors++;
-                            metrics.SetProcessorQueueSize(processorInfoKv.Key, processorHost.QueueSize);
                         }
-                        metrics.PausedProcessors = pausedProcessors;
                         swUpdateSubscription.Restart();
+                    }
+                    if (swSaveProcessorMetrics.Elapsed > settings.FlushMetricsInterval)
+                    {
+                        metrics.WriteProcessorMetric(processorInfos);
+                        swSaveProcessorMetrics.Restart();
                     }
                 }
                 Unsubscribe();
@@ -291,21 +287,16 @@ namespace Vostok.AirlockConsumer
 
         private void OnMessage(Message<Null, byte[]> message)
         {
-            metrics.MessagesCounter.Add();
+            metrics.IncrementMessage(message.Topic);
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
             processorInfo.ProcessorHost.Enqueue(message);
         }
 
-        private void OnConsumerOnOnStatistics(object _, string statJson)
+        private void OnConsumerStatistics(object _, string statJson)
         {
-            dynamic jStat = JObject.Parse(statJson);
-            metrics.QueueSize = jStat.replyq;
-            metrics.AssignmentSize = jStat.cgrp.assignment_size;
-            metrics.RebalanceAge = jStat.cgrp.rebalance_age;
-            metrics.RebalanceCnt = jStat.cgrp.rebalance_cnt;
+            metrics.WriteKafkaStat(statJson);
             log.Debug($"Statistics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, stat: {statJson}");
         }
-
     }
 }
