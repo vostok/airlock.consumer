@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using Elasticsearch.Net;
+using Vostok.Airlock.Logging;
 using Vostok.Logging;
-using Vostok.Logging.Airlock;
 
 namespace Vostok.AirlockConsumer.Logs
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vostok.Airlock.Metrics;
 using Vostok.Logging;
 using Vostok.Metrics;
 
