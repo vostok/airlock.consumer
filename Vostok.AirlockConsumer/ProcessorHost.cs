@@ -26,6 +26,8 @@ namespace Vostok.AirlockConsumer
         private readonly Thread processorThread;
         private int[] pausedPartitions;
         private readonly ICounter messageCounter;
+        private readonly IDisposable queueGauge;
+        private readonly IDisposable pausedGauge;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval)
         {
@@ -39,8 +41,8 @@ namespace Vostok.AirlockConsumer
                 IsBackground = true,
                 Name = $"processor-{consumerGroupHostId}-{processor.ProcessorId}",
             };
-            metricScope.Gauge(flushMetricsInterval, "queue_size", () => eventsQueue.Count);
-            metricScope.Gauge(flushMetricsInterval, "paused", () => pausedPartitions != null ? 1 : 0);
+            queueGauge = metricScope.Gauge(flushMetricsInterval, "queue_size", () => eventsQueue.Count);
+            pausedGauge = metricScope.Gauge(flushMetricsInterval, "paused", () => pausedPartitions != null ? 1 : 0);
             messageCounter = metricScope.Counter(flushMetricsInterval, "messages");
         }
 
@@ -187,7 +189,9 @@ namespace Vostok.AirlockConsumer
 
         public void Dispose()
         {
-            //todo: dispose gauges and counters
+            (messageCounter as IDisposable)?.Dispose();
+            queueGauge.Dispose();
+            pausedGauge.Dispose();
         }
-    }
+}
 }
