@@ -3,6 +3,7 @@ using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Airlock.Tracing;
 using Vostok.Logging;
+using Vostok.Metrics;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
