@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
-using Newtonsoft.Json.Linq;
-using Vostok.Commons.Collections;
 using Vostok.Logging;
 using Vostok.Metrics;
 

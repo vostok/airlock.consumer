@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Vostok.Airlock;
+using Vostok.Airlock.Metrics;
 using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
 using Vostok.Metrics;

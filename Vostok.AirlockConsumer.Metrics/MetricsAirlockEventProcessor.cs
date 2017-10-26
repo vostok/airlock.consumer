@@ -29,12 +29,12 @@ namespace Vostok.AirlockConsumer.Metrics
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
         {
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
-            foreach (var batch in Split(metrics, batchSize))
-                SendBatchAsync(batch, attemptCount, sendPeriod).GetAwaiter().GetResult();
+            foreach (var batch in Split(metrics))
+                SendBatchAsync(batch).GetAwaiter().GetResult();
         }
 
         // todo (avk, 05.10.2017): simplify processors https://github.com/vostok/airlock.consumer/issues/16
-        private async Task SendBatchAsync(List<Metric> batchMetrics, int attemptCount, TimeSpan sendPeriod)
+        private async Task SendBatchAsync(List<Metric> batchMetrics)
         {
             var attemptTimeout = TimeSpan.Zero;
             var attempt = 1;
@@ -66,7 +66,7 @@ namespace Vostok.AirlockConsumer.Metrics
             }
         }
 
-        private static IEnumerable<List<T>> Split<T>(IEnumerable<T> source, int batchSize)
+        private static IEnumerable<List<T>> Split<T>(IEnumerable<T> source)
         {
             var batch = new List<T>(batchSize);
             foreach (var item in source)

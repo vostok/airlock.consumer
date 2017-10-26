@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 using Vostok.Commons.Synchronization;
 using Vostok.Metrics.Meters.Histograms;
 

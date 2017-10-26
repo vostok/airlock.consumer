@@ -8,7 +8,7 @@ namespace Vostok.AirlockConsumer.Metrics
 {
     internal class GraphiteNameBuilder : IGraphiteNameBuilder
     {
-        private const string Separator = ".";
+        private const string separator = ".";
         private readonly Dictionary<string, string> namePartsByRoutingKeys = new Dictionary<string, string>();
 
         private readonly Dictionary<string, TagInfo> defaultTagInfos = new[]
@@ -26,12 +26,12 @@ namespace Vostok.AirlockConsumer.Metrics
 
             return string.IsNullOrEmpty(namePartByTags)
                 ? namePartByRoutingKey
-                : namePartByRoutingKey + Separator + namePartByTags;
+                : namePartByRoutingKey + separator + namePartByTags;
         }
 
         public string BuildName(string prefix, string suffix)
         {
-            return prefix + Separator + FixInvalidChars(suffix);
+            return prefix + separator + FixInvalidChars(suffix);
         }
 
         private string GetNamePartByRoutingKey(string routingKey)
@@ -42,8 +42,8 @@ namespace Vostok.AirlockConsumer.Metrics
             }
 
             var routingKeyModel = RoutingKey.Parse(routingKey);
-            var partNameByRoutingKey = FixInvalidChars(routingKeyModel.Project) + Separator
-                                     + FixInvalidChars(routingKeyModel.Environment) + Separator
+            var partNameByRoutingKey = FixInvalidChars(routingKeyModel.Project) + separator
+                                     + FixInvalidChars(routingKeyModel.Environment) + separator
                                      + FixInvalidChars(routingKeyModel.ServiceName);
 
             namePartsByRoutingKeys.Add(routingKey, partNameByRoutingKey);
@@ -71,7 +71,7 @@ namespace Vostok.AirlockConsumer.Metrics
                 .ThenBy(x => x.Key)
                 .Select(x => FixInvalidChars(x.Value));
 
-            return string.Join(Separator, parts);
+            return string.Join(separator, parts);
         }
 
         private static string FixInvalidChars(string name)
