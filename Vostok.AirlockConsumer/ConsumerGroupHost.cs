@@ -122,7 +122,6 @@ namespace Vostok.AirlockConsumer
             {
                 var needToPoll = UpdateSubscription();
                 var swUpdateSubscription = Stopwatch.StartNew();
-                var swSaveProcessorMetrics = Stopwatch.StartNew();
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
                     if (needToPoll)
@@ -138,11 +137,6 @@ namespace Vostok.AirlockConsumer
                             processorHost.TryResumeConsumption();
                         }
                         swUpdateSubscription.Restart();
-                    }
-                    if (swSaveProcessorMetrics.Elapsed > settings.FlushMetricsInterval)
-                    {
-                        metrics.WriteProcessorMetric(processorInfos);
-                        swSaveProcessorMetrics.Restart();
                     }
                 }
                 Unsubscribe();
@@ -166,7 +160,10 @@ namespace Vostok.AirlockConsumer
             foreach (var processorHost in processorHostsToStop)
                 processorHost.Stop();
             foreach (var processorHost in processorHostsToStop)
+            {
                 processorHost.WaitForTermination();
+                processorHost.Dispose();
+            }
         }
 
         private bool UpdateSubscription()
@@ -228,7 +225,7 @@ namespace Vostok.AirlockConsumer
                 if (!processorInfos.TryGetValue(routingKey, out var processorInfo))
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
-                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer);
+                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer, metrics.GetProcessorScope(routingKey), settings.FlushMetricsInterval);
                     processorInfo = (processor, processorHost);
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
@@ -279,6 +276,7 @@ namespace Vostok.AirlockConsumer
                 processorInfos.Remove(routingKey);
             }
             StopProcessors(processorHostsToStop);
+            metrics.ProcessorCount = processorInfos.Count;
 
             if (topicPartitionOffsets.Count != topicPartitions.Count)
                 throw new InvalidOperationException($"AssertionFailure: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count {topicPartitions.Count}");
@@ -287,7 +285,7 @@ namespace Vostok.AirlockConsumer
 
         private void OnMessage(Message<Null, byte[]> message)
         {
-            metrics.IncrementMessage(message.Topic);
+            metrics.IncrementMessage();
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
             processorInfo.ProcessorHost.Enqueue(message);
@@ -295,7 +293,7 @@ namespace Vostok.AirlockConsumer
 
         private void OnConsumerStatistics(object _, string statJson)
         {
-            metrics.WriteKafkaStat(statJson);
+            metrics.UpdateKafkaStat(statJson);
             log.Debug($"Statistics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, stat: {statJson}");
         }
     }

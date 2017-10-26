@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Newtonsoft.Json.Linq;
+using Vostok.Commons.Synchronization;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
@@ -12,74 +14,71 @@ namespace Vostok.AirlockConsumer
         public readonly ICounter CriticalErrorCounter;
         public readonly ICounter ConsumeErrorCounter;
 
-        private readonly TimeSpan flushMetricsInterval;
         private readonly IMetricScope rootMetricScope;
         private readonly IMetricScope processorsScope;
         private readonly IMetricScope statScope;
-        private int messagesCounter;
-        private readonly Dictionary<string,int> countersByRoutingKey = new Dictionary<string, int>();
+        private readonly AtomicInt messagesCounter = new AtomicInt(0);
+
+        private struct KafkaStat
+        {
+            public int QueueSize;
+            public int AssignmentSize;
+            public int RebalanceAge;
+            public int RebalanceCnt;
+        }
+
+        private KafkaStat stat;
+        public int ProcessorCount;
 
         public ConsumerMetrics(TimeSpan flushMetricsInterval, IMetricScope rootMetricScope)
         {
-            this.flushMetricsInterval = flushMetricsInterval;
             this.rootMetricScope = rootMetricScope;
             statScope = rootMetricScope.WithTag(MetricsTagNames.Type, "stat");
             processorsScope = rootMetricScope.WithTag(MetricsTagNames.Type, "processors");
             var errorsScope = rootMetricScope.WithTag(MetricsTagNames.Type, "error");
-            CriticalErrorCounter = errorsScope.Counter(this.flushMetricsInterval, "critical");
-            ConsumeErrorCounter = errorsScope.Counter(this.flushMetricsInterval, "consume");
+            CriticalErrorCounter = errorsScope.Counter(flushMetricsInterval, "critical");
+            ConsumeErrorCounter = errorsScope.Counter(flushMetricsInterval, "consume");
+
+            MetricClocks.Get(flushMetricsInterval).Register(WriteMetrics);
         }
 
-        public void WriteKafkaStat(string statJson)
+        public IMetricScope GetProcessorScope(string routingKey)
         {
-            dynamic jStat = JObject.Parse(statJson);
-            var now = DateTimeOffset.UtcNow;
+            return processorsScope.WithTag(MetricsTagNames.Operation, routingKey);
+        }
+
+        private void WriteMetrics(DateTimeOffset timeStamp)
+        {
+            Thread.MemoryBarrier();
             statScope
                 .WriteMetric()
-                .SetTimestamp(now)
-                .SetValue("queue_size", jStat.replyq)
-                .SetValue("assignment_size", jStat.cgrp.assignment_size)
-                .SetValue("rebalance_age", jStat.cgrp.rebalance_age)
-                .SetValue("rebalance_cnt", jStat.cgrp.rebalance_cnt)
+                .SetTimestamp(timeStamp)
+                .SetValue("queue_size", stat.QueueSize)
+                .SetValue("assignment_size", stat.AssignmentSize)
+                .SetValue("rebalance_age", stat.RebalanceAge)
+                .SetValue("rebalance_cnt", stat.RebalanceCnt)
                 .Commit();
-        }
-
-        public void IncrementMessage(string routingKey)
-        {
-            messagesCounter++;
-            if (!countersByRoutingKey.TryGetValue(routingKey, out var counter))
-                counter = 0;
-            countersByRoutingKey[routingKey] = counter + 1;
-        }
-
-        public void WriteProcessorMetric(Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost)> processorInfos)
-        {
-            var now = GetNormalizedNow();
-            processorsScope.WriteMetric().SetTimestamp(now)
-                .SetValue("count", processorInfos.Count)
-                .SetValue("paused", processorInfos.Values.Count(x => x.ProcessorHost.Paused))
+            rootMetricScope
+                .WriteMetric()
+                .SetTimestamp(timeStamp)
+                .SetValue("processor_count", ProcessorCount)
+                .SetValue("message_count", messagesCounter)
                 .Commit();
-            rootMetricScope.WriteMetric().SetTimestamp(now).SetValue("message-count", messagesCounter).Commit();
-            foreach (var processorInfoKv in processorInfos)
-            {
-                var processorInfo = processorInfoKv.Value;
-                processorsScope.WriteMetric().SetTimestamp(now).SetTag("routingKey", processorInfoKv.Key).SetValue("queue-size", processorInfo.ProcessorHost.QueueSize).Commit();
-            }
-            foreach (var counterKv in countersByRoutingKey.ToArray())
-            {
-                if (counterKv.Value <= 0)
-                    countersByRoutingKey.Remove(counterKv.Key);
-                processorsScope.WriteMetric().SetTimestamp(now).SetTag("routingKey", counterKv.Key).SetValue("messages", counterKv.Value).Commit();
-                if (counterKv.Value > 0)
-                    countersByRoutingKey[counterKv.Key] = 0;
-            }
-            messagesCounter = 0;
+            messagesCounter.Value = 0;
         }
 
-        private DateTimeOffset GetNormalizedNow()
+        public void UpdateKafkaStat(string statJson)
         {
-            var now = DateTimeOffset.UtcNow;
-            return new DateTimeOffset(now.Ticks - now.Ticks % flushMetricsInterval.Ticks, TimeSpan.Zero);
+            dynamic jStat = JObject.Parse(statJson);
+            stat.QueueSize = jStat.replyq;
+            stat.AssignmentSize = jStat.cgrp.assignment_size;
+            stat.RebalanceAge = jStat.cgrp.rebalance_age;
+            stat.RebalanceCnt = jStat.cgrp.rebalance_cnt;
+        }
+
+        public void IncrementMessage()
+        {
+            messagesCounter.Increment();
         }
     }
 }
