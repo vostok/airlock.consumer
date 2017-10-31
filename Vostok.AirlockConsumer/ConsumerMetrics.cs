@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using Newtonsoft.Json.Linq;
-using Vostok.Commons.Synchronization;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
@@ -15,7 +14,7 @@ namespace Vostok.AirlockConsumer
         private readonly IMetricScope rootMetricScope;
         private readonly IMetricScope processorsScope;
         private readonly IMetricScope statScope;
-        private readonly AtomicInt messagesCounter = new AtomicInt(0);
+        private readonly Counter messagesCounter = new Counter();
 
         private struct KafkaStat
         {
@@ -60,9 +59,8 @@ namespace Vostok.AirlockConsumer
                 .WriteMetric()
                 .SetTimestamp(timeStamp)
                 .SetValue("processor_count", ProcessorCount)
-                .SetValue("message_count", messagesCounter)
+                .SetValue("message_count", messagesCounter.Reset())
                 .Commit();
-            messagesCounter.Value = 0;
         }
 
         public void UpdateKafkaStat(string statJson)
@@ -76,7 +74,7 @@ namespace Vostok.AirlockConsumer
 
         public void IncrementMessage()
         {
-            messagesCounter.Increment();
+            messagesCounter.Add();
         }
     }
 }
