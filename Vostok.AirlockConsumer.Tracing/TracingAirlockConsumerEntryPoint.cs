@@ -20,6 +20,11 @@ namespace Vostok.AirlockConsumer.Tracing
         }
 
         protected override string ServiceName => "consumer-tracing";
+        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
+        {
+            MaxBatchSize = 3000,
+            MaxProcessorQueueSize = 100000
+        };
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {

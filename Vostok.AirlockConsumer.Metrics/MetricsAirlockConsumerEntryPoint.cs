@@ -16,6 +16,11 @@ namespace Vostok.AirlockConsumer.Metrics
         }
 
         protected override string ServiceName => "consumer-metric";
+        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
+        {
+            MaxBatchSize = 10000,
+            MaxProcessorQueueSize = 100000
+        };
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {

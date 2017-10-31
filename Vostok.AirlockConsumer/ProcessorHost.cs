@@ -13,28 +13,29 @@ namespace Vostok.AirlockConsumer
 {
     public class ProcessorHost : IDisposable
     {
-        private const int maxBatchSize = 100*1000;
-        private const int maxProcessorQueueSize = maxBatchSize*10;
         private readonly string routingKey;
         private readonly IAirlockEventProcessor processor;
         private readonly ILog log;
         private readonly Consumer<Null, byte[]> consumer;
+        private readonly ProcessorHostSettings processorHostSettings;
         private readonly TimeSpan maxDequeueTimeout = TimeSpan.FromSeconds(1);
         private readonly TimeSpan minDequeueTimeout = TimeSpan.FromMilliseconds(100);
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
         private int[] pausedPartitions;
-        private readonly ICounter messageCounter;
+        private readonly ICounter messageEnqueuedCounter;
+        private readonly ICounter messageProcessedCounter;
         private readonly IDisposable queueGauge;
         private readonly IDisposable pausedGauge;
 
-        public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval)
+        public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval, ProcessorHostSettings processorHostSettings)
         {
             this.routingKey = routingKey;
             this.processor = processor;
             this.log = log;
             this.consumer = consumer;
+            this.processorHostSettings = processorHostSettings;
             AssignedPartitions = new int[0];
             processorThread = new Thread(ProcessorThreadFunc)
             {
@@ -43,7 +44,8 @@ namespace Vostok.AirlockConsumer
             };
             queueGauge = metricScope.Gauge(flushMetricsInterval, "queue_size", () => eventsQueue.Count);
             pausedGauge = metricScope.Gauge(flushMetricsInterval, "paused", () => pausedPartitions != null ? 1 : 0);
-            messageCounter = metricScope.Counter(flushMetricsInterval, "messages");
+            messageEnqueuedCounter = metricScope.Counter(flushMetricsInterval, "message_enqueued");
+            messageProcessedCounter = metricScope.Counter(flushMetricsInterval, "message_processed");
         }
 
         public int[] AssignedPartitions { get; set; }
@@ -57,9 +59,9 @@ namespace Vostok.AirlockConsumer
         {
             if (pausedPartitions != null)
                 throw new InvalidOperationException($"ProcessorHost is paused for routingKey: {routingKey}");
-            messageCounter.Add();
+            messageEnqueuedCounter.Add();
             eventsQueue.Add(message, CancellationToken.None);
-            if (eventsQueue.Count >= maxProcessorQueueSize)
+            if (eventsQueue.Count >= processorHostSettings.MaxProcessorQueueSize)
             {
                 var partitionsToPause = AssignedPartitions.ToArray();
                 consumer.Pause(partitionsToPause.Select(p => new TopicPartition(message.Topic, p)));
@@ -127,7 +129,7 @@ namespace Vostok.AirlockConsumer
                 if (TryDequeueSingleMessage(dequeueTimeout, out var message))
                 {
                     messageBatch.Add(message);
-                    if (messageBatch.Count >= maxBatchSize)
+                    if (messageBatch.Count >= processorHostSettings.MaxBatchSize)
                         break;
                 }
                 else
@@ -172,6 +174,7 @@ namespace Vostok.AirlockConsumer
                 offsetsToCommit[x.TopicPartition] = x.Offset + 1;
             }
             DoProcessMessageBatch(airlockEvents);
+            messageProcessedCounter.Add(airlockEvents.Count);
             consumer.CommitAsync(offsetsToCommit.Select(x => new TopicPartitionOffset(x.Key, x.Value))).GetAwaiter().GetResult();
         }
 
@@ -189,7 +192,7 @@ namespace Vostok.AirlockConsumer
 
         public void Dispose()
         {
-            (messageCounter as IDisposable)?.Dispose();
+            (messageEnqueuedCounter as IDisposable)?.Dispose();
             queueGauge.Dispose();
             pausedGauge.Dispose();
         }

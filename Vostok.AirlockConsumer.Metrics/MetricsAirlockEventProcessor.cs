@@ -15,7 +15,6 @@ namespace Vostok.AirlockConsumer.Metrics
         private readonly MetricConverter metricConverter;
         private readonly GraphiteClient graphiteClient;
         private readonly TimeSpan sendPeriod = 10.Seconds();
-        private const int batchSize = 10000;
         private const int attemptCount = 3;
 
         public MetricsAirlockEventProcessor(Uri graphiteUri, ILog log)
@@ -29,12 +28,11 @@ namespace Vostok.AirlockConsumer.Metrics
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
         {
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
-            foreach (var batch in Split(metrics))
-                SendBatchAsync(batch).GetAwaiter().GetResult();
+            SendBatchAsync(metrics.ToArray()).GetAwaiter().GetResult();
         }
 
         // todo (avk, 05.10.2017): simplify processors https://github.com/vostok/airlock.consumer/issues/16
-        private async Task SendBatchAsync(List<Metric> batchMetrics)
+        private async Task SendBatchAsync(IReadOnlyCollection<Metric> batchMetrics)
         {
             var attemptTimeout = TimeSpan.Zero;
             var attempt = 1;
@@ -63,25 +61,6 @@ namespace Vostok.AirlockConsumer.Metrics
                     await Task.Delay(attemptTimeout).ConfigureAwait(false);
                     attemptTimeout *= 2;
                 }
-            }
-        }
-
-        private static IEnumerable<List<T>> Split<T>(IEnumerable<T> source)
-        {
-            var batch = new List<T>(batchSize);
-            foreach (var item in source)
-            {
-                if (batch.Count >= batchSize)
-                {
-                    yield return batch;
-                    batch = new List<T>(batchSize);
-                }
-                batch.Add(item);
-            }
-
-            if (batch.Count > 0)
-            {
-                yield return batch;
             }
         }
     }
