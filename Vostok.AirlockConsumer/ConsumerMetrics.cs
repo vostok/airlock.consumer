@@ -11,8 +11,8 @@ namespace Vostok.AirlockConsumer
         public readonly ICounter CriticalErrorCounter;
         public readonly ICounter ConsumeErrorCounter;
 
-        private readonly IMetricScope rootMetricScope;
         private readonly IMetricScope processorsScope;
+        private readonly IMetricScope hostScope;
         private readonly IMetricScope statScope;
         private readonly Counter messagesCounter = new Counter();
 
@@ -29,13 +29,12 @@ namespace Vostok.AirlockConsumer
 
         public ConsumerMetrics(TimeSpan flushMetricsInterval, IMetricScope rootMetricScope)
         {
-            this.rootMetricScope = rootMetricScope;
-            statScope = rootMetricScope.WithTag(MetricsTagNames.Type, "stat");
+            statScope = rootMetricScope.WithTag(MetricsTagNames.Type, "libstat");
             processorsScope = rootMetricScope.WithTag(MetricsTagNames.Type, "processors");
+            hostScope = rootMetricScope.WithTag(MetricsTagNames.Type, "grouphost");
             var errorsScope = rootMetricScope.WithTag(MetricsTagNames.Type, "error");
             CriticalErrorCounter = errorsScope.Counter(flushMetricsInterval, "critical");
             ConsumeErrorCounter = errorsScope.Counter(flushMetricsInterval, "consume");
-
             MetricClocks.Get(flushMetricsInterval).Register(WriteMetrics);
         }
 
@@ -55,7 +54,7 @@ namespace Vostok.AirlockConsumer
                 .SetValue("rebalance_age", stat.RebalanceAge)
                 .SetValue("rebalance_cnt", stat.RebalanceCnt)
                 .Commit();
-            rootMetricScope
+            hostScope
                 .WriteMetric()
                 .SetTimestamp(timeStamp)
                 .SetValue("processor_count", ProcessorCount)
