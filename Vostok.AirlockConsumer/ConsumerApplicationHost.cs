@@ -3,6 +3,7 @@ using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
@@ -49,6 +50,7 @@ namespace Vostok.AirlockConsumer
                 stopSignal.Wait(Timeout.Infinite);
                 log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
                 consumerGroupHost.Stop();
+                MetricClocks.Stop();
                 log.Info($"Consumer application is stopped: {typeof (TConsumerApp).Name}");
                 terminationSignal.Set();
             }
