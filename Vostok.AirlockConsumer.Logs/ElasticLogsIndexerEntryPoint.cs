@@ -4,6 +4,7 @@ using System.Linq;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Logs
 {
@@ -16,7 +17,9 @@ namespace Vostok.AirlockConsumer.Logs
             new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>().Run();
         }
 
-        protected sealed override void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected override string ServiceName => "consumer-logs";
+
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
             var elasticUris = GetElasticUris(log, environmentVariables);

@@ -6,6 +6,7 @@ using System.Threading;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
 using Vostok.Logging;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
@@ -22,17 +23,27 @@ namespace Vostok.AirlockConsumer
         private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost)>();
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
+        private readonly ConsumerMetrics metrics;
 
-        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
+        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IMetricScope rootMetricScope, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
         {
             this.settings = settings;
             this.log = log;
             this.routingKeyFilter = routingKeyFilter;
             this.processorProvider = processorProvider;
+            metrics = new ConsumerMetrics(settings.FlushMetricsInterval, rootMetricScope);
 
             consumer = new Consumer<Null, byte[]>(settings.GetConsumerConfig(), keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
-            consumer.OnError += (_, error) => { log.Error($"CriticalError: consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {error.ToString()}"); };
-            consumer.OnConsumeError += (_, message) => { log.Error($"ConsumeError: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topic: {message.Topic}, partition: {message.Partition}, offset: {message.Offset}, timestamp: {message.Timestamp.UtcDateTime:O}: {message.Error.ToString()}"); };
+            consumer.OnError += (_, error) =>
+            {
+                log.Error($"CriticalError: consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {error.ToString()}");
+                metrics.CriticalErrorCounter.Add();
+            };
+            consumer.OnConsumeError += (_, message) =>
+            {
+                log.Error($"ConsumeError: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topic: {message.Topic}, partition: {message.Partition}, offset: {message.Offset}, timestamp: {message.Timestamp.UtcDateTime:O}: {message.Error.ToString()}");
+                metrics.ConsumeErrorCounter.Add();
+            };
             consumer.OnLog += (_, logMessage) =>
             {
                 LogLevel logLevel;
@@ -59,7 +70,8 @@ namespace Vostok.AirlockConsumer
                 }
                 log.Log(logLevel, null, $"consumerName: {consumer.Name}, memberId: {consumer.MemberId} - {logMessage.Name}|{logMessage.Facility}| {logMessage.Message}");
             };
-            consumer.OnStatistics += (_, statJson) => { log.Debug($"Statistics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, stat: {statJson}"); };
+
+            consumer.OnStatistics += OnConsumerStatistics;
             consumer.OnPartitionEOF += (_, topicPartitionOffset) => { log.Debug($"PartitionEof: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartition: {topicPartitionOffset.TopicPartition}, next message will be at offset {topicPartitionOffset.Offset}"); };
             consumer.OnOffsetsCommitted += (_, committedOffsets) =>
             {
@@ -118,8 +130,10 @@ namespace Vostok.AirlockConsumer
                     if (swUpdateSubscription.Elapsed > settings.UpdateSubscriptionInterval)
                     {
                         needToPoll = UpdateSubscription();
-                        foreach (var processorInfo in processorInfos.Values)
-                            processorInfo.ProcessorHost.TryResumeConsumption();
+                        foreach (var processorHost in processorInfos.Values.Select(x => x.ProcessorHost))
+                        {
+                            processorHost.TryResumeConsumption();
+                        }
                         swUpdateSubscription.Restart();
                     }
                 }
@@ -144,7 +158,10 @@ namespace Vostok.AirlockConsumer
             foreach (var processorHost in processorHostsToStop)
                 processorHost.Stop();
             foreach (var processorHost in processorHostsToStop)
+            {
                 processorHost.WaitForTermination();
+                processorHost.Dispose();
+            }
         }
 
         private bool UpdateSubscription()
@@ -207,7 +224,7 @@ namespace Vostok.AirlockConsumer
                 if (!processorInfos.TryGetValue(routingKey, out var processorInfo))
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
-                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer);
+                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer, metrics.GetProcessorScope(routingKey), settings.FlushMetricsInterval);
                     processorInfo = (processor, processorHost);
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();
@@ -268,6 +285,7 @@ namespace Vostok.AirlockConsumer
                 processorInfos.Remove(routingKey);
             }
             StopProcessors(processorHostsToStop);
+            metrics.ProcessorCount = processorInfos.Count;
 
             if (topicPartitionOffsets.Count != topicPartitions.Count)
                 throw new InvalidOperationException($"AssertionFailure: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count ({topicPartitions.Count})");
@@ -276,9 +294,16 @@ namespace Vostok.AirlockConsumer
 
         private void OnMessage(Message<Null, byte[]> message)
         {
+            metrics.IncrementMessage();
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");
             processorInfo.ProcessorHost.Enqueue(message);
+        }
+
+        private void OnConsumerStatistics(object _, string statJson)
+        {
+            metrics.UpdateKafkaStat(statJson);
+            log.Debug($"Statistics: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, stat: {statJson}");
         }
     }
 }

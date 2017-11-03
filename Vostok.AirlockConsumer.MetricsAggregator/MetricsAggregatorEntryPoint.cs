@@ -14,7 +14,9 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             new ConsumerApplicationHost<MetricsAggregatorEntryPoint>().Run();
         }
 
-        protected sealed override void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected override string ServiceName => "metrics-aggregator";
+
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то https://github.com/vostok/airlock.consumer/issues/18
             routingKeyFilter = new DirtyRoutingKeyFilter("-events");
@@ -24,12 +26,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             var airlockClient = new AirlockClient(airlockConfig, log);
 
             var settings = new MetricsAggregatorSettings();
-            var rootMetricScope = new RootMetricScope(
-                new MetricConfiguration
-                {
-                    // todo (spaceorc 05.10.2017) get proj and env from settings https://github.com/vostok/airlock.consumer/issues/18
-                    Reporter = new AirlockMetricReporter(airlockClient, RoutingKey.CreatePrefix("vostok", "env", "metrics-aggregator"))
-                });
             var processor = new MetricAirlockEventProcessor(
                 routingKey =>
                 {

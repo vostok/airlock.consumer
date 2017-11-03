@@ -20,10 +20,6 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
         private DateTimeOffset now;
         private Borders borders;
 
-        public Bucket_Tests()
-        {
-        }
-
         [SetUp]
         public void Init()
         {

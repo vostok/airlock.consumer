@@ -2,7 +2,7 @@
 {
     internal class RoutingKey
     {
-        const string defaultValue = "unknown";
+        private const string defaultValue = "unknown";
 
         private RoutingKey(string project, string environment, string serviceName)
         {

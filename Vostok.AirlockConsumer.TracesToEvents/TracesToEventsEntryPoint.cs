@@ -3,6 +3,7 @@ using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Airlock.Tracing;
 using Vostok.Logging;
+using Vostok.Metrics;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
@@ -14,7 +15,9 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             new ConsumerApplicationHost<TracesToEventsEntryPoint>().Run();
         }
 
-        protected sealed override void DoInitialize(ILog log, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected override string ServiceName => "traces-to-events";
+
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             AirlockSerializerRegistry.Register(new MetricEventSerializer());

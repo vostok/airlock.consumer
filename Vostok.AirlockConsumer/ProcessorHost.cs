@@ -6,10 +6,12 @@ using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
 using Vostok.Logging;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
-    public class ProcessorHost
+    public class ProcessorHost : IDisposable
     {
         private const int maxBatchSize = 100*1000;
         private const int maxProcessorQueueSize = maxBatchSize*10;
@@ -23,8 +25,11 @@ namespace Vostok.AirlockConsumer
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
         private int[] pausedPartitions;
+        private readonly ICounter messageCounter;
+        private readonly IDisposable queueGauge;
+        private readonly IDisposable pausedGauge;
 
-        public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer)
+        public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval)
         {
             this.routingKey = routingKey;
             this.processor = processor;
@@ -36,6 +41,9 @@ namespace Vostok.AirlockConsumer
                 IsBackground = true,
                 Name = $"processor-{consumerGroupHostId}-{processor.ProcessorId}",
             };
+            queueGauge = metricScope.Gauge(flushMetricsInterval, "queue_size", () => eventsQueue.Count);
+            pausedGauge = metricScope.Gauge(flushMetricsInterval, "paused", () => pausedPartitions != null ? 1 : 0);
+            messageCounter = metricScope.Counter(flushMetricsInterval, "messages");
         }
 
         public int[] AssignedPartitions { get; set; }
@@ -49,6 +57,7 @@ namespace Vostok.AirlockConsumer
         {
             if (pausedPartitions != null)
                 throw new InvalidOperationException($"ProcessorHost is paused for routingKey: {routingKey}");
+            messageCounter.Add();
             eventsQueue.Add(message, CancellationToken.None);
             if (eventsQueue.Count >= maxProcessorQueueSize)
             {
@@ -177,5 +186,12 @@ namespace Vostok.AirlockConsumer
                 log.Error($"Processor failed for routingKey: {routingKey}, processorType: {processor.GetType().Name}, processorId: {processor.ProcessorId}", e);
             }
         }
-    }
+
+        public void Dispose()
+        {
+            (messageCounter as IDisposable)?.Dispose();
+            queueGauge.Dispose();
+            pausedGauge.Dispose();
+        }
+}
 }

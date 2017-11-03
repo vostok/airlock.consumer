@@ -13,6 +13,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
 
             return new MetricEvent
             {
+                // ReSharper disable once PossibleInvalidOperationException - сюда попадают только метрики, где EndTimestamp!=null
                 Timestamp = span.EndTimestamp.Value,
                 Tags = tags,
                 Values = values
@@ -23,6 +24,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
         {
             return new Dictionary<string, double>
             {
+                // ReSharper disable once PossibleInvalidOperationException - сюда попадают только метрики, где EndTimestamp!=null
                 [MetricsValueNames.Duration] = (span.EndTimestamp.Value - span.BeginTimestamp).TotalMilliseconds
             };
         }
