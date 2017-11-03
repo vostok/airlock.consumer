@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Elasticsearch.Net;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
+using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Logs
 {
@@ -11,9 +13,11 @@ namespace Vostok.AirlockConsumer.Logs
     {
         private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
+        private readonly RetriableCallStrategy retriableCallStrategy;
 
         public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
+            retriableCallStrategy = new RetriableCallStrategy();
             this.log = log;
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
@@ -31,12 +35,34 @@ namespace Vostok.AirlockConsumer.Logs
             Index(bulkItems);
         }
 
-        // todo (avk, 04.10.2017): implement retry policy https://github.com/vostok/airlock.consumer/issues/15
         private void Index(List<object> bulkItems)
         {
-            var response = elasticClient.Bulk<byte[]>(new PostData<object>(bulkItems));
-            if (response.HttpStatusCode != (int)HttpStatusCode.OK)
-                log.Error($"Elasic error. code= {response.HttpStatusCode}, reason: {response.ServerError?.Error?.Reason}");
+            retriableCallStrategy.Call(() =>
+            {
+                var response = elasticClient.Bulk<byte[]>(new PostData<object>(bulkItems));
+                if (!response.Success)
+                    throw response.OriginalException;
+            }, IsRetriableException, log);
+        }
+
+        private static readonly HttpStatusCode[] retriableHttpStatusCodes =
+        {
+            HttpStatusCode.InternalServerError,
+            HttpStatusCode.NotImplemented,
+            HttpStatusCode.BadGateway,
+            HttpStatusCode.GatewayTimeout,
+            HttpStatusCode.RequestTimeout,
+            HttpStatusCode.ServiceUnavailable,
+            HttpStatusCode.TemporaryRedirect,
+        };
+
+        private bool IsRetriableException(Exception ex)
+        {
+            var elasticsearchClientException = ExceptionFinder.FindException<ElasticsearchClientException>(ex);
+            if (elasticsearchClientException == null)
+                return false;
+            var statusCode = (HttpStatusCode) (elasticsearchClientException.Response.HttpStatusCode ?? 500);
+            return retriableHttpStatusCodes.Contains(statusCode);
         }
 
         private static object BuildIndexRecordMeta(AirlockEvent<LogEventData> @event)
