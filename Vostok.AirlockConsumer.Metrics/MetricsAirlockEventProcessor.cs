@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Graphite.Client;
 using Vostok.Logging;
 using Vostok.Metrics;
@@ -15,7 +14,7 @@ namespace Vostok.AirlockConsumer.Metrics
         private readonly ILog log;
         private readonly MetricConverter metricConverter;
         private readonly GraphiteClient graphiteClient;
-        private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy(3, 10000, 100000);
+        private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(100));
 
         public MetricsAirlockEventProcessor(Uri graphiteUri, ILog log)
         {
