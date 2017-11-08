@@ -20,7 +20,8 @@ namespace Vostok.AirlockConsumer
         public AutoResetOffsetPolicy AutoResetOffsetPolicy { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);
         public TimeSpan UpdateSubscriptionInterval { get; } = TimeSpan.FromSeconds(30);
-        public TimeSpan FlushMetricsInterval { get; } = TimeSpan.FromSeconds(5);
+        public TimeSpan UpdateSubscriptionTimeout { get; } = TimeSpan.FromSeconds(10);
+        public TimeSpan FlushMetricsInterval { get; } = TimeSpan.FromSeconds(10);
         public TimeSpan OffsetsForTimesTimeout { get; } = TimeSpan.FromSeconds(10);
         public string ConsumerGroupHostId => $"{ConsumerGroupId}-{ClientId}";
 
