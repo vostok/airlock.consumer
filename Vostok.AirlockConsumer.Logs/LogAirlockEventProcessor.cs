@@ -48,8 +48,6 @@ namespace Vostok.AirlockConsumer.Logs
 
         private static readonly HttpStatusCode[] retriableHttpStatusCodes =
         {
-            HttpStatusCode.InternalServerError,
-            HttpStatusCode.NotImplemented,
             HttpStatusCode.BadGateway,
             HttpStatusCode.GatewayTimeout,
             HttpStatusCode.RequestTimeout,
