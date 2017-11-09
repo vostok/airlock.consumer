@@ -182,7 +182,8 @@ namespace Vostok.AirlockConsumer
         {
             try
             {
-                processor.Process(airlockEvents);
+                processor.Process(airlockEvents, messageProcessedCounter);
+                log.Info($"batch was processed, size={airlockEvents.Count}");
             }
             catch (Exception e)
             {
@@ -193,6 +194,7 @@ namespace Vostok.AirlockConsumer
         public void Dispose()
         {
             (messageEnqueuedCounter as IDisposable)?.Dispose();
+            (messageProcessedCounter as IDisposable)?.Dispose();
             queueGauge.Dispose();
             pausedGauge.Dispose();
         }

@@ -26,9 +26,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
-            var airlockConfig = GetAirlockConfig(log, environmentVariables);
-            var airlockClient = new AirlockClient(airlockConfig, log);
-            processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracesToEventsProcessor(airlockClient));
+            processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracesToEventsProcessor(AirlockClient));
         }
     }
 }

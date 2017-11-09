@@ -15,7 +15,7 @@ namespace Vostok.AirlockConsumer
 
         public void Run()
         {
-            var log = Logging.Configure($"./log/{typeof (TConsumerApp).Name}-{{Date}}.log");
+            var log = Logging.Configure();
             AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
             {
                 log.Fatal("Unhandled exception in curreant AppDomain", (Exception) eventArgs.ExceptionObject);
@@ -59,6 +59,11 @@ namespace Vostok.AirlockConsumer
                 log.Fatal("Unhandled exception on the main thread", e);
                 Environment.Exit(3);
             }
+        }
+
+        public void Stop()
+        {
+            stopSignal.Set();
         }
     }
 }

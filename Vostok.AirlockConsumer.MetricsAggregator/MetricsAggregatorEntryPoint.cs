@@ -27,8 +27,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             routingKeyFilter = new DirtyRoutingKeyFilter("-events");
 
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
-            var airlockConfig = GetAirlockConfig(log, environmentVariables);
-            var airlockClient = new AirlockClient(airlockConfig, log);
 
             var settings = new MetricsAggregatorSettings();
             var processor = new MetricAirlockEventProcessor(
@@ -38,7 +36,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                     var metricAggregator = new MetricAggregator(
                         rootMetricScope,
                         new BucketKeyProvider(),
-                        airlockClient,
+                        AirlockClient,
                         settings.MetricAggregationPastGap,
                         initialBorders,
                         routingKey);

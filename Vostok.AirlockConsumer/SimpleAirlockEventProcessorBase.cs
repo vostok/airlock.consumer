@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
@@ -10,7 +11,7 @@ namespace Vostok.AirlockConsumer
             return null;
         }
 
-        public abstract void Process(List<AirlockEvent<T>> events);
+        public abstract void Process(List<AirlockEvent<T>> events, ICounter messageProcessedCounter);
 
         public void Release(string routingKey)
         {

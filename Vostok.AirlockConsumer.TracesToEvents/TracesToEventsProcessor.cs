@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
+using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
@@ -14,7 +15,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             this.airlockClient = airlockClient;
         }
 
-        public sealed override void Process(List<AirlockEvent<Span>> events)
+        public sealed override void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
         {
             var httpServerSpanEvents = events
                 .Where(x => x.Payload.Annotations.TryGetValue("kind", out var kind) && kind == "http-server")
@@ -25,6 +26,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
                 var routingKey = RoutingKey.ReplaceSuffix(@event.RoutingKey, RoutingKey.TraceEventsSuffix);
                 var metricEvent = MetricEventBuilder.Build(@event.Payload);
                 airlockClient.Push(routingKey, metricEvent);
+                messageProcessedCounter.Add();
             }
         }
     }

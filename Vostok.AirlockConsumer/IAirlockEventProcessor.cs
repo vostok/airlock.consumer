@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
@@ -12,7 +13,7 @@ namespace Vostok.AirlockConsumer
         /// </summary>
         DateTimeOffset? GetStartTimestampOnRebalance(string routingKey);
 
-        void Process(List<AirlockEvent<byte[]>> events);
+        void Process(List<AirlockEvent<byte[]>> events, ICounter messageProcessedCounter);
 
         void Release(string routingKey);
     }
@@ -24,7 +25,7 @@ namespace Vostok.AirlockConsumer
         /// </summary>
         DateTimeOffset? GetStartTimestampOnRebalance(string routingKey);
 
-        void Process(List<AirlockEvent<T>> events);
+        void Process(List<AirlockEvent<T>> events, ICounter messageProcessedCounter);
 
         void Release(string routingKey);
     }
