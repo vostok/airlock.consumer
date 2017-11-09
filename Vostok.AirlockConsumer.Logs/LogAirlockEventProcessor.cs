@@ -26,19 +26,14 @@ namespace Vostok.AirlockConsumer.Logs
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
         {
-            Parallel.ForEach(
-                events.Batch(batchSize), new ParallelOptions { MaxDegreeOfParallelism = maxElasticTasks },
-                batch =>
-                {
-                    var bulkItems = new List<object>();
-                    foreach (var @event in batch)
-                    {
-                        bulkItems.Add(BuildIndexRecordMeta(@event));
-                        bulkItems.Add(BuildIndexRecord(@event));
-                    }
-                    Index(bulkItems);
-                    messageProcessedCounter.Add(events.Count);
-                });
+            var bulkItems = new List<object>();
+            foreach (var @event in events)
+            {
+                bulkItems.Add(BuildIndexRecordMeta(@event));
+                bulkItems.Add(BuildIndexRecord(@event));
+            }
+            Index(bulkItems);
+            messageProcessedCounter.Add(events.Count);
         }
 
         private void Index(List<object> bulkItems)
