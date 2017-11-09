@@ -38,12 +38,15 @@ namespace Vostok.AirlockConsumer.Logs
         private void Index(List<object> bulkItems)
         {
             var postData = new PostData<object>(bulkItems);
-            retriableCallStrategy.Call(() =>
-            {
-                var response = elasticClient.Bulk<byte[]>(postData);
-                if (!response.Success)
-                    throw response.OriginalException;
-            }, IsRetriableException, log);
+            retriableCallStrategy.Call(
+                () =>
+                {
+                    var response = elasticClient.Bulk<byte[]>(postData);
+                    if (!response.Success)
+                        throw response.OriginalException;
+                },
+                IsRetriableException,
+                log);
         }
 
         private static readonly HttpStatusCode[] retriableHttpStatusCodes =
@@ -58,9 +61,10 @@ namespace Vostok.AirlockConsumer.Logs
         private bool IsRetriableException(Exception ex)
         {
             var elasticsearchClientException = ExceptionFinder.FindException<ElasticsearchClientException>(ex);
-            if (elasticsearchClientException == null)
+            var httpStatusCode = elasticsearchClientException?.Response?.HttpStatusCode;
+            if (httpStatusCode == null)
                 return false;
-            var statusCode = (HttpStatusCode) (elasticsearchClientException.Response.HttpStatusCode ?? 500);
+            var statusCode = (HttpStatusCode) httpStatusCode.Value;
             return retriableHttpStatusCodes.Contains(statusCode);
         }
 
