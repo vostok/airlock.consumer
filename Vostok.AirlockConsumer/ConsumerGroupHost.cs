@@ -175,7 +175,7 @@ namespace Vostok.AirlockConsumer
             catch (Exception e)
             {
                 log.Error($"Could not get metadata, consumerName: {consumer.Name}, memberId: {consumer.MemberId}", e);
-                return false;
+                return true;
             }
             log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
 
