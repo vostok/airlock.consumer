@@ -30,7 +30,6 @@ namespace Vostok.AirlockConsumer.Metrics
             SendBatchAsync(metrics.ToArray()).GetAwaiter().GetResult();
         }
 
-        // todo (avk, 05.10.2017): simplify processors https://github.com/vostok/airlock.consumer/issues/16
         private async Task SendBatchAsync(IReadOnlyCollection<Metric> batchMetrics)
         {
             await retriableCallStrategy.CallAsync(() => graphiteClient.SendAsync(batchMetrics), ex => true, log);

@@ -37,9 +37,10 @@ namespace Vostok.AirlockConsumer.Logs
 
         private void Index(List<object> bulkItems)
         {
+            var postData = new PostData<object>(bulkItems);
             retriableCallStrategy.Call(() =>
             {
-                var response = elasticClient.Bulk<byte[]>(new PostData<object>(bulkItems));
+                var response = elasticClient.Bulk<byte[]>(postData);
                 if (!response.Success)
                     throw response.OriginalException;
             }, IsRetriableException, log);
