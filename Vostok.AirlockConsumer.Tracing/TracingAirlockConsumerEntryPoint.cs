@@ -34,7 +34,7 @@ namespace Vostok.AirlockConsumer.Tracing
             processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, log, maxCassandraTasks: 1000));
         }
 
-        private static ContrailsClientSettings GetContrailsClientSettings(ILog log, Dictionary<string, string> environmentVariables)
+        public static ContrailsClientSettings GetContrailsClientSettings(ILog log, Dictionary<string, string> environmentVariables)
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_CASSANDRA_ENDPOINTS", out var cassandraEndpoints))
                 cassandraEndpoints = defaultCassandraEndpoints;

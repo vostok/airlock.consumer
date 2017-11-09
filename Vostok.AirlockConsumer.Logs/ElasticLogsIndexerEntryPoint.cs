@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer.Logs
             processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
         }
 
-        private static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
+        public static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
                 elasticEndpoints = defaultElasticEndpoints;

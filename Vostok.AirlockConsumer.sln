@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Trac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Sentry", "Vostok.AirlockConsumer.Sentry\Vostok.AirlockConsumer.Sentry.csproj", "{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.IntergationTests", "Vostok.AirlockConsumer.IntergationTests\Vostok.AirlockConsumer.IntergationTests.csproj", "{3BD377F5-AA40-4D50-B479-A171F04AFBAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BD377F5-AA40-4D50-B479-A171F04AFBAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BD377F5-AA40-4D50-B479-A171F04AFBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BD377F5-AA40-4D50-B479-A171F04AFBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BD377F5-AA40-4D50-B479-A171F04AFBAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
