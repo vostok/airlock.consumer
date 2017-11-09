@@ -224,7 +224,7 @@ namespace Vostok.AirlockConsumer
                 if (!processorInfos.TryGetValue(routingKey, out var processorInfo))
                 {
                     var processor = processorProvider.GetProcessor(routingKey);
-                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer, metrics.GetProcessorScope(routingKey), settings.FlushMetricsInterval);
+                    var processorHost = new ProcessorHost(settings.ConsumerGroupHostId, routingKey, processor, log, consumer, metrics.GetProcessorScope(routingKey), settings.FlushMetricsInterval, settings.ProcessorHostSettings);
                     processorInfo = (processor, processorHost);
                     processorInfos.Add(routingKey, processorInfo);
                     processorHost.Start();

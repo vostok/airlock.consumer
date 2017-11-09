@@ -6,16 +6,18 @@ namespace Vostok.AirlockConsumer
 {
     public class ConsumerGroupHostSettings
     {
-        public ConsumerGroupHostSettings(string bootstrapServers, string consumerGroupId, string clientId = null, AutoResetOffsetPolicy autoResetOffsetPolicy = AutoResetOffsetPolicy.Latest)
+        public ConsumerGroupHostSettings(string bootstrapServers, string consumerGroupId, ProcessorHostSettings processorHostSettings, string clientId = null, AutoResetOffsetPolicy autoResetOffsetPolicy = AutoResetOffsetPolicy.Latest)
         {
             BootstrapServers = bootstrapServers;
             ConsumerGroupId = consumerGroupId;
+            ProcessorHostSettings = processorHostSettings;
             ClientId = clientId ?? $"airlock@{Dns.GetHostName()}";
             AutoResetOffsetPolicy = autoResetOffsetPolicy;
         }
 
         public string BootstrapServers { get; }
         public string ConsumerGroupId { get; }
+        public ProcessorHostSettings ProcessorHostSettings { get; }
         public string ClientId { get; }
         public AutoResetOffsetPolicy AutoResetOffsetPolicy { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);

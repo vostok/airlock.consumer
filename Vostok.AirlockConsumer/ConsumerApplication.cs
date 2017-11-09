@@ -32,12 +32,13 @@ namespace Vostok.AirlockConsumer
                     Reporter = new AirlockMetricReporter(airlockClient, RoutingKey.CreatePrefix("vostok", envName, ServiceName))
                 });
 
-            var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables);
+            var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables, ProcessorHostSettings);
             DoInitialize(log, rootMetricScope,  environmentVariables, out var routingKeyFilter, out var processorProvider);
             return new ConsumerGroupHost(consumerGroupHostSettings, log, rootMetricScope, routingKeyFilter, processorProvider);
         }
 
         protected abstract string ServiceName { get; }
+        protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
 
@@ -67,11 +68,11 @@ namespace Vostok.AirlockConsumer
             return environmentVariables;
         }
 
-        private ConsumerGroupHostSettings GetConsumerGroupHostSettings(ILog log, Dictionary<string, string> environmentVariables)
+        private ConsumerGroupHostSettings GetConsumerGroupHostSettings(ILog log, Dictionary<string, string> environmentVariables, ProcessorHostSettings processorHostSettings)
         {
             var consumerGroupId = GetConsumerGroupId(environmentVariables);
             var kafkaBootstrapEndpoints = GetKafkaBootstrapEndpoints(environmentVariables);
-            var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId);
+            var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, processorHostSettings);
             log.Info($"ConsumerGroupHostSettings: {consumerGroupHostSettings.ToPrettyJson()}");
             return consumerGroupHostSettings;
         }

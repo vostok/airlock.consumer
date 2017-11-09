@@ -15,6 +15,11 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         }
 
         protected override string ServiceName => "metrics-aggregator";
+        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
+        {
+            MaxBatchSize = 1000,
+            MaxProcessorQueueSize = 100000
+        };
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
