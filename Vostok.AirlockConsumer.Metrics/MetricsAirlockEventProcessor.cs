@@ -29,8 +29,7 @@ namespace Vostok.AirlockConsumer.Metrics
         {
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
             SendBatchAsync(metrics.ToArray()).GetAwaiter().GetResult();
-                messageProcessedCounter.Add(events.Count);
-            }
+            messageProcessedCounter.Add(events.Count);
         }
 
         private async Task SendBatchAsync(IReadOnlyCollection<Metric> batchMetrics)
