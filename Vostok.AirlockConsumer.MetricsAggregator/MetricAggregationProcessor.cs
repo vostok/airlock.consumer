@@ -6,16 +6,14 @@ using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    // todo (avk, 06.10.2017): we need only one MetricAggregationService per project https://github.com/vostok/airlock.consumer/issues/18
-    internal class MetricAirlockEventProcessor : SimpleAirlockEventProcessorBase<MetricEvent>
+    internal class MetricAggregationProcessor : SimpleAirlockEventProcessorBase<MetricEvent>
     {
         private readonly Func<string, MetricAggregationService> serviceFactory;
-        private readonly ConcurrentDictionary<string, MetricAggregationService> services;
+        private readonly ConcurrentDictionary<string, MetricAggregationService> services = new ConcurrentDictionary<string, MetricAggregationService>();
 
-        public MetricAirlockEventProcessor(Func<string, MetricAggregationService> serviceFactory)
+        public MetricAggregationProcessor(Func<string, MetricAggregationService> serviceFactory)
         {
             this.serviceFactory = serviceFactory;
-            services = new ConcurrentDictionary<string, MetricAggregationService>();
         }
 
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ICounter messageProcessedCounter)
@@ -23,13 +21,12 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             foreach (var consumerEvent in events)
             {
                 var service = services.GetOrAdd(consumerEvent.RoutingKey, serviceFactory);
-                service.Start();
                 service.ProcessMetricEvent(consumerEvent.Payload);
                 messageProcessedCounter.Add();
             }
         }
 
-        public void Stop()
+        public override void Release(string routingKey)
         {
             foreach (var kvp in services)
                 kvp.Value.Stop();

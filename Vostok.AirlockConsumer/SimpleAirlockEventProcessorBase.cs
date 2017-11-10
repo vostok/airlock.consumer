@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer
 
         public abstract void Process(List<AirlockEvent<T>> events, ICounter messageProcessedCounter);
 
-        public void Release(string routingKey)
+        public virtual void Release(string routingKey)
         {
         }
     }
