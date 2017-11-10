@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -166,7 +167,16 @@ namespace Vostok.AirlockConsumer
 
         private bool UpdateSubscription()
         {
-            var metadata = consumer.GetMetadata(allTopics: true);
+            Metadata metadata;
+            try
+            {
+                metadata = consumer.GetMetadata(allTopics: true, timeout: settings.UpdateSubscriptionTimeout);
+            }
+            catch (Exception e)
+            {
+                log.Error($"Could not get metadata, consumerName: {consumer.Name}, memberId: {consumer.MemberId}", e);
+                return true;
+            }
             log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
 
             var topicsToSubscribeTo = new HashSet<string>();

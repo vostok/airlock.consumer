@@ -23,7 +23,7 @@ namespace Vostok.AirlockConsumer.Tracing
 
         private void ProcessEvent(AirlockEvent<Span> @event)
         {
-            contrailsClient.AddSpan(@event.Payload).Wait();
+            contrailsClient.AddSpan(@event.Payload).GetAwaiter().GetResult();
         }
     }
 }
