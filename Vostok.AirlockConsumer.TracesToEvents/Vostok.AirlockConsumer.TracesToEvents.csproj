@@ -5,6 +5,9 @@
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject />
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ThreadPoolMinThreads>100</ThreadPoolMinThreads>
+    <ThreadPoolMaxThreads>3000</ThreadPoolMaxThreads>
   </PropertyGroup>
 
   <ItemGroup>
