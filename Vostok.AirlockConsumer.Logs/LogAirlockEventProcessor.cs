@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using Elasticsearch.Net;
 using Vostok.Airlock.Logging;
+using Vostok.Logging;
 using Vostok.Metrics.Meters;
 using Vostok.RetriableCall;
 
@@ -11,11 +12,13 @@ namespace Vostok.AirlockConsumer.Logs
 {
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
+        private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
         private readonly RetriableCallStrategy retriableCallStrategy;
 
-        public LogAirlockEventProcessor(Uri[] elasticUris)
+        public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
+            this.log = log;
             retriableCallStrategy = new RetriableCallStrategy();
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);

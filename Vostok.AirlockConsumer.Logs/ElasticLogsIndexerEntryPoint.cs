@@ -28,7 +28,7 @@ namespace Vostok.AirlockConsumer.Logs
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
             var elasticUris = GetElasticUris(log, environmentVariables);
-            processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris));
+            processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
         }
 
         private static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
