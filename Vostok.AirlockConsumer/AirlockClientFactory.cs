@@ -14,7 +14,7 @@ namespace Vostok.AirlockConsumer
 
         public static IAirlockClient CreateAirlockClient(Dictionary<string, string> environmentVariables)
         {
-            var log = Logging.ConfigureAirlockClient();
+            var log = Logging.Configure("./log/airlock-{Date}.log");
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
             return new AirlockClient(airlockConfig, log);
         }
