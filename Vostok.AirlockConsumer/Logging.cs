@@ -8,14 +8,15 @@ namespace Vostok.AirlockConsumer
 {
     public static class Logging
     {
-        public static ILog Configure(string pathFormat = "./log/actions-{Date}.log")
+        public static ILog Configure(string pathFormat = "./log/actions-{Date}.log", bool writeToConsole = true)
         {
-            var logger = new LoggerConfiguration()
+            var loggerConfiguration = new LoggerConfiguration()
                 .Enrich.With<ThreadEnricher>()
                 .MinimumLevel.Debug()
-                .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff} {Level:u3} [{Thread}] {Message:l}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Information)
-                .WriteTo.RollingFile(pathFormat, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3} [{Thread}] {SourceContext} {Message:l}{NewLine}{Exception}")
-                .CreateLogger();
+                .WriteTo.RollingFile(pathFormat, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3} [{Thread}] {SourceContext} {Message:l}{NewLine}{Exception}");
+            if (writeToConsole)
+                loggerConfiguration = loggerConfiguration.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff} {Level:u3} [{Thread}] {Message:l}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Information);
+            var logger = loggerConfiguration.CreateLogger();
             return new SerilogLog(logger).WithFlowContext();
         }
     }
