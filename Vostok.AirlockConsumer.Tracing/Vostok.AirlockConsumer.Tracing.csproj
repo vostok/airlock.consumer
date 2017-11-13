@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="CassandraCSharpDriver" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="Vostok.Contrails.Client" Version="1.0.0-pre000020" />
+    <PackageReference Include="Vostok.Contrails.Client" Version="1.0.0-pre000023" />
     <PackageReference Include="Vostok.Core" Version="1.0.0-pre000346" />
   </ItemGroup>
 
