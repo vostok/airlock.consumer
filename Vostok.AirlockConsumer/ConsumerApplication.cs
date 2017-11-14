@@ -18,7 +18,7 @@ namespace Vostok.AirlockConsumer
             if (!environmentVariables.TryGetValue("VOSTOK_ENV", out var envName))
                 envName = "dev";
 
-            AirlockClient = AirlockClientFactory.CreateAirlockClient(environmentVariables);
+            AirlockClient = AirlockClientFactory.CreateAirlockClient(environmentVariables, log);
 
             IMetricScope rootMetricScope = new RootMetricScope(
                 new MetricConfiguration

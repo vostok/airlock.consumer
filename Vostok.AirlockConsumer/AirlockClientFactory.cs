@@ -12,11 +12,11 @@ namespace Vostok.AirlockConsumer
         private const string defaultAirlockGateEndpoints = "http://gate:6306";
         private const string defaultAirlockGateApiKey = "UniversalApiKey";
 
-        public static IAirlockClient CreateAirlockClient(Dictionary<string, string> environmentVariables)
+        public static IAirlockClient CreateAirlockClient(Dictionary<string, string> environmentVariables, ILog log)
         {
-            var log = Logging.Configure("./log/airlock-{Date}.log", false);
+            var airlockClientLog = Logging.Configure("./log/airlock-{Date}.log", false);
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
-            return new AirlockClient(airlockConfig, log);
+            return new AirlockClient(airlockConfig, airlockClientLog);
         }
 
         private static AirlockConfig GetAirlockConfig(ILog log, Dictionary<string, string> environmentVariables)
