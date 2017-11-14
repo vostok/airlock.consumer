@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Vostok.Airlock;
+using Vostok.Airlock.Logging;
 using Vostok.AirlockConsumer.Logs;
 using Vostok.AirlockConsumer.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
+using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
@@ -17,20 +20,19 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
-            var eventCount = 10;
+            const int eventCount = 10;
 
-            var dateTimeOffset = DateTimeOffset.UtcNow;
-            var testId = Guid.NewGuid().ToString("N");
-
-            var logEventDictionary = SendLogEvents(eventCount, dateTimeOffset, testId);
+            var logEventDictionary = new Dictionary<string, LogEventData>();
+            SendLogEvents(eventCount, logEventData => logEventDictionary.Add(logEventData.Message, logEventData));
+            var testId = logEventDictionary.Take(1).ToArray()[0].Value.Properties["testId"];
 
             var elasticUris = ElasticLogsIndexerEntryPoint.GetElasticUris(Log, EnvironmentVariables);
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
             var routingKey = RoutingKey.ReplaceSuffix(RoutingKeyPrefix, RoutingKey.LogsSuffix);
-            var indexName = string.Format("{0}-{1:yyyy.MM.dd}", routingKey.Replace('.', '-'), dateTimeOffset);
-            //Thread.Sleep(10000);
+            var indexName = string.Format("{0}-{1:yyyy.MM.dd}", routingKey.Replace('.', '-'), DateTime.UtcNow);
+
             var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
             var task = new Task(
                 () =>
@@ -77,7 +79,10 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendTraceEventsToAirlock_GotItAtCassandra()
         {
-            var spansList = SendTraces(10);
+            const int eventCount = 10;
+            var spansList = new List<Span>();
+
+            SendTraces(eventCount, span => spansList.Add(span));
             var contrailsClientSettings = TracingAirlockConsumerEntryPoint.GetContrailsClientSettings(Log, EnvironmentVariables);
             var contrailsClient = new ContrailsClient(contrailsClientSettings, Log);
 

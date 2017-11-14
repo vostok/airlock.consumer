@@ -37,9 +37,11 @@ namespace Vostok.AirlockConsumer.IntergationTests
             messageSender.SendMessage();
         }
 
-        protected Dictionary<string, LogEventData> SendLogEvents(int eventCount, DateTimeOffset dateTimeOffset, string testId)
+        protected void SendLogEvents(int eventCount, Action<LogEventData> onCreate = null)
         {
-            var logEventDictionary = new Dictionary<string, LogEventData>();
+            var dateTimeOffset = DateTimeOffset.UtcNow;
+            var testId = Guid.NewGuid().ToString("N");
+
             Send(
                 eventCount,
                 new LogEventDataSerializer(),
@@ -52,20 +54,18 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Timestamp = dateTimeOffset.AddMilliseconds(-i*10),
                         Properties = new Dictionary<string, string> {["testId"] = testId}
                     };
-                    logEventDictionary.Add(logEventData.Message, logEventData);
+                    onCreate?.Invoke(logEventData);
                     return logEventData;
                 },
                 RoutingKey.LogsSuffix,
                 e => e.Timestamp);
-            return logEventDictionary;
         }
 
-        protected List<Span> SendTraces(int eventCount)
+        protected void SendTraces(int eventCount, Action<Span> onCreate = null)
         {
             var dateTimeOffset = DateTimeOffset.UtcNow;
             var testId = Guid.NewGuid().ToString("N");
 
-            var spansList = new List<Span>();
             Send(
                 eventCount,
                 new SpanAirlockSerializer(),
@@ -79,12 +79,11 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         TraceId = Guid.NewGuid(),
                         Annotations = new Dictionary<string, string> {["testId"] = testId}
                     };
-                    spansList.Add(span);
+                    onCreate?.Invoke(span);
                     return span;
                 },
                 RoutingKey.TracesSuffix,
                 e => e.BeginTimestamp);
-            return spansList;
         }
     }
 }

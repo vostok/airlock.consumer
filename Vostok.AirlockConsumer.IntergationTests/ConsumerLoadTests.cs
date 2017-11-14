@@ -4,7 +4,6 @@ using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Metrics;
-using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
@@ -14,10 +13,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendLogEvents()
         {
-            var dateTimeOffset = DateTimeOffset.UtcNow;
-            var testId = Guid.NewGuid().ToString("N");
-
-            SendLogEvents(1000000, dateTimeOffset, testId);
+            SendLogEvents(1000000);
         }
 
         [Test]
@@ -32,7 +28,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
             const int eventCount = 10000;
             var dateTimeOffset = DateTimeOffset.UtcNow;
 
-            var tags = new Dictionary<string, string> { [MetricsTagNames.Type] = "test" };
+            var tags = new Dictionary<string, string> { [MetricsTagNames.Type] = "app" };
             var values = new Dictionary<string, double> { [MetricsTagNames.Type] = 1 };
 
             Send(
