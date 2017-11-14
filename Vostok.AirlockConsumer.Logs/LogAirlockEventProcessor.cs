@@ -5,6 +5,7 @@ using System.Net;
 using Elasticsearch.Net;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
+using Vostok.Metrics.Meters;
 using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Logs
@@ -17,14 +18,14 @@ namespace Vostok.AirlockConsumer.Logs
 
         public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
-            retriableCallStrategy = new RetriableCallStrategy();
             this.log = log;
+            retriableCallStrategy = new RetriableCallStrategy();
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public sealed override void Process(List<AirlockEvent<LogEventData>> events)
+        public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
         {
             var bulkItems = new List<object>();
             foreach (var @event in events)
@@ -33,6 +34,7 @@ namespace Vostok.AirlockConsumer.Logs
                 bulkItems.Add(BuildIndexRecord(@event));
             }
             Index(bulkItems);
+            messageProcessedCounter.Add(events.Count);
         }
 
         private void Index(List<object> bulkItems)

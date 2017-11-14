@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vostok.Contrails.Client;
+using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
@@ -16,14 +17,15 @@ namespace Vostok.AirlockConsumer.Tracing
             this.maxCassandraTasks = maxCassandraTasks;
         }
 
-        public sealed override void Process(List<AirlockEvent<Span>> events)
+        public sealed override void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
         {
-            Parallel.ForEach(events, new ParallelOptions {MaxDegreeOfParallelism = maxCassandraTasks}, ProcessEvent);
+            Parallel.ForEach(events, new ParallelOptions {MaxDegreeOfParallelism = maxCassandraTasks}, @event => ProcessEvent(@event, messageProcessedCounter));
         }
 
-        private void ProcessEvent(AirlockEvent<Span> @event)
+        private void ProcessEvent(AirlockEvent<Span> @event, ICounter messageProcessedCounter)
         {
             contrailsClient.AddSpan(@event.Payload).GetAwaiter().GetResult();
+            messageProcessedCounter.Add();
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
@@ -17,13 +18,14 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             services = new ConcurrentDictionary<string, MetricAggregationService>();
         }
 
-        public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
+        public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ICounter messageProcessedCounter)
         {
             foreach (var consumerEvent in events)
             {
                 var service = services.GetOrAdd(consumerEvent.RoutingKey, serviceFactory);
                 service.Start();
                 service.ProcessMetricEvent(consumerEvent.Payload);
+                messageProcessedCounter.Add();
             }
         }
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Vostok.Graphite.Client;
 using Vostok.Logging;
 using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Metrics
@@ -24,10 +25,11 @@ namespace Vostok.AirlockConsumer.Metrics
             graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port);
         }
 
-        public sealed override void Process(List<AirlockEvent<MetricEvent>> events)
+        public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ICounter messageProcessedCounter)
         {
             var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
             SendBatchAsync(metrics.ToArray()).GetAwaiter().GetResult();
+            messageProcessedCounter.Add(events.Count);
         }
 
         private async Task SendBatchAsync(IReadOnlyCollection<Metric> batchMetrics)

@@ -32,7 +32,7 @@ namespace Vostok.AirlockConsumer.Sample
         public static void Main(string[] args)
         {
             AirlockSerializerRegistry.Register(new SampleEventSerializer());
-            var log = Logging.Configure("log/actions-{Date}.txt");
+            var log = Logging.Configure();
             Console.CancelKeyPress += (_, e) =>
             {
                 log.Warn("Ctrl+C is pressed -> terminating...");
