@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
+using Vostok.Airlock;
+using Vostok.Airlock.Metrics;
+using Vostok.Metrics;
+using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
@@ -20,5 +25,32 @@ namespace Vostok.AirlockConsumer.IntergationTests
         {
             SendTraces(1000000);
         }
+
+        [Test]
+        public void SendAppEvents()
+        {
+            const int eventCount = 10000;
+            var dateTimeOffset = DateTimeOffset.UtcNow;
+
+            var tags = new Dictionary<string, string> { [MetricsTagNames.Type] = "test" };
+            var values = new Dictionary<string, double> { [MetricsTagNames.Type] = 1 };
+
+            Send(
+                eventCount,
+                new MetricEventSerializer(),
+                i =>
+                {
+                    var span = new MetricEvent
+                    {
+                        Timestamp = dateTimeOffset.AddMilliseconds(-i * 10),
+                        Tags = tags,
+                        Values = values
+                    };
+                    return span;
+                },
+                RoutingKey.AppEventsSuffix,
+                e => e.Timestamp);
+        }
+
     }
 }

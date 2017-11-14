@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
             RoutingKeyPrefix = RoutingKey.Create("vostok", "dev", "test");
         }
 
-        private void Send<T>(int eventCount, IAirlockSerializer<T> serializer, Func<int, T> factory, string routingKeySuffix, Func<T, DateTimeOffset> getTimestamp)
+        protected void Send<T>(int eventCount, IAirlockSerializer<T> serializer, Func<int, T> factory, string routingKeySuffix, Func<T, DateTimeOffset> getTimestamp)
         {
             var routingKey = RoutingKey.ReplaceSuffix(RoutingKeyPrefix, routingKeySuffix);
             var airlockConfig = TestAirlockClientFactory.GetAirlockConfig(Log, EnvironmentVariables);
