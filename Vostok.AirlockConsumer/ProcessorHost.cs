@@ -183,7 +183,6 @@ namespace Vostok.AirlockConsumer
             try
             {
                 processor.Process(airlockEvents, messageProcessedCounter);
-                log.Info($"batch was processed, size={airlockEvents.Count}");
             }
             catch (Exception e)
             {
