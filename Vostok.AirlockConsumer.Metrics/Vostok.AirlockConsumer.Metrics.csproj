@@ -5,8 +5,6 @@
     <IsPackable>false</IsPackable>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <ThreadPoolMinThreads>100</ThreadPoolMinThreads>
-    <ThreadPoolMaxThreads>3000</ThreadPoolMaxThreads>
   </PropertyGroup>
 
   <ItemGroup>
