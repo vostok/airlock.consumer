@@ -29,33 +29,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
 
             var settings = new MetricsAggregatorSettings();
-            var processor = new MetricAirlockEventProcessor(
-                routingKey =>
-                {
-                    var initialBorders = CreateBorders(DateTimeOffset.UtcNow, settings);
-                    var metricAggregator = new MetricAggregator(
-                        rootMetricScope,
-                        new BucketKeyProvider(),
-                        AirlockClient,
-                        settings.MetricAggregationPastGap,
-                        initialBorders,
-                        routingKey);
-                    var eventsTimestampProvider = new EventsTimestampProvider(1000);
-                    var metricResetDaemon = new MetricResetDaemon(eventsTimestampProvider, settings, metricAggregator);
-                    return new MetricAggregationService(
-                        metricAggregator,
-                        eventsTimestampProvider,
-                        metricResetDaemon,
-                        initialBorders);
-                });
-            processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => processor);
-        }
-
-        private static Borders CreateBorders(DateTimeOffset timestamp, MetricsAggregatorSettings settings)
-        {
-            var future = timestamp + settings.MetricAggregationFutureGap;
-            var past = timestamp - settings.MetricAggregationPastGap - settings.MetricAggregationStartGap;
-            return new Borders(past, future);
+            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, AirlockClient, settings);
         }
 
         private class DirtyRoutingKeyFilter : IRoutingKeyFilter
