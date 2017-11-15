@@ -9,21 +9,24 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private readonly IEventsTimestampProvider eventsTimestampProvider;
         private readonly MetricsAggregatorSettings settings;
         private readonly IMetricAggregator aggregator;
+        private Borders currentBorders;
 
         private readonly CancellationTokenSource cts;
 
         public MetricResetDaemon(
             IEventsTimestampProvider eventsTimestampProvider,
             MetricsAggregatorSettings settings,
-            IMetricAggregator aggregator)
+            IMetricAggregator aggregator,
+            Borders initialBorders)
         {
             this.eventsTimestampProvider = eventsTimestampProvider;
             this.settings = settings;
             this.aggregator = aggregator;
+            currentBorders = initialBorders;
             cts = new CancellationTokenSource();
         }
 
-        public async Task StartAsync(Borders currentBorders)
+        public async Task StartAsync()
         {
             while (!cts.Token.IsCancellationRequested)
             {
@@ -35,10 +38,14 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 {
                     return;
                 }
-
-                currentBorders = CalculateNewBorders(currentBorders);
-                aggregator.Flush(currentBorders);
+                Flush();
             }
+        }
+
+        private void Flush()
+        {
+            currentBorders = CalculateNewBorders(currentBorders);
+            aggregator.Flush(currentBorders);
         }
 
         private Borders CalculateNewBorders(Borders current)
@@ -59,6 +66,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         public void Stop()
         {
             cts.Cancel();
+            Flush();
         }
     }
 }
