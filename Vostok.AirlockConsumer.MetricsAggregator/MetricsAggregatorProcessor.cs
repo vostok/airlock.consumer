@@ -17,6 +17,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private IMetricAggregator aggregator;
         private MetricResetDaemon resetDaemon;
         private Task resetDaemonTask;
+        private bool started;
 
         public MetricsAggregatorProcessor(
             IAirlockClient airlockClient,
@@ -33,6 +34,9 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
         {
             ValidateRoutingKey(routingKey);
+            if (started)
+                throw new InvalidOperationException($"Unexpected {nameof(GetStartTimestampOnRebalance)} call. Possible reason: many partitions for one topic are not supported for aggregation");
+            started = true;
             eventsTimestampProvider = new EventsTimestampProvider(1000);
             var initialBorders = CreateBorders(DateTimeOffset.UtcNow);
             aggregator = new MetricAggregator(
