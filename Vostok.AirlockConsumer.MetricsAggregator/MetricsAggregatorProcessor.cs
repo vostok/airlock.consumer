@@ -7,7 +7,7 @@ using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class MetricsAggregatorProcessor : IAirlockEventProcessor<MetricEvent>
+    public class MetricsAggregatorProcessor : IAirlockEventProcessor<MetricEvent>
     {
         private readonly IAirlockClient airlockClient;
         private readonly IMetricScope rootMetricScope;
@@ -67,7 +67,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         private void ValidateRoutingKey(string routingKey)
         {
-            if (eventsRoutingKey != routingKey)
+            if (routingKey != eventsRoutingKey)
                 throw new InvalidOperationException($"routingKey({routingKey}) != eventsRoutingKey({eventsRoutingKey})");
         }
 

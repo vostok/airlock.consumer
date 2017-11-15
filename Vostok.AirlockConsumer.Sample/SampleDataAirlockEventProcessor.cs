@@ -16,12 +16,12 @@ namespace Vostok.AirlockConsumer.Sample
             this.recedeGap = recedeGap;
         }
 
-        public DateTimeOffset? GetStartTimestampOnRebalance(string eventsRoutingKey)
+        public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
         {
             if (!recedeGap.HasValue)
                 return null;
             var startTimestampOnRebalance = DateTimeOffset.UtcNow - recedeGap.Value;
-            log.Warn($"Going back on {eventsRoutingKey} to timestamp: {startTimestampOnRebalance}");
+            log.Warn($"Going back on {routingKey} to timestamp: {startTimestampOnRebalance}");
             return startTimestampOnRebalance;
         }
 
