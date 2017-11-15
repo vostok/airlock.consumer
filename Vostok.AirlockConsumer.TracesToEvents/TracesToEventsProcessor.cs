@@ -6,6 +6,7 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
 {
+    // todo (spaceorc, 15.11.2017) удалить - научиться обрабатывать трассировки прямо в MetricsAggregator - чтобы сэкономить место в кафке
     public class TracesToEventsProcessor : SimpleAirlockEventProcessorBase<Span>
     {
         private readonly IAirlockClient airlockClient;
