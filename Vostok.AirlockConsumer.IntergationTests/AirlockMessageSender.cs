@@ -6,7 +6,7 @@ using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
-    public class AirlockMessageSender<T>
+    public class AirlockMessageSender<T> : IDisposable
     {
         private readonly string routingKey;
         private readonly RequestSender requestSender;
@@ -31,9 +31,12 @@ namespace Vostok.AirlockConsumer.IntergationTests
         public void AddEvent(T data)
         {
             list.Add(data);
+            if (list.Count >= 10000)
+                Flush();
+
         }
 
-        public void SendMessage()
+        private void Flush()
         {
             if (list.Count == 0)
                 return;
@@ -53,6 +56,11 @@ namespace Vostok.AirlockConsumer.IntergationTests
             if (result!=RequestSendResult.Success)
                 log.Error($"{result} on {list.Count} messages");
             list.Clear();
+        }
+
+        public void Dispose()
+        {
+            Flush();
         }
     }
 }

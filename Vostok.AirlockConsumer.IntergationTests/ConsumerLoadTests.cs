@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
@@ -10,6 +11,8 @@ namespace Vostok.AirlockConsumer.IntergationTests
     [Category("Load")]
     public class ConsumerLoadTests : BaseTestClass
     {
+        protected override bool UseAirlockClient => false;
+
         [Test]
         public void SendLogEvents()
         {
@@ -32,8 +35,8 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var values = new Dictionary<string, double> { [MetricsTagNames.Type] = 1 };
 
             Send(
-                eventCount,
                 new MetricEventSerializer(),
+                Enumerable.Range(0, eventCount).Select(
                 i =>
                 {
                     var span = new MetricEvent
@@ -43,7 +46,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Values = values
                     };
                     return span;
-                },
+                }),
                 RoutingKey.AppEventsSuffix,
                 e => e.Timestamp);
         }

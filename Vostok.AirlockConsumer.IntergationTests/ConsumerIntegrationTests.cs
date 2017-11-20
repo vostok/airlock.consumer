@@ -17,6 +17,8 @@ namespace Vostok.AirlockConsumer.IntergationTests
 {
     public class ConsumerIntegrationTests : BaseTestClass
     {
+        protected override bool UseAirlockClient => true;
+
         [Test]
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
@@ -38,7 +40,8 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 () =>
                 {
                     applicationHost.Run();
-                }, TaskCreationOptions.LongRunning);
+                },
+                TaskCreationOptions.LongRunning);
             task.Start();
 
             WaitHelper.Wait(
@@ -91,7 +94,8 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 () =>
                 {
                     applicationHost.Run();
-                }, TaskCreationOptions.LongRunning);
+                },
+                TaskCreationOptions.LongRunning);
             task.Start();
 
             WaitHelper.Wait(
@@ -112,5 +116,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 });
             applicationHost.Stop();
         }
+
     }
 }
