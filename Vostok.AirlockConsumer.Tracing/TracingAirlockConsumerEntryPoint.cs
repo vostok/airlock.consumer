@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer.Tracing
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             var contrailsClientSettings = GetContrailsClientSettings(log, environmentVariables);
             var contrailsClient = new ContrailsClient(contrailsClientSettings, log);
-            processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, maxCassandraTasks: 1000));
+            processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, maxCassandraTasks: 1000, log: log));
         }
 
         private static ContrailsClientSettings GetContrailsClientSettings(ILog log, Dictionary<string, string> environmentVariables)

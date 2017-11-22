@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vostok.Contrails.Client;
+using Vostok.Logging;
 using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
@@ -10,11 +12,13 @@ namespace Vostok.AirlockConsumer.Tracing
     {
         private readonly IContrailsClient contrailsClient;
         private readonly int maxCassandraTasks;
+        private readonly ILog log;
 
-        public TracingAirlockEventProcessor(IContrailsClient contrailsClient, int maxCassandraTasks) // ICassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy
+        public TracingAirlockEventProcessor(IContrailsClient contrailsClient, int maxCassandraTasks, ILog log) // ICassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy
         {
             this.contrailsClient = contrailsClient;
             this.maxCassandraTasks = maxCassandraTasks;
+            this.log = log;
         }
 
         public sealed override void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
@@ -24,8 +28,15 @@ namespace Vostok.AirlockConsumer.Tracing
 
         private void ProcessEvent(AirlockEvent<Span> @event, ICounter messageProcessedCounter)
         {
-            contrailsClient.AddSpan(@event.Payload).GetAwaiter().GetResult();
-            messageProcessedCounter.Add();
+            try
+            {
+                contrailsClient.AddSpan(@event.Payload).GetAwaiter().GetResult();
+                messageProcessedCounter.Add();
+            }
+            catch (Exception e)
+            {
+                log.Error(e);
+            }
         }
     }
 }
