@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SharpRaven;
@@ -11,11 +12,13 @@ namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryResenderProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
+        private readonly ILog log;
         private readonly RavenClient ravenClient;
-        private const int maxSentryTasks = 1000;
+        private const int maxSentryTasks = 100;
 
         public SentryResenderProcessor(string sentryDsn, ILog log)
         {
+            this.log = log;
             ravenClient = new VostokRavenClient(sentryDsn, log);
         }
 
@@ -26,15 +29,22 @@ namespace Vostok.AirlockConsumer.Sentry
                 new ParallelOptions {MaxDegreeOfParallelism = maxSentryTasks},
                 logEvent =>
                 {
-                    var sentryEvent = new SentryEvent(logEvent.Message)
+                    try
                     {
-                        Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
-                        Tags = logEvent.Properties,
-                    };
-                    sentryEvent.Tags["timestamp"] = logEvent.Timestamp.ToString("O");
-                    sentryEvent.Tags["exception"] = logEvent.Exception;
-                    ravenClient.Capture(sentryEvent);
-                    messageProcessedCounter.Add();
+                        var sentryEvent = new SentryEvent(logEvent.Message)
+                        {
+                            Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
+                            Tags = logEvent.Properties,
+                        };
+                        sentryEvent.Tags["timestamp"] = logEvent.Timestamp.ToString("O");
+                        sentryEvent.Tags["exception"] = logEvent.Exception;
+                        ravenClient.Capture(sentryEvent);
+                        messageProcessedCounter.Add();
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(e);
+                    }
                 });
         }
 

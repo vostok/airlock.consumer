@@ -16,22 +16,26 @@ namespace Vostok.AirlockConsumer.Sentry
         public VostokRavenClient(string dsn, ILog log) : base(dsn, new VostokJsonPacketFactory())
         {
             this.log = log;
-            ErrorOnCapture = OnSendError;
         }
 
         protected override string Send(JsonPacket packet)
         {
-            return retriableCallStrategy.Call(() => base.Send(packet), IsRetriableException, log);
+            return retriableCallStrategy.Call(() =>
+            {
+                var requester = new Requester(packet, this);
+                BeforeSend?.Invoke(requester);
+                return requester.Request();
+            }, IsRetriableException, log);
         }
 
-        protected override Task<string> SendAsync(JsonPacket packet)
+        protected override async Task<string> SendAsync(JsonPacket packet)
         {
-            return retriableCallStrategy.CallAsync(async () => await base.SendAsync(packet), IsRetriableException, log);
-        }
-
-        private void OnSendError(Exception ex)
-        {
-            throw ex;
+            return await retriableCallStrategy.CallAsync(async () =>
+            {
+                var requester = new Requester(packet, this);
+                BeforeSend?.Invoke(requester);
+                return await requester.RequestAsync();
+            }, IsRetriableException, log);
         }
 
         private static readonly WebExceptionStatus[] retriableHttpStatusCodes =
