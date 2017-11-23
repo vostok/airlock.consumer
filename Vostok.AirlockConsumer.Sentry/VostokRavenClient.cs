@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer.Sentry
     {
         private readonly ILog log;
         private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy();
-        public VostokRavenClient(string dsn, ILog log) : base(dsn, new VostokJsonPacketFactory())
+        public VostokRavenClient(string dsn, ILog log) : base(dsn, new VostokJsonPacketFactory(log))
         {
             this.log = log;
         }
