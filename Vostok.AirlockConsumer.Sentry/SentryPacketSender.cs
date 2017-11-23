@@ -9,32 +9,24 @@ using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Sentry
 {
-    public class VostokRavenClient : RavenClient
+    public class SentryPacketSender 
     {
         private readonly ILog log;
         private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy();
-        public VostokRavenClient(string dsn, ILog log) : base(dsn, new VostokJsonPacketFactory(log))
+        private readonly RavenClient ravenClient;
+
+        public SentryPacketSender(Dsn dsn, ILog log) 
         {
+            ravenClient = new RavenClient(dsn);
             this.log = log;
         }
 
-        protected override string Send(JsonPacket packet)
+        public void SendPacket(JsonPacket packet)
         {
-            return retriableCallStrategy.Call(() =>
+            retriableCallStrategy.Call(() =>
             {
-                var requester = new Requester(packet, this);
-                BeforeSend?.Invoke(requester);
+                var requester = new Requester(packet, ravenClient);
                 return requester.Request();
-            }, IsRetriableException, log);
-        }
-
-        protected override async Task<string> SendAsync(JsonPacket packet)
-        {
-            return await retriableCallStrategy.CallAsync(async () =>
-            {
-                var requester = new Requester(packet, this);
-                BeforeSend?.Invoke(requester);
-                return await requester.RequestAsync();
             }, IsRetriableException, log);
         }
 

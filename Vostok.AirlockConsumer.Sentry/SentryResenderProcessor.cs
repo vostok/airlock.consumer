@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SharpRaven;
 using SharpRaven.Data;
+using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 using Vostok.Metrics.Meters;
@@ -13,32 +14,42 @@ namespace Vostok.AirlockConsumer.Sentry
     public class SentryResenderProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
         private readonly ILog log;
-        private readonly RavenClient ravenClient;
+        private readonly SentryPacketSender packetSender;
+        private readonly Dsn dsn;
         private const int maxSentryTasks = 100;
+        private readonly ExceptionParser exceptionParser = new ExceptionParser();
 
         public SentryResenderProcessor(string sentryDsn, ILog log)
         {
             this.log = log;
-            ravenClient = new VostokRavenClient(sentryDsn, log);
+            dsn = new Dsn(sentryDsn);
+            packetSender = new SentryPacketSender(dsn, log);
         }
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
         {
-            Parallel.ForEach(
-                events.Select(ev => ev.Payload).Where(ev => ev.Level == LogLevel.Error || ev.Level == LogLevel.Fatal),
+            Parallel.ForEach( //.Select(ev => ev.Payload)
+                events.Where(ev => ev.Payload.Level == LogLevel.Error || ev.Payload.Level == LogLevel.Fatal),
                 new ParallelOptions {MaxDegreeOfParallelism = maxSentryTasks},
-                logEvent =>
+                @event =>
                 {
                     try
                     {
-                        var sentryEvent = new SentryEvent(logEvent.Message)
+                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var suffix);
+                        var logEvent = @event.Payload;
+                        var jsonPacket = new JsonPacket(dsn.ProjectID)
                         {
                             Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
                             Tags = logEvent.Properties,
+                            TimeStamp = logEvent.Timestamp.UtcDateTime,
+                            Environment = environment,
+                            Exceptions = exceptionParser.Parse(logEvent.Exception),
+                            Message = logEvent.Message,
+                            MessageObject = logEvent.Message
                         };
-                        sentryEvent.Tags["timestamp"] = logEvent.Timestamp.ToString("O");
-                        sentryEvent.Tags["exception"] = logEvent.Exception;
-                        ravenClient.Capture(sentryEvent);
+                        JsonPacketPatcher.PatchPacket(jsonPacket);
+                        log.Debug("prepared packet: " + jsonPacket.ToPrettyJson());
+                        packetSender.SendPacket(jsonPacket);
                         messageProcessedCounter.Add();
                     }
                     catch (Exception e)
