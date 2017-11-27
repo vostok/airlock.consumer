@@ -14,7 +14,7 @@ namespace Vostok.AirlockConsumer.Tracing
         private readonly int maxCassandraTasks;
         private readonly ILog log;
 
-        public TracingAirlockEventProcessor(IContrailsClient contrailsClient, int maxCassandraTasks, ILog log) // ICassandraDataScheme dataScheme, ICassandraRetryExecutionStrategy retryExecutionStrategy
+        public TracingAirlockEventProcessor(IContrailsClient contrailsClient, ILog log, int maxCassandraTasks)
         {
             this.contrailsClient = contrailsClient;
             this.maxCassandraTasks = maxCassandraTasks;

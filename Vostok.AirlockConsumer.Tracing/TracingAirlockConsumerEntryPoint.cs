@@ -26,12 +26,12 @@ namespace Vostok.AirlockConsumer.Tracing
             MaxProcessorQueueSize = 100000
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             var contrailsClientSettings = GetContrailsClientSettings(log, environmentVariables);
             var contrailsClient = new ContrailsClient(contrailsClientSettings, log);
-            processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, maxCassandraTasks: 1000, log: log));
+            processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, log, maxCassandraTasks: 1000));
         }
 
         private static ContrailsClientSettings GetContrailsClientSettings(ILog log, Dictionary<string, string> environmentVariables)
