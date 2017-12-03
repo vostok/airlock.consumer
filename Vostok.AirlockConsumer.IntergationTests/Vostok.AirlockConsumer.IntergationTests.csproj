@@ -6,13 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="Elasticsearch.Net" Version="5.5.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
-    <PackageReference Include="NUnit" Version="3.8.1" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="NUnit" Version="3.9.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000358" />
-    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000358" />
-    <PackageReference Include="CassandraCSharpDriver" Version="3.3.2" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000373" />
+    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000373" />
+    <PackageReference Include="CassandraCSharpDriver" Version="3.4.0" />
   </ItemGroup>
 
   <ItemGroup>
