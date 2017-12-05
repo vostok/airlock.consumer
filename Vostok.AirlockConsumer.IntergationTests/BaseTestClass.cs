@@ -18,6 +18,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
         protected BaseTestClass()
         {
             EnvironmentVariables = EnvironmentVariablesFactory.GetEnvironmentVariables(Log);
+            //EnvironmentVariables["AIRLOCK_GATE_ENDPOINTS"] = "http://vostok.dev.kontur.ru:6306/";
+            //EnvironmentVariables["AIRLOCK_ELASTICSEARCH_ENDPOINTS"] = "http://devops-consul1.dev.kontur.ru:9200";
+            //EnvironmentVariables["AIRLOCK_CASSANDRA_ENDPOINTS"] = "vm-ke-cass1:9042;vm-ke-cass2:9042;vm-ke-cass3:9042";
             RoutingKeyPrefix = RoutingKey.Create("vostok", "dev", "test");
         }
 

@@ -33,14 +33,14 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var routingKey = RoutingKey.ReplaceSuffix(RoutingKeyPrefix, RoutingKey.LogsSuffix);
             var indexName = string.Format("{0}-{1:yyyy.MM.dd}", routingKey.Replace('.', '-'), DateTime.UtcNow);
 
-            var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
-            var task = new Task(
-                () =>
-                {
-                    applicationHost.Run();
-                },
-                TaskCreationOptions.LongRunning);
-            task.Start();
+            //var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
+            //var task = new Task(
+            //    () =>
+            //    {
+            //        applicationHost.Run();
+            //    },
+            //    TaskCreationOptions.LongRunning);
+            //task.Start();
 
             WaitHelper.Wait(
                 () =>
@@ -74,7 +74,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     }
                     return WaitAction.StopWaiting;
                 });
-            applicationHost.Stop();
+            //applicationHost.Stop();
         }
 
         [Test]
@@ -87,14 +87,14 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var contrailsClientSettings = TracingAirlockConsumerEntryPoint.GetContrailsClientSettings(Log, EnvironmentVariables);
             var contrailsClient = new ContrailsClient(contrailsClientSettings, Log);
 
-            var applicationHost = new ConsumerApplicationHost<TracingAirlockConsumerEntryPoint>();
-            var task = new Task(
-                () =>
-                {
-                    applicationHost.Run();
-                },
-                TaskCreationOptions.LongRunning);
-            task.Start();
+            //var applicationHost = new ConsumerApplicationHost<TracingAirlockConsumerEntryPoint>();
+            //var task = new Task(
+            //    () =>
+            //    {
+            //        applicationHost.Run();
+            //    },
+            //    TaskCreationOptions.LongRunning);
+            //task.Start();
 
             WaitHelper.Wait(
                 () =>
@@ -112,7 +112,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     }
                     return true;
                 });
-            applicationHost.Stop();
+            //applicationHost.Stop();
         }
 
     }
