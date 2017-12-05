@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Elasticsearch.Net" Version="5.5.0" />
+    <PackageReference Include="morelinq" Version="2.8.0" />
     <PackageReference Include="Vostok.Core" Version="1.0.0-pre000374" />
   </ItemGroup>
 
