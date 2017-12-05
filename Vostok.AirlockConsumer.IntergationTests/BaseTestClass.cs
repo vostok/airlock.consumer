@@ -11,6 +11,8 @@ namespace Vostok.AirlockConsumer.IntergationTests
 {
     public abstract class BaseTestClass
     {
+        protected const string project = "vostok";
+        protected const string environment = "dev";
         protected readonly ConsoleLog Log = new ConsoleLog();
         protected readonly Dictionary<string, string> EnvironmentVariables;
         protected readonly string RoutingKeyPrefix;
@@ -21,7 +23,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
             //EnvironmentVariables["AIRLOCK_GATE_ENDPOINTS"] = "http://vostok.dev.kontur.ru:6306/";
             //EnvironmentVariables["AIRLOCK_ELASTICSEARCH_ENDPOINTS"] = "http://devops-consul1.dev.kontur.ru:9200";
             //EnvironmentVariables["AIRLOCK_CASSANDRA_ENDPOINTS"] = "vm-ke-cass1:9042;vm-ke-cass2:9042;vm-ke-cass3:9042";
-            RoutingKeyPrefix = RoutingKey.Create("vostok", "dev", "test");
+            RoutingKeyPrefix = RoutingKey.Create(project, environment, "test");
         }
 
         protected void Send<T>(IEnumerable<T> events, string routingKeySuffix, Func<T, DateTimeOffset> getTimestamp)

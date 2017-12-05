@@ -30,8 +30,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
-            var routingKey = RoutingKey.ReplaceSuffix(RoutingKeyPrefix, RoutingKey.LogsSuffix);
-            var indexName = string.Format("{0}-{1:yyyy.MM.dd}", routingKey.Replace('.', '-'), DateTime.UtcNow);
+            var indexName = $"{project}-{environment}-{DateTime.UtcNow:yyyy.MM.dd}";
 
             //var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
             //var task = new Task(
