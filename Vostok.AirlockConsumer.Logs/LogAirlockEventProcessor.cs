@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Elasticsearch.Net;
+using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 using Vostok.Metrics.Meters;
@@ -30,8 +31,9 @@ namespace Vostok.AirlockConsumer.Logs
             var bulkItems = new List<object>();
             foreach (var @event in events)
             {
-                bulkItems.Add(BuildIndexRecordMeta(@event));
-                bulkItems.Add(BuildIndexRecord(@event));
+                RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var suffix);
+                bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
+                bulkItems.Add(BuildIndexRecord(@event, service));
             }
             Index(bulkItems);
             messageProcessedCounter.Add(events.Count);
@@ -70,9 +72,9 @@ namespace Vostok.AirlockConsumer.Logs
             return retriableHttpStatusCodes.Contains(statusCode);
         }
 
-        private static object BuildIndexRecordMeta(AirlockEvent<LogEventData> @event)
+        private static object BuildIndexRecordMeta(AirlockEvent<LogEventData> @event, string project, string environment)
         {
-            var indexName = string.Format("{0}-{1:yyyy.MM.dd}", @event.RoutingKey.Replace('.', '-'), @event.Payload.Timestamp.Date);
+            var indexName = $"{project}-{environment}-{@event.Payload.Timestamp.Date:yyyy.MM.dd}";
             return new
             {
                 index = new
@@ -83,12 +85,13 @@ namespace Vostok.AirlockConsumer.Logs
             };
         }
 
-        private static Dictionary<string, string> BuildIndexRecord(AirlockEvent<LogEventData> @event)
+        private static Dictionary<string, string> BuildIndexRecord(AirlockEvent<LogEventData> @event, string service)
         {
             var indexRecord = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
             {
                 ["Level"] = @event.Payload.Level.ToString(),
                 ["@timestamp"] = @event.Payload.Timestamp.ToString("O"),
+                ["@service"] = service,
             };
             if (!string.IsNullOrEmpty(@event.Payload.Message))
                 indexRecord.Add("Message", @event.Payload.Message);
