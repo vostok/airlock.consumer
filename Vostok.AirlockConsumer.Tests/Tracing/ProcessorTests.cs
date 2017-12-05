@@ -30,7 +30,7 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
                         Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
                         return Task.CompletedTask;
                     });
-            var processor = new TracingAirlockEventProcessor(contrailsClient, new ConsoleLog(), maxCassandraTasks: 3);
+            var processor = new TracingAirlockEventProcessor(contrailsClient, Substitute.For<ILog>(), maxCassandraTasks: 3);
             var airlockEvents = new List<AirlockEvent<Span>>();
             const int spanCount = 10;
             for (var i = 0; i < spanCount; i++)
