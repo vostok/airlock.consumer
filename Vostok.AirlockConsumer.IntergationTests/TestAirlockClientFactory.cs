@@ -13,13 +13,13 @@ namespace Vostok.AirlockConsumer.IntergationTests
         private const string defaultAirlockGateEndpoints = "http://gate:6306";
         private const string defaultAirlockGateApiKey = "UniversalApiKey";
 
-        public static IAirlockClient CreateAirlockClient(ILog log, Dictionary<string, string> environmentVariables)
+        public static ParallelAirlockClient CreateAirlockClient(ILog log, Dictionary<string, string> environmentVariables)
         {
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
-            return new ParallelAirlockClient(airlockConfig, 20, log);
+            return new ParallelAirlockClient(airlockConfig, 10, log);
         }
 
-        public static AirlockConfig GetAirlockConfig(ILog log, Dictionary<string, string> environmentVariables)
+        private static AirlockConfig GetAirlockConfig(ILog log, Dictionary<string, string> environmentVariables)
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_GATE_API_KEY", out var airlockGateApiKey))
                 airlockGateApiKey = defaultAirlockGateApiKey;
@@ -32,9 +32,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 ClusterProvider = new FixedClusterProvider(airlockGateUris),
                 SendPeriod = TimeSpan.FromMilliseconds(10),
                 MaximumBatchSizeToSend = 300.Megabytes(),
-                MaximumMemoryConsumption = 1.Gigabytes(),
+                MaximumMemoryConsumption = 300.Megabytes(),
                 InitialPooledBufferSize = 10.Megabytes(),
-                InitialPooledBuffersCount = 100
+                InitialPooledBuffersCount = 10
             };
             log.Info($"AirlockConfig: {airlockConfig.ToPrettyJson()}");
             return airlockConfig;

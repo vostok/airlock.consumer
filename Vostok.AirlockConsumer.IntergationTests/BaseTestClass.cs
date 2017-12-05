@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
-using Vostok.Airlock.Tracing;
 using Vostok.Logging;
 using Vostok.Logging.Logs;
 using Vostok.Tracing;
@@ -22,30 +21,16 @@ namespace Vostok.AirlockConsumer.IntergationTests
             RoutingKeyPrefix = RoutingKey.Create("vostok", "dev", "test");
         }
 
-        protected abstract bool UseAirlockClient { get; }
-
-        protected void Send<T>(IAirlockSerializer<T> serializer, IEnumerable<T> events, string routingKeySuffix, Func<T, DateTimeOffset> getTimestamp)
+        protected void Send<T>(IEnumerable<T> events, string routingKeySuffix, Func<T, DateTimeOffset> getTimestamp)
         {
             var routingKey = RoutingKey.ReplaceSuffix(RoutingKeyPrefix, routingKeySuffix);
-            if (UseAirlockClient)
+            var airlockClient = TestAirlockClientFactory.CreateAirlockClient(Log, EnvironmentVariables);
+            foreach (var @event in events)
             {
-                var airlockClient = TestAirlockClientFactory.CreateAirlockClient(Log, EnvironmentVariables);
-                foreach (var @event in events)
-                {
-                    airlockClient.Push(routingKey, @event, getTimestamp(@event));
-                }
+                airlockClient.Push(routingKey, @event, getTimestamp(@event));
             }
-            else
-            {
-                var airlockConfig = TestAirlockClientFactory.GetAirlockConfig(Log, EnvironmentVariables);
-                using (var messageSender = new AirlockMessageSender<T>(routingKey, new RequestSender(airlockConfig, Log), Log, serializer, getTimestamp))
-                {
-                    foreach (var @event in events)
-                    {
-                        messageSender.AddEvent(@event);
-                    }
-                }
-            }
+            airlockClient.FlushAsync().Wait();
+            Log.Debug($"lost items: {airlockClient.LostItemsCount}, sent: {airlockClient.SentItemsCount}");
         }
 
         protected void SendLogEvents(int eventCount, Action<LogEventData> onCreate = null)
@@ -54,7 +39,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var testId = Guid.NewGuid().ToString("N");
 
             Send(
-                new LogEventDataSerializer(),
                 Enumerable.Range(0,eventCount).Select(
                 i =>
                 {
@@ -78,7 +62,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var testId = Guid.NewGuid().ToString("N");
 
             Send(
-                new SpanAirlockSerializer(),
                 Enumerable.Range(0, eventCount).Select(
                 i =>
                 {

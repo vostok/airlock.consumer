@@ -17,8 +17,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
 {
     public class ConsumerIntegrationTests : BaseTestClass
     {
-        protected override bool UseAirlockClient => true;
-
         [Test]
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
