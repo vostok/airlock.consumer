@@ -174,7 +174,6 @@ namespace Vostok.AirlockConsumer
                 offsetsToCommit[x.TopicPartition] = x.Offset + 1;
             }
             DoProcessMessageBatch(airlockEvents);
-            messageProcessedCounter.Add(airlockEvents.Count);
             consumer.CommitAsync(offsetsToCommit.Select(x => new TopicPartitionOffset(x.Key, x.Value))).GetAwaiter().GetResult();
         }
 
