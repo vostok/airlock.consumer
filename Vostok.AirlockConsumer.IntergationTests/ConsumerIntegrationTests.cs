@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.AirlockConsumer.Logs;
 using Vostok.AirlockConsumer.Tracing;
@@ -30,7 +28,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var connectionPool = new StickyConnectionPool(elasticUris);
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
-            var indexName = $"{project}-{environment}-{DateTime.UtcNow:yyyy.MM.dd}";
+            var indexName = $"{Project}-{Environment}-{DateTime.UtcNow:yyyy.MM.dd}";
 
             //var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
             //var task = new Task(

@@ -11,24 +11,21 @@ namespace Vostok.AirlockConsumer.IntergationTests
 {
     public abstract class BaseTestClass
     {
-        protected const string project = "vostok";
-        protected const string environment = "dev";
+        protected const string Project = "vostok";
+        protected const string Environment = "dev";
         protected readonly ConsoleLog Log = new ConsoleLog();
         protected readonly Dictionary<string, string> EnvironmentVariables;
-        protected readonly string RoutingKeyPrefix;
+        private readonly string routingKeyPrefix;
 
         protected BaseTestClass()
         {
             EnvironmentVariables = EnvironmentVariablesFactory.GetEnvironmentVariables(Log);
-            //EnvironmentVariables["AIRLOCK_GATE_ENDPOINTS"] = "http://vostok.dev.kontur.ru:6306/";
-            //EnvironmentVariables["AIRLOCK_ELASTICSEARCH_ENDPOINTS"] = "http://devops-consul1.dev.kontur.ru:9200";
-            //EnvironmentVariables["AIRLOCK_CASSANDRA_ENDPOINTS"] = "vm-ke-cass1:9042;vm-ke-cass2:9042;vm-ke-cass3:9042";
-            RoutingKeyPrefix = RoutingKey.Create(project, environment, "test");
+            routingKeyPrefix = RoutingKey.Create(Project, Environment, "test");
         }
 
         protected void Send<T>(IEnumerable<T> events, string routingKeySuffix, Func<T, DateTimeOffset> getTimestamp)
         {
-            var routingKey = RoutingKey.ReplaceSuffix(RoutingKeyPrefix, routingKeySuffix);
+            var routingKey = RoutingKey.ReplaceSuffix(routingKeyPrefix, routingKeySuffix);
             var airlockClient = TestAirlockClientFactory.CreateAirlockClient(Log, EnvironmentVariables);
             foreach (var @event in events)
             {
