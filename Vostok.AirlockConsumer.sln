@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer", "Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj", "{D11DD2E1-0296-4FA1-8630-CF0A453EFF0C}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Sample", "Vostok.AirlockConsumer.Sample\Vostok.AirlockConsumer.Sample.csproj", "{FCD81500-9B71-4641-99AE-D04F6C3047D7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.TracesToEvents", "Vostok.AirlockConsumer.TracesToEvents\Vostok.AirlockConsumer.TracesToEvents.csproj", "{062894CF-9956-4540-A0E3-C342655E24A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Sentry", "Vostok.AirlockConsumer.Sentry\Vostok.AirlockConsumer.Sentry.csproj", "{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{062894CF-9956-4540-A0E3-C342655E24A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{062894CF-9956-4540-A0E3-C342655E24A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{062894CF-9956-4540-A0E3-C342655E24A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
