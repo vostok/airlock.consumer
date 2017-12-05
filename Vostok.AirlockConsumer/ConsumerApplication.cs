@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
@@ -32,6 +33,11 @@ namespace Vostok.AirlockConsumer
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables, ProcessorHostSettings);
             DoInitialize(log, rootMetricScope, environmentVariables, out var routingKeyFilter, out var processorProvider);
             return new ConsumerGroupHost(consumerGroupHostSettings, log, rootMetricScope, routingKeyFilter, processorProvider);
+        }
+
+        public void Stop()
+        {
+            (AirlockClient as IDisposable)?.Dispose();
         }
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);

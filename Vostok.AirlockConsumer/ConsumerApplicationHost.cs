@@ -51,6 +51,7 @@ namespace Vostok.AirlockConsumer
                 log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
                 consumerGroupHost.Stop();
                 MetricClocks.Stop();
+                consumerApplication.Stop();
                 log.Info($"Consumer application is stopped: {typeof (TConsumerApp).Name}");
                 terminationSignal.Set();
             }
