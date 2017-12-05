@@ -28,14 +28,14 @@ namespace Vostok.AirlockConsumer.Sentry
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
         {
-            Parallel.ForEach( //.Select(ev => ev.Payload)
+            Parallel.ForEach(
                 events.Where(ev => ev.Payload.Level == LogLevel.Error || ev.Payload.Level == LogLevel.Fatal),
                 new ParallelOptions {MaxDegreeOfParallelism = maxSentryTasks},
                 @event =>
                 {
                     try
                     {
-                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var suffix);
+                        RoutingKey.Parse(@event.RoutingKey, out var _, out var environment, out var _, out var _);
                         var logEvent = @event.Payload;
                         var jsonPacket = new JsonPacket(dsn.ProjectID)
                         {
