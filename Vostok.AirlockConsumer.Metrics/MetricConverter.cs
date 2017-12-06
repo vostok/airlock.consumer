@@ -4,7 +4,7 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Metrics
 {
-    internal class MetricConverter
+    public class MetricConverter
     {
         private readonly IGraphiteNameBuilder graphiteNameBuilder;
 

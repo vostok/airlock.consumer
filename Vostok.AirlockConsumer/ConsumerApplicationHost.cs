@@ -18,7 +18,7 @@ namespace Vostok.AirlockConsumer
             var log = Logging.Configure();
             AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
             {
-                log.Fatal("Unhandled exception in curreant AppDomain", (Exception) eventArgs.ExceptionObject);
+                log.Fatal("Unhandled exception in curreant AppDomain", (Exception)eventArgs.ExceptionObject);
                 Environment.Exit(1);
             };
             TaskScheduler.UnobservedTaskException += (_, eventArgs) =>

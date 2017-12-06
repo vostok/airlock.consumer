@@ -6,26 +6,18 @@ using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
-    internal class ConsumerMetrics
+    public class ConsumerMetrics
     {
         public readonly ICounter CriticalErrorCounter;
         public readonly ICounter ConsumeErrorCounter;
+        public int ProcessorCount;
 
         private readonly IMetricScope processorsScope;
         private readonly IMetricScope hostScope;
         private readonly IMetricScope statScope;
         private readonly Counter messagesCounter = new Counter();
 
-        private struct KafkaStat
-        {
-            public int QueueSize;
-            public int AssignmentSize;
-            public int RebalanceAge;
-            public int RebalanceCnt;
-        }
-
         private KafkaStat stat;
-        public int ProcessorCount;
 
         public ConsumerMetrics(TimeSpan flushMetricsInterval, IMetricScope rootMetricScope)
         {
@@ -41,6 +33,20 @@ namespace Vostok.AirlockConsumer
         public IMetricScope GetProcessorScope(string routingKey)
         {
             return processorsScope.WithTag(MetricsTagNames.Operation, routingKey);
+        }
+
+        public void UpdateKafkaStat(string statJson)
+        {
+            dynamic jStat = JObject.Parse(statJson);
+            stat.QueueSize = jStat.replyq;
+            stat.AssignmentSize = jStat.cgrp.assignment_size;
+            stat.RebalanceAge = jStat.cgrp.rebalance_age;
+            stat.RebalanceCnt = jStat.cgrp.rebalance_cnt;
+        }
+
+        public void IncrementMessage()
+        {
+            messagesCounter.Add();
         }
 
         private void WriteMetrics(DateTimeOffset timeStamp)
@@ -62,18 +68,12 @@ namespace Vostok.AirlockConsumer
                 .Commit();
         }
 
-        public void UpdateKafkaStat(string statJson)
+        private struct KafkaStat
         {
-            dynamic jStat = JObject.Parse(statJson);
-            stat.QueueSize = jStat.replyq;
-            stat.AssignmentSize = jStat.cgrp.assignment_size;
-            stat.RebalanceAge = jStat.cgrp.rebalance_age;
-            stat.RebalanceCnt = jStat.cgrp.rebalance_cnt;
-        }
-
-        public void IncrementMessage()
-        {
-            messagesCounter.Add();
+            public int QueueSize;
+            public int AssignmentSize;
+            public int RebalanceAge;
+            public int RebalanceCnt;
         }
     }
 }

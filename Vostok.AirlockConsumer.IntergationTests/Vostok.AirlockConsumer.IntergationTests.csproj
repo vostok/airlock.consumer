@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="NUnit" Version="3.9.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="FluentAssertions" Version="4.19.4" />
+    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000374" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
+  </ItemGroup>
+
+</Project>

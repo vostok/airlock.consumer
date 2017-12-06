@@ -2,7 +2,7 @@
 
 namespace Vostok.AirlockConsumer.Metrics
 {
-    internal class TagInfo
+    public class TagInfo
     {
         public TagInfo(string name, int priority, Func<string, string> convertValue)
         {

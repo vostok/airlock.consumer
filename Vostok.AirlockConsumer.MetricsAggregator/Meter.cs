@@ -26,7 +26,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             var result = new Dictionary<string, double>
             {
-                { "sum", sum }
+                {"sum", sum}
             };
 
             var snapshot = histogram.GetSnapshot();

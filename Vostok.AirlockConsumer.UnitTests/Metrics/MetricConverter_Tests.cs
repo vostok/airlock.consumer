@@ -7,7 +7,7 @@ using Vostok.AirlockConsumer.Metrics;
 using Vostok.Graphite.Client;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Tests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Metrics
 {
     public class MetricConverter_Tests
     {
@@ -46,7 +46,7 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
             graphiteNameBuilder.BuildName(prefixName, "inputName1").Returns(name1);
             graphiteNameBuilder.BuildName(prefixName, "inputName2").Returns(name2);
 
-            var expectingMetrics = new []
+            var expectingMetrics = new[]
             {
                 new Metric(name1, 25.5, expectingTimestamp),
                 new Metric(name2, 50, expectingTimestamp),

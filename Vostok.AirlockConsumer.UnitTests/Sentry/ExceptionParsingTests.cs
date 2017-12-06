@@ -8,128 +8,10 @@ using Vostok.AirlockConsumer.Sentry;
 using Vostok.Logging;
 using Vostok.Logging.Logs;
 
-namespace Vostok.AirlockConsumer.Tests.Sentry
+namespace Vostok.AirlockConsumer.UnitTests.Sentry
 {
     public class ExceptionParsingTests
     {
-        private readonly ConsoleLog log = new ConsoleLog();
-        private readonly ExceptionParser exceptionParser = new ExceptionParser();
-
-        private static void MyGenericFunc<T>()
-        {
-            throw new Exception("hello from generic func " + typeof (T).Name);
-        }
-
-        private class MyClass<T>
-        {
-            public void MyFunc()
-            {
-                throw new Exception("hello from generic class " + typeof (T).Name);
-            }
-        }
-
-        private static async Task MyAsyncFunc()
-        {
-            await Task.Delay(200);
-            throw new Exception("hello from async func");
-        }
-
-        private static void MyLambdaFunc()
-        {
-            var action = new Action(
-                () => throw new Exception("hello from lambda"));
-            action();
-        }
-
-        private static void NestedFunc()
-        {
-            try
-            {
-                NestedFunc2();
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("invalid oper", e);
-            }
-        }
-
-        private static void NestedFunc2()
-        {
-            throw new InvalidDataException("bad data");
-        }
-
-        private static void DivideByZero()
-        {
-            int i2 = 0;
-            // ReSharper disable once UnusedVariable
-            int i = 10/i2;
-        }
-
-        private static void GenericClassFunc()
-        {
-            new MyClass<double>().MyFunc();
-        }
-
-        private static readonly object[] testCases =
-        {
-            new object[] { "DivideByZero", (Action) DivideByZero, new[] {"TestByThrowingException", "DivideByZero"}, new []{ "DivideByZeroException" } },
-            new object[] { "MyGenericFunc<int>", (Action) MyGenericFunc<int>, new[] {"TestByThrowingException", "MyGenericFunc"}, new []{ "Exception" } },
-            new object[] { "GenericClassFunc", (Action) GenericClassFunc, new[] {"TestByThrowingException", "MyFunc"}, new []{ "Exception" } },
-            new object[] { "AsyncFunc", (Action) (() => MyAsyncFunc().GetAwaiter().GetResult()), new[] {"TestByThrowingException", "cctor { <lambda> }", "HandleNonSuccessAndDebuggerNotification", "Throw", "MyAsyncFunc"}, new []{ "Exception" } },
-            new object[] { "LambdaFunc",(Action) MyLambdaFunc, new[] {"TestByThrowingException", "MyLambdaFunc { <lambda> }"}, new []{ "Exception" } },
-            new object[] { "NestedFunc", (Action) NestedFunc, new[] {"TestByThrowingException", "NestedFunc", "NestedFunc", "NestedFunc2"}, new []{ "InvalidOperationException", "InvalidDataException" } }
-        };
-
-        //[TestCaseSource(nameof(testCases))]
-        [Test]
-        public void TestByThrowingException() //Action action, string[] funcNames, string[] exNames
-        {
-            foreach (var testCase in testCases.Cast<object[]>())
-            {
-                var caseName = (string)testCase[0];
-                var action = (Action)testCase[1];
-                var funcNames = (string[])testCase[2];
-                var exNames = (string[])testCase[3];
-                try
-                {
-                    action();
-                }
-                catch (Exception e)
-                {
-                    log.Error(e);
-                    var sentryExceptions = exceptionParser.Parse(e.ToString());
-                    //var jsonPacket = new JsonPacket("vostok", exception);
-                    //log.Debug("expected:\n" + jsonPacket.Exceptions.ToPrettyJson());
-                    log.Debug("got:\n" + sentryExceptions.ToPrettyJson());
-                    sentryExceptions.SelectMany(e1 => e1.Stacktrace.Frames).Select(x => x.Function).ShouldAllBeEquivalentTo(funcNames, caseName + " funcNames");
-                    sentryExceptions.Select(ex => ex.Type).ShouldAllBeEquivalentTo(exNames, caseName + " exNames");
-                }
-            }
-        }
-
-        private static readonly object[] preparedTextTestCases =
-        {
-            new object[] { "rusEx", rusEx, new[] {"Call", "Call { <lambda> }", "PerformHttpRequestInternal { <lambda> }", "<>n__FabricatedMethod3", "PerformHttpRequest" }, new []{ "HttpClientException", "WebException", "SocketException" } },
-            new object[] { "bigEx", bigEx, new[] {"Call", "Call { <lambda> }", "GetJsonResult", "PerformJsonHttpRequest", "PerformJsonHttpRequest" }, new[] { "AttemptsExceededException", "ConnectorHttpClientException" } }
-        };
-
-        //[TestCaseSource(nameof(preparedTextTestCases))] //не смог заставить работать через TestCaseSource
-        [Test]
-        public void PreparedTextTest() //string text, string[] funcNames
-        {
-            foreach (var testCase in preparedTextTestCases.Cast<object[]>())
-            {
-                var caseName = (string)testCase[0];
-                var text = (string)testCase[1]; //, string[] funcNames
-                var funcNames = (string[]) testCase[2];
-                var exNames = (string[])testCase[3];
-                var sentryExceptions = exceptionParser.Parse(text);
-                log.Debug("got:\n" + sentryExceptions.ToPrettyJson());
-                sentryExceptions.SelectMany(e => e.Stacktrace.Frames).Select(x => x.Function).Take(5).ShouldAllBeEquivalentTo(funcNames, caseName + " funcNames");
-                sentryExceptions.Select(ex => ex.Type).ShouldAllBeEquivalentTo(exNames, caseName + " exNames");
-            }
-        }
-
         private const string rusEx = @"Diadoc.Api.Http.HttpClientException: BaseUrl=http://localhost:27183, PathAndQuery=/GetBox?boxId=9f9e1bd9-54ac-4896-aa9d-b143f9a38427, AdditionalMessage=, StatusCode=, DiadocErrorCode:  ---> System.Net.WebException: Невозможно соединиться с удаленным сервером ---> System.Net.Sockets.SocketException: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение 127.0.0.1:27183
    в System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
    в System.Net.ServicePoint.ConnectSocketInternal(Boolean connectFailure, Socket s4, Socket s6, Socket& socket, IPAddress& address, ConnectSocketState state, IAsyncResult asyncResult, Exception& exception)
@@ -223,5 +105,122 @@ RequestUrl: https://billy-publicapi.kontur.ru/subscriptions/actual?productCode=7
    at DC.CallStrategy.RetriableCallStrategyBase.<>c__DisplayClass1_0`1.<Call>b__0() in C:\cement\diadocconnector\_Src\Connector.Core\DC.Core\CallStrategy\IRetriableCallStrategy.cs:line 19
    at DC.CallStrategy.MaxAttemptsRetriableCallStrategy.Call(Action action, Func`2 isExceptionRetriable, Action beforeRetry) in C:\cement\diadocconnector\_Src\Connector.Core\DC.Core\CallStrategy\MaxAttemptsRetriableCallStrategy.cs:line 41<---
 ";
+
+        private static readonly object[] testCases =
+        {
+            new object[] {"DivideByZero", (Action)DivideByZero, new[] {"TestByThrowingException", "DivideByZero"}, new[] {"DivideByZeroException"}},
+            new object[] {"MyGenericFunc<int>", (Action)MyGenericFunc<int>, new[] {"TestByThrowingException", "MyGenericFunc"}, new[] {"Exception"}},
+            new object[] {"GenericClassFunc", (Action)GenericClassFunc, new[] {"TestByThrowingException", "MyFunc"}, new[] {"Exception"}},
+            new object[] {"AsyncFunc", (Action)(() => MyAsyncFunc().GetAwaiter().GetResult()), new[] {"TestByThrowingException", "cctor { <lambda> }", "HandleNonSuccessAndDebuggerNotification", "Throw", "MyAsyncFunc"}, new[] {"Exception"}},
+            new object[] {"LambdaFunc", (Action)MyLambdaFunc, new[] {"TestByThrowingException", "MyLambdaFunc { <lambda> }"}, new[] {"Exception"}},
+            new object[] {"NestedFunc", (Action)NestedFunc, new[] {"TestByThrowingException", "NestedFunc", "NestedFunc", "NestedFunc2"}, new[] {"InvalidOperationException", "InvalidDataException"}}
+        };
+
+        private static readonly object[] preparedTextTestCases =
+        {
+            new object[] {"rusEx", rusEx, new[] {"Call", "Call { <lambda> }", "PerformHttpRequestInternal { <lambda> }", "<>n__FabricatedMethod3", "PerformHttpRequest"}, new[] {"HttpClientException", "WebException", "SocketException"}},
+            new object[] {"bigEx", bigEx, new[] {"Call", "Call { <lambda> }", "GetJsonResult", "PerformJsonHttpRequest", "PerformJsonHttpRequest"}, new[] {"AttemptsExceededException", "ConnectorHttpClientException"}}
+        };
+        private readonly ConsoleLog log = new ConsoleLog();
+        private readonly ExceptionParser exceptionParser = new ExceptionParser();
+
+        //[TestCaseSource(nameof(testCases))]
+        [Test]
+        public void TestByThrowingException() //Action action, string[] funcNames, string[] exNames
+        {
+            foreach (var testCase in testCases.Cast<object[]>())
+            {
+                var caseName = (string)testCase[0];
+                var action = (Action)testCase[1];
+                var funcNames = (string[])testCase[2];
+                var exNames = (string[])testCase[3];
+                try
+                {
+                    action();
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                    var sentryExceptions = exceptionParser.Parse(e.ToString());
+                    //var jsonPacket = new JsonPacket("vostok", exception);
+                    //log.Debug("expected:\n" + jsonPacket.Exceptions.ToPrettyJson());
+                    log.Debug("got:\n" + sentryExceptions.ToPrettyJson());
+                    sentryExceptions.SelectMany(e1 => e1.Stacktrace.Frames).Select(x => x.Function).ShouldAllBeEquivalentTo(funcNames, caseName + " funcNames");
+                    sentryExceptions.Select(ex => ex.Type).ShouldAllBeEquivalentTo(exNames, caseName + " exNames");
+                }
+            }
+        }
+
+        //[TestCaseSource(nameof(preparedTextTestCases))] //не смог заставить работать через TestCaseSource
+        [Test]
+        public void PreparedTextTest() //string text, string[] funcNames
+        {
+            foreach (var testCase in preparedTextTestCases.Cast<object[]>())
+            {
+                var caseName = (string)testCase[0];
+                var text = (string)testCase[1]; //, string[] funcNames
+                var funcNames = (string[])testCase[2];
+                var exNames = (string[])testCase[3];
+                var sentryExceptions = exceptionParser.Parse(text);
+                log.Debug("got:\n" + sentryExceptions.ToPrettyJson());
+                sentryExceptions.SelectMany(e => e.Stacktrace.Frames).Select(x => x.Function).Take(5).ShouldAllBeEquivalentTo(funcNames, caseName + " funcNames");
+                sentryExceptions.Select(ex => ex.Type).ShouldAllBeEquivalentTo(exNames, caseName + " exNames");
+            }
+        }
+
+        private static void MyGenericFunc<T>()
+        {
+            throw new Exception("hello from generic func " + typeof (T).Name);
+        }
+
+        private static async Task MyAsyncFunc()
+        {
+            await Task.Delay(200);
+            throw new Exception("hello from async func");
+        }
+
+        private static void MyLambdaFunc()
+        {
+            var action = new Action(
+                () => throw new Exception("hello from lambda"));
+            action();
+        }
+
+        private static void NestedFunc()
+        {
+            try
+            {
+                NestedFunc2();
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("invalid oper", e);
+            }
+        }
+
+        private static void NestedFunc2()
+        {
+            throw new InvalidDataException("bad data");
+        }
+
+        private static void DivideByZero()
+        {
+            var i2 = 0;
+            // ReSharper disable once UnusedVariable
+            var i = 10/i2;
+        }
+
+        private static void GenericClassFunc()
+        {
+            new MyClass<double>().MyFunc();
+        }
+
+        private class MyClass<T>
+        {
+            public void MyFunc()
+            {
+                throw new Exception("hello from generic class " + typeof (T).Name);
+            }
+        }
     }
 }

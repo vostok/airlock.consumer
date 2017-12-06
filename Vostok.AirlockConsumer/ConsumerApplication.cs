@@ -9,8 +9,11 @@ namespace Vostok.AirlockConsumer
 {
     public abstract class ConsumerApplication
     {
-        protected IAirlockClient AirlockClient;
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
+        protected IAirlockClient AirlockClient;
+
+        protected abstract string ServiceName { get; }
+        protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
 
         public ConsumerGroupHost Initialize(ILog log)
         {
@@ -27,12 +30,9 @@ namespace Vostok.AirlockConsumer
                 });
 
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables, ProcessorHostSettings);
-            DoInitialize(log, rootMetricScope,  environmentVariables, out var routingKeyFilter, out var processorProvider);
+            DoInitialize(log, rootMetricScope, environmentVariables, out var routingKeyFilter, out var processorProvider);
             return new ConsumerGroupHost(consumerGroupHostSettings, log, rootMetricScope, routingKeyFilter, processorProvider);
         }
-
-        protected abstract string ServiceName { get; }
-        protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
 

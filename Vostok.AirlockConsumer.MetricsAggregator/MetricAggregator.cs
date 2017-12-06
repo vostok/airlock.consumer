@@ -8,15 +8,15 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class MetricAggregator : IMetricAggregator
+    public class MetricAggregator : IMetricAggregator
     {
         private readonly IMetricScope metricScope;
         private readonly IBucketKeyProvider bucketKeyProvider;
         private readonly IAirlockClient airlockClient;
         private readonly TimeSpan cooldownPeriod;
         private readonly ConcurrentDictionary<BucketKey, IBucket> buckets;
-        private Borders borders;
         private readonly string metricsRoutingKey;
+        private Borders borders;
 
         public MetricAggregator(
             IMetricScope metricScope,

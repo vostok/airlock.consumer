@@ -6,7 +6,7 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.Metrics
 {
-    internal class GraphiteNameBuilder : IGraphiteNameBuilder
+    public class GraphiteNameBuilder : IGraphiteNameBuilder
     {
         private const string separator = ".";
         private readonly Dictionary<string, string> namePartsByRoutingKeys = new Dictionary<string, string>();
@@ -43,8 +43,8 @@ namespace Vostok.AirlockConsumer.Metrics
 
             var routingKeyModel = RoutingKey.Parse(routingKey);
             var partNameByRoutingKey = FixInvalidChars(routingKeyModel.Project) + separator
-                                     + FixInvalidChars(routingKeyModel.Environment) + separator
-                                     + FixInvalidChars(routingKeyModel.ServiceName);
+                                       + FixInvalidChars(routingKeyModel.Environment) + separator
+                                       + FixInvalidChars(routingKeyModel.ServiceName);
 
             namePartsByRoutingKeys.Add(routingKey, partNameByRoutingKey);
             return partNameByRoutingKey;
@@ -96,10 +96,10 @@ namespace Vostok.AirlockConsumer.Metrics
         private static bool IsPermittedSymbol(char c)
         {
             return c >= 'a' && c <= 'z'
-                || c >= 'A' && c <= 'Z'
-                || c >= '0' && c <= '9'
-                || c == '_'
-                || c == '-';
+                   || c >= 'A' && c <= 'Z'
+                   || c >= '0' && c <= '9'
+                   || c == '_'
+                   || c == '-';
         }
     }
 }

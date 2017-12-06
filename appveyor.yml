@@ -12,7 +12,7 @@ install:
       $version = $xml.CreateElement("Version")
       $versionText = $xml.CreateTextNode($env:appveyor_build_version)
       $version.AppendChild($versionText)
-      $xml.Project.PropertyGroup.AppendChild($version)
+      $gen.ParentNode.AppendChild($version)
       $xml.Save($xmlPath)
   - dotnet restore
 configuration: Release
@@ -20,8 +20,8 @@ after_build:
   - ps: if ($env:appveyor_repo_branch -eq "master") { Get-ChildItem $env:appveyor_build_folder\Vostok.AirlockConsumer\bin\Release\Vostok.AirlockConsumer.*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } }
 test_script:
   - ps: |
-      dotnet test "$env:appveyor_build_folder\Vostok.AirlockConsumer.Tests\Vostok.AirlockConsumer.Tests.csproj" --logger "trx;LogFileName=airlock-consumer-tests.trx"
+      dotnet test "$env:appveyor_build_folder\Vostok.AirlockConsumer.UnitTests\Vostok.AirlockConsumer.UnitTests.csproj" --logger "trx;LogFileName=airlock-consumer-tests.trx"
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder\Vostok.AirlockConsumer.Tests\TestResults\airlock-consumer-tests.trx")
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder\Vostok.AirlockConsumer.UnitTests\TestResults\airlock-consumer-tests.trx")

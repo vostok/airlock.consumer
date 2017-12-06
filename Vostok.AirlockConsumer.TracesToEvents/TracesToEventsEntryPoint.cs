@@ -22,7 +22,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             MaxProcessorQueueSize = 1000000
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             AirlockSerializerRegistry.Register(new MetricEventSerializer());

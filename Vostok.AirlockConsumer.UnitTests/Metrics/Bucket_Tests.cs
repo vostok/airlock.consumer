@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Vostok.AirlockConsumer.MetricsAggregator;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Tests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Metrics
 {
     public class Bucket_Tests
     {
@@ -59,16 +59,6 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
             Assert.AreEqual(1, metricEvents[1].Values["count"], doubleDelta);
         }
 
-        private Borders NormalizeBorders(Borders b)
-        {
-            return new Borders(NormalizeTimestamp(b.Past), NormalizeTimestamp(b.Future));
-        }
-
-        private DateTimeOffset NormalizeTimestamp(DateTimeOffset timestamp)
-        {
-            return new DateTimeOffset(timestamp.Ticks - timestamp.Ticks%period.Ticks, TimeSpan.Zero);
-        }
-
         [Test]
         public void TimeBin_MultithreadedTest()
         {
@@ -101,7 +91,7 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
             foreach (var inc in increment)
             {
                 var metricSum = metricEvent.Values[inc.Key + "_sum"];
-                Assert.AreEqual(7.5, metricEvent.Values[inc.Key + "_mean"],0.3);
+                Assert.AreEqual(7.5, metricEvent.Values[inc.Key + "_mean"], 0.3);
                 Assert.AreEqual((inc.Value + increment2[inc.Key])*taskCount*comsumeCount, metricSum, doubleDelta);
             }
             Assert.AreEqual(4.5, metricEvent.Values["k1_stddev"], 0.1);
@@ -114,6 +104,16 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
 
             metricEvent = timeBin.TryFlush(null);
             Assert.Null(metricEvent);
+        }
+
+        private Borders NormalizeBorders(Borders b)
+        {
+            return new Borders(NormalizeTimestamp(b.Past), NormalizeTimestamp(b.Future));
+        }
+
+        private DateTimeOffset NormalizeTimestamp(DateTimeOffset timestamp)
+        {
+            return new DateTimeOffset(timestamp.Ticks - timestamp.Ticks%period.Ticks, TimeSpan.Zero);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Vostok.AirlockConsumer.Metrics
 {
-    internal interface IGraphiteNameBuilder
+    public interface IGraphiteNameBuilder
     {
         string BuildPrefix(string routingKey, IEnumerable<KeyValuePair<string, string>> tags);
         string BuildName(string prefix, string suffix);

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class MetricResetDaemon
+    public class MetricResetDaemon
     {
         private readonly IEventsTimestampProvider eventsTimestampProvider;
         private readonly MetricsAggregatorSettings settings;
@@ -41,6 +41,11 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             }
         }
 
+        public void Stop()
+        {
+            cts.Cancel();
+        }
+
         private Borders CalculateNewBorders(Borders current)
         {
             var now = DateTimeOffset.UtcNow;
@@ -54,11 +59,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 past = maxPossiblePast;
 
             return new Borders(past, future);
-        }
-
-        public void Stop()
-        {
-            cts.Cancel();
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private readonly HashSet<string> splittableTags;
 
         public BucketKeyProvider()
-            : this(new []{ MetricsTagNames.Host, MetricsTagNames.Status, MetricsTagNames.Operation })
+            : this(new[] {MetricsTagNames.Host, MetricsTagNames.Status, MetricsTagNames.Operation})
         {
         }
 
@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                     {
                         keys.Add(new Dictionary<string, string>(keys[i])
                         {
-                            { kvp.Key, "any" }
+                            {kvp.Key, "any"}
                         });
                     }
                 }

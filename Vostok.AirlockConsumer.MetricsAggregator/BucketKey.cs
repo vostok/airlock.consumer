@@ -6,6 +6,8 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class BucketKey : IEquatable<BucketKey>
     {
+        private readonly string key;
+
         public BucketKey(IReadOnlyDictionary<string, string> tags)
         {
             Tags = tags;
@@ -13,8 +15,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         }
 
         public IReadOnlyDictionary<string, string> Tags { get; }
-
-        private readonly string key;
 
         public bool Equals(BucketKey other)
         {
@@ -33,7 +33,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                 return true;
             if (obj.GetType() != GetType())
                 return false;
-            return Equals((BucketKey) obj);
+            return Equals((BucketKey)obj);
         }
 
         public override int GetHashCode()

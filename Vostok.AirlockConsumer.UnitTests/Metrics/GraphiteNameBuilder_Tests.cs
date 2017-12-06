@@ -3,7 +3,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Metrics;
 
-namespace Vostok.AirlockConsumer.Tests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Metrics
 {
     public class GraphiteNameBuilder_Tests
     {
@@ -34,13 +34,13 @@ namespace Vostok.AirlockConsumer.Tests.Metrics
         public void Build_should_build_name_by_routingKey_and_tags(string expecting, string routingKey, params string[] tagStrings)
         {
             var tags = tagStrings.Select(
-                    x =>
-                    {
-                        var split = x.Split(":");
-                        return new { Key = split[0], Value = split[1] };
-                    }
+                x =>
+                {
+                    var split = x.Split(":");
+                    return new {Key = split[0], Value = split[1]};
+                }
                 )
-                .ToDictionary(x => x.Key, x => x.Value);
+                                 .ToDictionary(x => x.Key, x => x.Value);
 
             var actual = graphiteNameBuilder.BuildPrefix(routingKey, tags);
 

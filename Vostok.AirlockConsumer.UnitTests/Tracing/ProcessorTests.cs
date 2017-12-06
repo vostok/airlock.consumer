@@ -7,11 +7,10 @@ using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
-using Vostok.Logging.Logs;
 using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.Tests.Tracing
+namespace Vostok.AirlockConsumer.UnitTests.Tracing
 {
     public class ProcessorTests
     {
@@ -21,15 +20,14 @@ namespace Vostok.AirlockConsumer.Tests.Tracing
             var counter = 0;
             var contrailsClient = Substitute.For<IContrailsClient>();
             contrailsClient.AddSpan(Arg.Any<Span>())
-                .Returns(
-                    x =>
-                    {
-                        Console.WriteLine($"start process {counter} [{Thread.CurrentThread.ManagedThreadId}]");
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref counter);
-                        Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
-                        return Task.CompletedTask;
-                    });
+                           .Returns(x =>
+                           {
+                               Console.WriteLine($"start process {counter} [{Thread.CurrentThread.ManagedThreadId}]");
+                               Thread.Sleep(500);
+                               Interlocked.Increment(ref counter);
+                               Console.WriteLine($"processed {counter} [{Thread.CurrentThread.ManagedThreadId}]");
+                               return Task.CompletedTask;
+                           });
             var processor = new TracingAirlockEventProcessor(contrailsClient, Substitute.For<ILog>(), maxCassandraTasks: 3);
             var airlockEvents = new List<AirlockEvent<Span>>();
             const int spanCount = 10;
