@@ -25,17 +25,14 @@ namespace Vostok.AirlockConsumer.Metrics
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(Airlock.RoutingKey.MetricsSuffix);
-            var graphiteUri = GetGraphiteUri(log, environmentVariables);
+            var graphiteUri = GetGraphiteUri();
             processorProvider = processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => new MetricsAirlockEventProcessor(graphiteUri, log));
         }
 
-        private static Uri GetGraphiteUri(ILog log, Dictionary<string, string> environmentVariables)
+        private Uri GetGraphiteUri()
         {
-            if (!environmentVariables.TryGetValue("AIRLOCK_GRAPHITE_ENDPOINT", out var graphiteEndpoint))
-                graphiteEndpoint = defaultGraphiteEndpoint;
-            var graphiteUri = new Uri("tcp://" + graphiteEndpoint);
-            log.Info($"GraphiteUri: {graphiteUri}");
-            return graphiteUri;
+            var graphiteEndpoint = GetSettingByName("GRAPHITE_ENDPOINT", defaultGraphiteEndpoint);
+            return new Uri("tcp://" + graphiteEndpoint);
         }
     }
 }

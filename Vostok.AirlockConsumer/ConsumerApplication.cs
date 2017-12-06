@@ -13,17 +13,20 @@ namespace Vostok.AirlockConsumer
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
         protected IAirlockClient AirlockClient;
         private ConsumerMetrics consumerMetrics;
+        private Dictionary<string, string> environmentVariables;
+        private ILog log;
 
         protected abstract string ServiceName { get; }
         protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
 
-        public ConsumerGroupHost Initialize(ILog log)
+        public ConsumerGroupHost Initialize(ILog logValue)
         {
-            var environmentVariables = EnvironmentVariablesFactory.GetEnvironmentVariables(log);
+            log = logValue;
+            environmentVariables = EnvironmentVariablesFactory.GetEnvironmentVariables(logValue);
             if (!environmentVariables.TryGetValue("VOSTOK_ENV", out var envName))
                 envName = "dev";
 
-            AirlockClient = AirlockClientFactory.CreateAirlockClient(environmentVariables, log);
+            AirlockClient = AirlockClientFactory.CreateAirlockClient(environmentVariables, logValue);
 
             IMetricScope rootMetricScope = new RootMetricScope(
                 new MetricConfiguration
@@ -46,27 +49,21 @@ namespace Vostok.AirlockConsumer
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
 
-        private ConsumerGroupHostSettings GetConsumerGroupHostSettings(ILog log, Dictionary<string, string> environmentVariables, ProcessorHostSettings processorHostSettings)
+        private ConsumerGroupHostSettings GetConsumerGroupHostSettings(ProcessorHostSettings processorHostSettings)
         {
-            var consumerGroupId = GetConsumerGroupId(environmentVariables);
-            var kafkaBootstrapEndpoints = GetKafkaBootstrapEndpoints(environmentVariables);
+            var consumerGroupId = GetSettingByName("CONSUMER_GROUP_ID", $"{GetType().Name}@{Dns.GetHostName()}");
+            var kafkaBootstrapEndpoints = GetSettingByName("KAFKA_BOOTSTRAP_ENDPOINTS", defaultKafkaBootstrapEndpoints);
             var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, processorHostSettings);
             log.Info($"ConsumerGroupHostSettings: {consumerGroupHostSettings.ToPrettyJson()}");
             return consumerGroupHostSettings;
         }
 
-        private string GetConsumerGroupId(Dictionary<string, string> environmentVariables)
+        protected string GetSettingByName(string name, string defaultValue = null)
         {
-            if (!environmentVariables.TryGetValue("AIRLOCK_CONSUMER_GROUP_ID", out var consumerGroupId))
-                consumerGroupId = $"{GetType().Name}@{Dns.GetHostName()}";
-            return consumerGroupId;
-        }
-
-        private static string GetKafkaBootstrapEndpoints(Dictionary<string, string> environmentVariables)
-        {
-            if (!environmentVariables.TryGetValue("AIRLOCK_KAFKA_BOOTSTRAP_ENDPOINTS", out var kafkaBootstrapEndpoints))
-                kafkaBootstrapEndpoints = defaultKafkaBootstrapEndpoints;
-            return kafkaBootstrapEndpoints;
+            if (!environmentVariables.TryGetValue("AIRLOCK_" + name, out var value))
+                value = defaultValue;
+            log.Info($"{name}: {value}");
+            return value;
         }
     }
 }

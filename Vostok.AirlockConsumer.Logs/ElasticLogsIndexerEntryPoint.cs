@@ -28,16 +28,14 @@ namespace Vostok.AirlockConsumer.Logs
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
-            var elasticUris = GetElasticUris(log, environmentVariables);
+            var elasticUris = GetElasticUris();
             processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
         }
 
-        private static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
+        private Uri[] GetElasticUris()
         {
-            if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
-                elasticEndpoints = defaultElasticEndpoints;
+            var elasticEndpoints = GetSettingByName("ELASTICSEARCH_ENDPOINTS", defaultElasticEndpoints);
             var elasticUris = elasticEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
-            log.Info($"ElasticUris: {elasticUris.ToPrettyJson()}");
             return elasticUris;
         }
     }
