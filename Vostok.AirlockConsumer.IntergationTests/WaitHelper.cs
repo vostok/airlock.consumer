@@ -20,10 +20,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     Console.WriteLine("wait attempt failed: {0}", ex);
                     return WaitAction.ContinueWaiting;
                 }
-            },
-                 timeOutSeconds,
-                 throwException,
-                 exceptionMessage);
+            }, timeOutSeconds, throwException, exceptionMessage);
         }
 
         public static void WaitSafe(Action action, int timeOutSeconds = 120, bool throwException = true, string exceptionMessage = "Wait operation timed out.")
@@ -40,10 +37,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     Console.WriteLine("wait attempt failed: {0}", ex);
                     return WaitAction.ContinueWaiting;
                 }
-            },
-                 timeOutSeconds,
-                 throwException,
-                 exceptionMessage);
+            }, timeOutSeconds, throwException, exceptionMessage);
         }
 
         public static void Wait(Func<bool> func, int timeOutSeconds = 120, bool throwException = true, string exceptionMessage = "Wait operation timed out.")

@@ -17,16 +17,8 @@ namespace Vostok.AirlockConsumer.Logs
             new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>().Run();
         }
 
-        public static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
-        {
-            if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
-                elasticEndpoints = defaultElasticEndpoints;
-            var elasticUris = elasticEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
-            log.Info($"ElasticUris: {elasticUris.ToPrettyJson()}");
-            return elasticUris;
-        }
-
         protected override string ServiceName => "consumer-logs";
+
         protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
         {
             MaxBatchSize = 1000,
@@ -38,6 +30,15 @@ namespace Vostok.AirlockConsumer.Logs
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
             var elasticUris = GetElasticUris(log, environmentVariables);
             processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
+        }
+
+        private static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
+        {
+            if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
+                elasticEndpoints = defaultElasticEndpoints;
+            var elasticUris = elasticEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
+            log.Info($"ElasticUris: {elasticUris.ToPrettyJson()}");
+            return elasticUris;
         }
     }
 }
