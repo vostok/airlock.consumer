@@ -1,8 +1,14 @@
 ﻿namespace Vostok.AirlockConsumer.Metrics
 {
-    internal class RoutingKey
+    public class RoutingKey
     {
         private const string defaultValue = "unknown";
+
+        public static RoutingKey Parse(string routingKey)
+        {
+            Airlock.RoutingKey.TryParse(routingKey, out var project, out var env, out var service, out _);
+            return new RoutingKey(project ?? defaultValue, env ?? defaultValue, service ?? defaultValue);
+        }
 
         private RoutingKey(string project, string environment, string serviceName)
         {
@@ -14,11 +20,5 @@
         public string Project { get; }
         public string Environment { get; }
         public string ServiceName { get; }
-
-        public static RoutingKey Parse(string routingKey)
-        {
-            Airlock.RoutingKey.TryParse(routingKey, out var project, out var env, out var service, out _);
-            return new RoutingKey(project ?? defaultValue, env ?? defaultValue, service ?? defaultValue);
-        }
     }
 }

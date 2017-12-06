@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal class EventsTimestampProvider : IEventsTimestampProvider
+    public class EventsTimestampProvider : IEventsTimestampProvider
     {
         private readonly int maxCapacity;
         private readonly Queue<DateTimeOffset> offsets = new Queue<DateTimeOffset>();

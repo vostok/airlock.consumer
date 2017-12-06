@@ -4,7 +4,7 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.TracesToEvents
 {
-    internal static class MetricEventBuilder
+    public static class MetricEventBuilder
     {
         public static MetricEvent Build(Span span)
         {

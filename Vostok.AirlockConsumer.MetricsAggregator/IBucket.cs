@@ -4,7 +4,7 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal interface IBucket
+    public interface IBucket
     {
         void Consume(IReadOnlyDictionary<string, double> values, DateTimeOffset timestamp);
         IEnumerable<MetricEvent> Flush(Borders nextBorders);

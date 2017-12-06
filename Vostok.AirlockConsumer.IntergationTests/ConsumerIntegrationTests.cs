@@ -61,7 +61,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     if (!response.Success)
                         throw new Exception("elastic error");
                     dynamic jObject = JObject.Parse(response.Body);
-                    var hits = (JArray) jObject.hits.hits;
+                    var hits = (JArray)jObject.hits.hits;
                     if (logEventDictionary.Count != hits.Count)
                         return WaitAction.ContinueWaiting;
                     foreach (dynamic hit in hits)
@@ -111,6 +111,5 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 });
             //applicationHost.Stop();
         }
-
     }
 }

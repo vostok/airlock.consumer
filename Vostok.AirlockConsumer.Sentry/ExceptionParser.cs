@@ -92,7 +92,7 @@ namespace Vostok.AirlockConsumer.Sentry
         private void AddFramesToException(SentryException exception, List<ExceptionFrame> frames)
         {
             frames.Reverse();
-            exception.Stacktrace = new SentryStacktrace(null) { Frames = frames.ToArray() };
+            exception.Stacktrace = new SentryStacktrace(null) {Frames = frames.ToArray()};
             if (frames.Count > 0)
                 exception.Module = frames[0].Module;
             frames.Clear();

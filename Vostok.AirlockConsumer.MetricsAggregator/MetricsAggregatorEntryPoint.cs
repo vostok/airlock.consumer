@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             MaxProcessorQueueSize = 100000
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то https://github.com/vostok/airlock.consumer/issues/18
             routingKeyFilter = new DirtyRoutingKeyFilter("-events");

@@ -5,58 +5,51 @@ using JetBrains.Annotations;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
-    public enum WaitAction
-    {
-        ContinueWaiting,
-        StopWaiting
-    }
-
     public static class WaitHelper
     {
         public static void WaitSafe(Func<WaitAction> func, int timeOutSeconds = 120, bool throwException = true, string exceptionMessage = "Wait operation timed out.")
         {
             Wait(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        return func();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("wait attempt failed: {0}", ex);
-                        return WaitAction.ContinueWaiting;
-                    }
-                },
-                timeOutSeconds,
-                throwException,
-                exceptionMessage);
+                    return func();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("wait attempt failed: {0}", ex);
+                    return WaitAction.ContinueWaiting;
+                }
+            },
+                 timeOutSeconds,
+                 throwException,
+                 exceptionMessage);
         }
 
         public static void WaitSafe(Action action, int timeOutSeconds = 120, bool throwException = true, string exceptionMessage = "Wait operation timed out.")
         {
             Wait(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        action();
-                        return WaitAction.StopWaiting;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("wait attempt failed: {0}", ex);
-                        return WaitAction.ContinueWaiting;
-                    }
-                },
-                timeOutSeconds,
-                throwException,
-                exceptionMessage);
+                    action();
+                    return WaitAction.StopWaiting;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("wait attempt failed: {0}", ex);
+                    return WaitAction.ContinueWaiting;
+                }
+            },
+                 timeOutSeconds,
+                 throwException,
+                 exceptionMessage);
         }
 
         public static void Wait(Func<bool> func, int timeOutSeconds = 120, bool throwException = true, string exceptionMessage = "Wait operation timed out.")
         {
             Wait(() => func() ? WaitAction.StopWaiting : WaitAction.ContinueWaiting, timeOutSeconds, throwException, exceptionMessage);
         }
-
 
         public static void Wait(Func<WaitAction> func,
                                 int timeOutSeconds = 120,
@@ -104,7 +97,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         public static void SleepForTimeSpan(TimeSpan delay)
         {
             var stopwatch = Stopwatch.StartNew();
-            while (stopwatch.Elapsed < delay.Add(TimeSpan.FromMilliseconds(16 * 3)))
+            while (stopwatch.Elapsed < delay.Add(TimeSpan.FromMilliseconds(16*3)))
                 Thread.Sleep(TimeSpan.FromMilliseconds(16));
         }
     }

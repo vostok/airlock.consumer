@@ -4,7 +4,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.MetricsAggregator;
 
-namespace Vostok.AirlockConsumer.Tests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Metrics
 {
     public class BucketKeyProvider_Tests
     {

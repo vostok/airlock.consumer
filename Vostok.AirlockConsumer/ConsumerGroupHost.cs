@@ -21,9 +21,9 @@ namespace Vostok.AirlockConsumer
         private readonly Consumer<Null, byte[]> consumer;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost ProcessorHost)> processorInfos = new Dictionary<string, (IAirlockEventProcessor Processor, ProcessorHost)>();
+        private readonly ConsumerMetrics metrics;
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
-        private readonly ConsumerMetrics metrics;
 
         public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IMetricScope rootMetricScope, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
         {

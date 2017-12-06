@@ -25,7 +25,7 @@ namespace Vostok.AirlockConsumer
                 airlockGateApiKey = defaultAirlockGateApiKey;
             if (!environmentVariables.TryGetValue("AIRLOCK_GATE_ENDPOINTS", out var airlockGateEndpoints))
                 airlockGateEndpoints = defaultAirlockGateEndpoints;
-            var airlockGateUris = airlockGateEndpoints.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
+            var airlockGateUris = airlockGateEndpoints.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
             var airlockConfig = new AirlockConfig
             {
                 ApiKey = airlockGateApiKey,

@@ -23,11 +23,11 @@ namespace Vostok.AirlockConsumer
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
-        private int[] pausedPartitions;
         private readonly ICounter messageEnqueuedCounter;
         private readonly ICounter messageProcessedCounter;
         private readonly IDisposable queueGauge;
         private readonly IDisposable pausedGauge;
+        private int[] pausedPartitions;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval, ProcessorHostSettings processorHostSettings)
         {
@@ -99,6 +99,14 @@ namespace Vostok.AirlockConsumer
             cancellationTokenSource.Dispose();
         }
 
+        public void Dispose()
+        {
+            (messageEnqueuedCounter as IDisposable)?.Dispose();
+            (messageProcessedCounter as IDisposable)?.Dispose();
+            queueGauge.Dispose();
+            pausedGauge.Dispose();
+        }
+
         private void ProcessorThreadFunc()
         {
             try
@@ -150,7 +158,7 @@ namespace Vostok.AirlockConsumer
             message = null;
             try
             {
-                return eventsQueue.TryTake(out message, (int) dequeueTimeout.TotalMilliseconds, cancellationTokenSource.Token);
+                return eventsQueue.TryTake(out message, (int)dequeueTimeout.TotalMilliseconds, cancellationTokenSource.Token);
             }
             catch (OperationCanceledException)
             {
@@ -188,13 +196,5 @@ namespace Vostok.AirlockConsumer
                 log.Error($"Processor failed for routingKey: {routingKey}, processorType: {processor.GetType().Name}, processorId: {processor.ProcessorId}", e);
             }
         }
-
-        public void Dispose()
-        {
-            (messageEnqueuedCounter as IDisposable)?.Dispose();
-            (messageProcessedCounter as IDisposable)?.Dispose();
-            queueGauge.Dispose();
-            pausedGauge.Dispose();
-        }
-}
+    }
 }

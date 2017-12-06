@@ -2,7 +2,7 @@
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    internal interface IEventsTimestampProvider
+    public interface IEventsTimestampProvider
     {
         void AddTimestamp(DateTimeOffset timestamp);
         DateTimeOffset? Now();

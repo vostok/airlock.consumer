@@ -13,10 +13,10 @@ namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryResenderProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
+        private const int maxSentryTasks = 100;
         private readonly ILog log;
         private readonly SentryPacketSender packetSender;
         private readonly Dsn dsn;
-        private const int maxSentryTasks = 100;
         private readonly ExceptionParser exceptionParser = new ExceptionParser();
 
         public SentryResenderProcessor(string sentryDsn, ILog log)
@@ -58,6 +58,5 @@ namespace Vostok.AirlockConsumer.Sentry
                     }
                 });
         }
-
     }
 }

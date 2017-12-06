@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using SharpRaven;
 using SharpRaven.Data;
 using Vostok.Logging;
@@ -9,13 +8,24 @@ using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Sentry
 {
-    public class SentryPacketSender 
+    public class SentryPacketSender
     {
+        private static readonly WebExceptionStatus[] retriableHttpStatusCodes =
+        {
+            WebExceptionStatus.ConnectFailure,
+            WebExceptionStatus.ReceiveFailure,
+            WebExceptionStatus.SendFailure,
+            WebExceptionStatus.Timeout,
+            WebExceptionStatus.ConnectionClosed,
+            WebExceptionStatus.RequestCanceled,
+            WebExceptionStatus.KeepAliveFailure
+        };
+
         private readonly ILog log;
         private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy();
         private readonly RavenClient ravenClient;
 
-        public SentryPacketSender(Dsn dsn, ILog log) 
+        public SentryPacketSender(Dsn dsn, ILog log)
         {
             ravenClient = new RavenClient(dsn);
             this.log = log;
@@ -30,17 +40,6 @@ namespace Vostok.AirlockConsumer.Sentry
             }, IsRetriableException, log);
         }
 
-        private static readonly WebExceptionStatus[] retriableHttpStatusCodes =
-        {
-            WebExceptionStatus.ConnectFailure,
-            WebExceptionStatus.ReceiveFailure,
-            WebExceptionStatus.SendFailure,
-            WebExceptionStatus.Timeout,
-            WebExceptionStatus.ConnectionClosed,
-            WebExceptionStatus.RequestCanceled,
-            WebExceptionStatus.KeepAliveFailure
-        };
-
         private static bool IsRetriableException(Exception ex)
         {
             var webException = ExceptionFinder.FindException<WebException>(ex);
@@ -50,6 +49,5 @@ namespace Vostok.AirlockConsumer.Sentry
             var statusCode = httpStatusCode.Value;
             return retriableHttpStatusCodes.Contains(statusCode);
         }
-
     }
 }

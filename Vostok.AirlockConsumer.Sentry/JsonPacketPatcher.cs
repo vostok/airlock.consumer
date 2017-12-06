@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using SharpRaven.Data;
+﻿using SharpRaven.Data;
 
 namespace Vostok.AirlockConsumer.Sentry
 {

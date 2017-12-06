@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2005
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer", "Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj", "{D11DD2E1-0296-4FA1-8630-CF0A453EFF0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Tests", "Vostok.AirlockConsumer.Tests\Vostok.AirlockConsumer.Tests.csproj", "{A0B4778F-1D4E-4C2A-A00A-305E64A23C5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.UnitTests", "Vostok.AirlockConsumer.UnitTests\Vostok.AirlockConsumer.UnitTests.csproj", "{A0B4778F-1D4E-4C2A-A00A-305E64A23C5E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Logs", "Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj", "{9530980E-F85B-4BBE-A9B2-1A5AFC17690D}"
 EndProject
@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Trac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.Sentry", "Vostok.AirlockConsumer.Sentry\Vostok.AirlockConsumer.Sentry.csproj", "{33ABE80D-BC36-4AE2-BCBD-3FE643185A3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.AirlockConsumer.IntergationTests", "Vostok.AirlockConsumer.IntergationTests\Vostok.AirlockConsumer.IntergationTests.csproj", "{3BD377F5-AA40-4D50-B479-A171F04AFBAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.AirlockConsumer.IntergationTests", "Vostok.AirlockConsumer.IntergationTests\Vostok.AirlockConsumer.IntergationTests.csproj", "{3BD377F5-AA40-4D50-B479-A171F04AFBAA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

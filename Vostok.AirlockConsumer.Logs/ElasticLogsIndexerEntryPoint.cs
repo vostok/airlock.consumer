@@ -17,20 +17,6 @@ namespace Vostok.AirlockConsumer.Logs
             new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>().Run();
         }
 
-        protected override string ServiceName => "consumer-logs";
-        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
-        {
-            MaxBatchSize = 1000,
-            MaxProcessorQueueSize = 100000
-        };
-
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
-        {
-            routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
-            var elasticUris = GetElasticUris(log, environmentVariables);
-            processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
-        }
-
         public static Uri[] GetElasticUris(ILog log, Dictionary<string, string> environmentVariables)
         {
             if (!environmentVariables.TryGetValue("AIRLOCK_ELASTICSEARCH_ENDPOINTS", out var elasticEndpoints))
@@ -38,6 +24,20 @@ namespace Vostok.AirlockConsumer.Logs
             var elasticUris = elasticEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
             log.Info($"ElasticUris: {elasticUris.ToPrettyJson()}");
             return elasticUris;
+        }
+
+        protected override string ServiceName => "consumer-logs";
+        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
+        {
+            MaxBatchSize = 1000,
+            MaxProcessorQueueSize = 100000
+        };
+
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        {
+            routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
+            var elasticUris = GetElasticUris(log, environmentVariables);
+            processorProvider = new DefaultAirlockEventProcessorProvider<LogEventData, LogEventDataSerializer>(project => new LogAirlockEventProcessor(elasticUris, log));
         }
     }
 }

@@ -13,6 +13,14 @@ namespace Vostok.AirlockConsumer.Logs
 {
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
+        private static readonly HttpStatusCode[] retriableHttpStatusCodes =
+        {
+            HttpStatusCode.BadGateway,
+            HttpStatusCode.GatewayTimeout,
+            HttpStatusCode.RequestTimeout,
+            HttpStatusCode.ServiceUnavailable,
+            HttpStatusCode.TemporaryRedirect,
+        };
         private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
         private readonly RetriableCallStrategy retriableCallStrategy;
@@ -53,22 +61,13 @@ namespace Vostok.AirlockConsumer.Logs
                 log);
         }
 
-        private static readonly HttpStatusCode[] retriableHttpStatusCodes =
-        {
-            HttpStatusCode.BadGateway,
-            HttpStatusCode.GatewayTimeout,
-            HttpStatusCode.RequestTimeout,
-            HttpStatusCode.ServiceUnavailable,
-            HttpStatusCode.TemporaryRedirect,
-        };
-
         private bool IsRetriableException(Exception ex)
         {
             var elasticsearchClientException = ExceptionFinder.FindException<ElasticsearchClientException>(ex);
             var httpStatusCode = elasticsearchClientException?.Response?.HttpStatusCode;
             if (httpStatusCode == null)
                 return false;
-            var statusCode = (HttpStatusCode) httpStatusCode.Value;
+            var statusCode = (HttpStatusCode)httpStatusCode.Value;
             return retriableHttpStatusCodes.Contains(statusCode);
         }
 

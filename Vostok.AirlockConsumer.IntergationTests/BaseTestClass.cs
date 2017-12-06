@@ -41,19 +41,19 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var testId = Guid.NewGuid().ToString("N");
 
             Send(
-                Enumerable.Range(0,eventCount).Select(
-                i =>
-                {
-                    var logEventData = new LogEventData
+                Enumerable.Range(0, eventCount).Select(
+                    i =>
                     {
-                        Message = "hello!" + i,
-                        Level = LogLevel.Debug,
-                        Timestamp = dateTimeOffset.AddMilliseconds(-i*10),
-                        Properties = new Dictionary<string, string> {["testId"] = testId}
-                    };
-                    onCreate?.Invoke(logEventData);
-                    return logEventData;
-                }),
+                        var logEventData = new LogEventData
+                        {
+                            Message = "hello!" + i,
+                            Level = LogLevel.Debug,
+                            Timestamp = dateTimeOffset.AddMilliseconds(-i*10),
+                            Properties = new Dictionary<string, string> {["testId"] = testId}
+                        };
+                        onCreate?.Invoke(logEventData);
+                        return logEventData;
+                    }),
                 RoutingKey.LogsSuffix,
                 e => e.Timestamp);
         }
@@ -65,19 +65,19 @@ namespace Vostok.AirlockConsumer.IntergationTests
 
             Send(
                 Enumerable.Range(0, eventCount).Select(
-                i =>
-                {
-                    var span = new Span
+                    i =>
                     {
-                        BeginTimestamp = dateTimeOffset.AddMilliseconds(-i*10),
-                        EndTimestamp = dateTimeOffset.AddMilliseconds((-i - 10)*10),
-                        SpanId = Guid.NewGuid(),
-                        TraceId = Guid.NewGuid(),
-                        Annotations = new Dictionary<string, string> {["testId"] = testId}
-                    };
-                    onCreate?.Invoke(span);
-                    return span;
-                }),
+                        var span = new Span
+                        {
+                            BeginTimestamp = dateTimeOffset.AddMilliseconds(-i*10),
+                            EndTimestamp = dateTimeOffset.AddMilliseconds((-i - 10)*10),
+                            SpanId = Guid.NewGuid(),
+                            TraceId = Guid.NewGuid(),
+                            Annotations = new Dictionary<string, string> {["testId"] = testId}
+                        };
+                        onCreate?.Invoke(span);
+                        return span;
+                    }),
                 RoutingKey.TracesSuffix,
                 e => e.BeginTimestamp);
         }
