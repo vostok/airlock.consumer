@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using SharpRaven;
 
 namespace Vostok.AirlockConsumer.Sentry
@@ -22,7 +24,26 @@ namespace Vostok.AirlockConsumer.Sentry
             {
                 if (projectToClient.TryGetValue(project, out client))
                     return client;
-                var dsn = apiClient.GetOrCreateProjectAndDsn(project);
+                SentryApiClient.SentryTeam team;
+                try
+                {
+                    team = apiClient.GetTeam(project);
+                }
+                catch (HttpListenerException e) when (e.ErrorCode == 404)
+                {
+                    team = null;
+                }
+                if (team == null)
+                {
+                    apiClient.CreateTeam(project);
+                    apiClient.CreateProject(project, project);
+                }
+                else
+                {
+                    if (!team.Projects.Contains(project))
+                        apiClient.CreateProject(project, project);
+                }
+                var dsn = apiClient.GetProjectDsn(project) ?? apiClient.CreateProjectDsn(project);
                 client = new RavenClient(dsn);
                 projectToClient.Add(project, client);
                 return client;
