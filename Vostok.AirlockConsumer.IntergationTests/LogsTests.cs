@@ -67,7 +67,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.True(expectedLogMessages.Contains(message));
                     }
                     return WaitAction.StopWaiting;
-                }, 30);
+                });
 
             applicationHost.Stop();
         }
