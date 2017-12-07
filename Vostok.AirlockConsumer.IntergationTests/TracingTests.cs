@@ -19,9 +19,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendTraceEventsToAirlock_GotItAtCassandra()
         {
-            var applicationHost = new TestApplicationHost<TracingAirlockConsumerEntryPoint>(IntegrationTestsEnvironment.Log);
-            applicationHost.Run();
-            Thread.Sleep(10000);
+            //var applicationHost = new TestApplicationHost<TracingAirlockConsumerEntryPoint>(IntegrationTestsEnvironment.Log);
+            //applicationHost.Run();
+            //Thread.Sleep(10000);
 
             const int eventCount = 10;
             var spans = GenerateSpans(eventCount);
@@ -50,9 +50,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.AreEqual(span.SpanId, spanResult.SpanId);
                     }
                     return true;
-                });
+                },30);
 
-            applicationHost.Stop();
+            //applicationHost.Stop();
         }
 
         [Test]

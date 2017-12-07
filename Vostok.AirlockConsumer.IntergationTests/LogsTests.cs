@@ -20,9 +20,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
-            var applicationHost = new TestApplicationHost<ElasticLogsIndexerEntryPoint>(IntegrationTestsEnvironment.Log);
-            applicationHost.Run();
-            Thread.Sleep(10000);
+            //var applicationHost = new TestApplicationHost<ElasticLogsIndexerEntryPoint>(IntegrationTestsEnvironment.Log);
+            //applicationHost.Run();
+            //Thread.Sleep(10000);
 
             const int eventCount = 10;
             var logEvents = GenerateLogEvens(eventCount);
@@ -69,7 +69,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     return WaitAction.StopWaiting;
                 });
 
-            applicationHost.Stop();
+            //applicationHost.Stop();
         }
 
         [Test]
