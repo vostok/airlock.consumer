@@ -16,18 +16,20 @@ namespace Vostok.AirlockConsumer.Sentry
             this.apiClient = apiClient;
         }
 
-        public RavenClient GetOrCreateClient(string project)
+        public RavenClient GetOrCreateClient(string project, string env)
         {
-            if (projectToClient.TryGetValue(project, out var client))
+            var sentryProject = $"{project}_{env}";
+            var sentryTeam = project;
+            if (projectToClient.TryGetValue(sentryProject, out var client))
                 return client;
             lock (locker)
             {
-                if (projectToClient.TryGetValue(project, out client))
+                if (projectToClient.TryGetValue(sentryProject, out client))
                     return client;
                 SentryApiClient.SentryTeam team;
                 try
                 {
-                    team = apiClient.GetTeam(project);
+                    team = apiClient.GetTeam(sentryTeam);
                 }
                 catch (HttpListenerException e) when (e.ErrorCode == 404)
                 {
@@ -35,17 +37,17 @@ namespace Vostok.AirlockConsumer.Sentry
                 }
                 if (team == null)
                 {
-                    apiClient.CreateTeam(project);
-                    apiClient.CreateProject(project, project);
+                    apiClient.CreateTeam(sentryTeam);
+                    apiClient.CreateProject(sentryTeam, sentryProject);
                 }
                 else
                 {
-                    if (!team.Projects.Contains(project))
-                        apiClient.CreateProject(project, project);
+                    if (!team.Projects.Contains(sentryProject))
+                        apiClient.CreateProject(sentryTeam, sentryProject);
                 }
-                var dsn = apiClient.GetProjectDsn(project) ?? apiClient.CreateProjectDsn(project);
+                var dsn = apiClient.GetProjectDsn(sentryProject) ?? apiClient.CreateProjectDsn(sentryProject);
                 client = new RavenClient(dsn);
-                projectToClient.Add(project, client);
+                projectToClient.Add(sentryProject, client);
                 return client;
             }
         }
