@@ -15,9 +15,8 @@ namespace Vostok.AirlockConsumer
         protected abstract string ServiceName { get; }
         protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
 
-        public ConsumerGroupHost Initialize(ILog log)
+        public ConsumerGroupHost Initialize(ILog log, Dictionary<string,string> environmentVariables)
         {
-            var environmentVariables = EnvironmentVariablesFactory.GetEnvironmentVariables(log);
             if (!environmentVariables.TryGetValue("VOSTOK_ENV", out var envName))
                 envName = "dev";
 

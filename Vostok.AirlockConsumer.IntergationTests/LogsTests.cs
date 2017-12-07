@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
+using Vostok.AirlockConsumer.Logs;
 using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer.IntergationTests
@@ -17,21 +20,16 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
+            var applicationHost = new TestApplicationHost<ElasticLogsIndexerEntryPoint>(IntegrationTestsEnvironment.Log);
+            applicationHost.Run();
+            Thread.Sleep(10000);
+
             const int eventCount = 10;
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
 
-            //var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
-            //var task = new Task(
-            //    () =>
-            //    {
-            //        applicationHost.Run();
-            //    },
-            //    TaskCreationOptions.LongRunning);
-            //task.Start();
-
             // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
-            var connectionPool = new StickyConnectionPool(new[] {new Uri("http://devops-consul1.dev.kontur.ru:9200")});
+            var connectionPool = new StickyConnectionPool(new[] {new Uri("http://localhost:9200")});
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
             var indexName = $"{IntegrationTestsEnvironment.Project}-{IntegrationTestsEnvironment.Environment}-{logEvents.First().Timestamp:yyyy.MM.dd}";
@@ -69,9 +67,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.True(expectedLogMessages.Contains(message));
                     }
                     return WaitAction.StopWaiting;
-                });
+                }, 30);
 
-            //applicationHost.Stop();
+            applicationHost.Stop();
         }
 
         [Test]

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Vostok.Airlock;
+using Vostok.AirlockConsumer.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
@@ -16,23 +19,18 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendTraceEventsToAirlock_GotItAtCassandra()
         {
+            var applicationHost = new TestApplicationHost<TracingAirlockConsumerEntryPoint>(IntegrationTestsEnvironment.Log);
+            applicationHost.Run();
+            Thread.Sleep(10000);
+
             const int eventCount = 10;
             var spans = GenerateSpans(eventCount);
             PushToAirlock(spans);
 
-            //var applicationHost = new ConsumerApplicationHost<TracingAirlockConsumerEntryPoint>();
-            //var task = new Task(
-            //    () =>
-            //    {
-            //        applicationHost.Run();
-            //    },
-            //    TaskCreationOptions.LongRunning);
-            //task.Start();
-
             // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
             var contrailsClient = new ContrailsClient(new ContrailsClientSettings
             {
-                CassandraNodes = new[] {"vm-ke-cass1:9042", "vm-ke-cass2:9042", "vm-ke-cass3:9042"},
+                CassandraNodes = new[] {"localhost:9042"},
                 Keyspace = "airlock",
                 CassandraRetryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings(),
             }, IntegrationTestsEnvironment.Log);
@@ -52,9 +50,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.AreEqual(span.SpanId, spanResult.SpanId);
                     }
                     return true;
-                });
+                },60);
 
-            //applicationHost.Stop();
+            applicationHost.Stop();
         }
 
         [Test]

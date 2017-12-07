@@ -44,7 +44,7 @@ namespace Vostok.AirlockConsumer
             {
                 log.Info($"Consumer application is starting: {typeof (TConsumerApp).Name}");
                 var consumerApplication = new TConsumerApp();
-                var consumerGroupHost = consumerApplication.Initialize(log);
+                var consumerGroupHost = consumerApplication.Initialize(log, EnvironmentVariablesFactory.GetEnvironmentVariables(log));
                 log.Info($"Consumer application is initialized: {typeof (TConsumerApp).Name}");
                 consumerGroupHost.Start();
                 stopSignal.Wait(Timeout.Infinite);

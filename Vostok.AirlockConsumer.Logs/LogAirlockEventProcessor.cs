@@ -39,7 +39,7 @@ namespace Vostok.AirlockConsumer.Logs
             var bulkItems = new List<object>();
             foreach (var @event in events)
             {
-                RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var suffix);
+                RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var _);
                 bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
                 bulkItems.Add(BuildIndexRecord(@event, service));
             }
