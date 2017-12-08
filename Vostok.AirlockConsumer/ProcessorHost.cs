@@ -183,7 +183,7 @@ namespace Vostok.AirlockConsumer
             }
             DoProcessMessageBatch(airlockEvents);
             var partitionOffsets = offsetsToCommit.Select(x => new TopicPartitionOffset(x.Key, x.Value)).ToArray();
-            log.Debug("commit offsets: " + partitionOffsets.ToPrettyJson());
+            log.Info("commit offsets: " + string.Join(",", partitionOffsets.Select(x => $"{x.Topic}:{x.Partition}:{x.Offset}")));
             consumer.CommitAsync(partitionOffsets).GetAwaiter().GetResult();
         }
 
