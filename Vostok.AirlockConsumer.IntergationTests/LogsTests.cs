@@ -10,6 +10,7 @@ using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.AirlockConsumer.Logs;
 using Vostok.Logging;
+using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
@@ -36,10 +37,11 @@ namespace Vostok.AirlockConsumer.IntergationTests
 
             var testId = logEvents.First().Properties["testId"];
             var expectedLogMessages = new HashSet<string>(logEvents.Select(x => x.Message));
+            var callStrategy = new RetriableCallStrategy();
             WaitHelper.Wait(
                 () =>
                 {
-                    var response = elasticClient.Search<string>(
+                    var response = callStrategy.Call(() => elasticClient.Search<string>(
                         indexName,
                         "LogEvent",
                         new
@@ -53,14 +55,14 @@ namespace Vostok.AirlockConsumer.IntergationTests
                                     testId,
                                 }
                             }
-                        });
-                    IntegrationTestsEnvironment.Log.Debug("elastic responce: " + response.Body);
+                        }), ex => true, IntegrationTestsEnvironment.Log);
                     if (!response.Success)
                         throw new Exception("elastic error");
                     dynamic jObject = JObject.Parse(response.Body);
                     var hits = (JArray)jObject.hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
                         return WaitAction.ContinueWaiting;
+                    IntegrationTestsEnvironment.Log.Debug("elastic responce: " + response.Body);
                     foreach (dynamic hit in hits)
                     {
                         string message = hit._source.Message;
