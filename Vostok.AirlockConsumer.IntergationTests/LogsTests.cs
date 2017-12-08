@@ -41,23 +41,27 @@ namespace Vostok.AirlockConsumer.IntergationTests
             WaitHelper.Wait(
                 () =>
                 {
-                    var response = callStrategy.Call(() => elasticClient.Search<string>(
-                        indexName,
-                        "LogEvent",
-                        new
-                        {
-                            from = 0,
-                            size = eventCount,
-                            query = new
+                    var response = callStrategy.Call(() =>
+                    {
+                        var elasticsearchResponse = elasticClient.Search<string>(
+                            indexName,
+                            "LogEvent",
+                            new
                             {
-                                match = new
+                                from = 0,
+                                size = eventCount,
+                                query = new
                                 {
-                                    testId,
+                                    match = new
+                                    {
+                                        testId,
+                                    }
                                 }
-                            }
-                        }), ex => true, IntegrationTestsEnvironment.Log);
-                    if (!response.Success)
-                        throw new Exception("elastic error");
+                            });
+                        if (!elasticsearchResponse.Success)
+                            throw new Exception("elastic error " + elasticsearchResponse.OriginalException);
+                        return elasticsearchResponse;
+                    }, ex => true, IntegrationTestsEnvironment.Log);
                     dynamic jObject = JObject.Parse(response.Body);
                     var hits = (JArray)jObject.hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
