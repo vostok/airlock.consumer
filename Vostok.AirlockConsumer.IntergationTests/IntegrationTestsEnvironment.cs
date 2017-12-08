@@ -30,6 +30,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 foreach (var @event in events)
                     airlockClient.Push(routingKey, @event, getTimestamp(@event));
                 airlockClient.FlushAsync().Wait();
+                WaitHelper.Wait(() => airlockClient.LostItemsCount + airlockClient.SentItemsCount == events.Length, 10);
             }
             Log.Debug($"SentItemsCount: {airlockClient.SentItemsCount}, LostItemsCount: {airlockClient.LostItemsCount}, Elapsed: {sw.Elapsed}");
             airlockClient.LostItemsCount.Should().Be(0);
