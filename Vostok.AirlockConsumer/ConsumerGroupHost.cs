@@ -250,7 +250,6 @@ namespace Vostok.AirlockConsumer
                     var startTimestampOnRebalance = processorInfo.Processor.GetStartTimestampOnRebalance(routingKey);
                     if (!startTimestampOnRebalance.HasValue)
                     {
-                        var storedOffsets = consumer.Position(newPartitions.Select(x => new TopicPartition(routingKey, x)));
                         log.Debug("startTimestampOnRebalance is null");
                         topicPartitionOffsets.AddRange(newPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
                     }
