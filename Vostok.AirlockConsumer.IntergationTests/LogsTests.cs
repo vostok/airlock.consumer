@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
-using Vostok.AirlockConsumer.Logs;
 using Vostok.Logging;
 using Vostok.RetriableCall;
 
@@ -21,10 +18,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
-            //var applicationHost = new TestApplicationHost<ElasticLogsIndexerEntryPoint>(IntegrationTestsEnvironment.Log);
-            //applicationHost.Run();
-            //Thread.Sleep(10000);
-
             const int eventCount = 10;
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
@@ -73,9 +66,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.True(expectedLogMessages.Contains(message));
                     }
                     return WaitAction.StopWaiting;
-                }, 180);
-
-            //applicationHost.Stop();
+                });
         }
 
         [Test]

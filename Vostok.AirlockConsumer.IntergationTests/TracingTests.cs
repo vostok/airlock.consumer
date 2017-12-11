@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Vostok.Airlock;
-using Vostok.AirlockConsumer.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
@@ -19,10 +16,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Test]
         public void SendTraceEventsToAirlock_GotItAtCassandra()
         {
-            //var applicationHost = new TestApplicationHost<TracingAirlockConsumerEntryPoint>(IntegrationTestsEnvironment.Log);
-            //applicationHost.Run();
-            //Thread.Sleep(10000);
-
             const int eventCount = 10;
             var spans = GenerateSpans(eventCount);
             PushToAirlock(spans);
@@ -50,9 +43,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.AreEqual(span.SpanId, spanResult.SpanId);
                     }
                     return true;
-                },180);
-
-            //applicationHost.Stop();
+                });
         }
 
         [Test]
