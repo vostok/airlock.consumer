@@ -209,25 +209,31 @@ namespace Vostok.AirlockConsumer
         {
             log.Debug($"PartitionsAssignmentRequest: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, topicPartitions: [{string.Join(", ", topicPartitions)}]");
             var topicPartitionOffsets = HandlePartitionsAssignment(topicPartitions);
-            var newPartitions = topicPartitionOffsets.Where(x => x.Offset == Offset.Stored).ToArray();
-            var storedOffsets = consumer.Position(newPartitions.Select(x => x.TopicPartition)).ToDictionary(x => x.TopicPartition.ToString());
-            log.Debug($"Stored offsets for new partitions: [{string.Join(", ", storedOffsets)}], consumerName: {consumer.Name}, memberId: {consumer.MemberId}");
-            var timestampToSearch = new Timestamp(DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeMilliseconds(), TimestampType.NotAvailable);
-            var timestampsToSearch = newPartitions.Select(x => new TopicPartitionTimestamp(x.TopicPartition, timestampToSearch));
-            var offsetsForTimes = consumer.OffsetsForTimes(timestampsToSearch, settings.OffsetsForTimesTimeout).ToDictionary(x => x.TopicPartition.ToString());
-            for (var i = 0; i < topicPartitionOffsets.Count; i++)
+            var storedOffset = Offset.Stored;
+            var newPartitionsWithStoredOffset = topicPartitionOffsets.Where(x => x.Offset == storedOffset).ToArray();
+            if (newPartitionsWithStoredOffset.Length > 0)
             {
-                var topicPartitionOffset = topicPartitionOffsets[i];
-                if (topicPartitionOffsets[i].Offset == Offset.Stored)
+                var storedOffsets = consumer.Position(newPartitionsWithStoredOffset.Select(x => x.TopicPartition));
+                var storedOffsetsDict = storedOffsets.ToDictionary(x => x.TopicPartition);
+                log.Debug($"Stored offsets for new partitions: [{string.Join(", ", storedOffsets)}], consumerName: {consumer.Name}, memberId: {consumer.MemberId}");
+                var timestampToSearch = new Timestamp(DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeMilliseconds(), TimestampType.NotAvailable);
+                var timestampsToSearch = newPartitionsWithStoredOffset.Select(x => new TopicPartitionTimestamp(x.TopicPartition, timestampToSearch));
+                var offsetsByTimestamp = consumer.OffsetsForTimes(timestampsToSearch, settings.OffsetsForTimesTimeout).ToList();
+                log.Debug($"Offsets by timestamp for new partitions: [{string.Join(", ", offsetsByTimestamp)}], consumerName: {consumer.Name}, memberId: {consumer.MemberId}");
+                var offsetsByTimestampDict = offsetsByTimestamp.ToDictionary(x => x.TopicPartition);
+                for (var i = 0; i < topicPartitionOffsets.Count; i++)
                 {
-                    var topicPartitionStr = topicPartitionOffset.TopicPartition.ToString();
-                    if (!storedOffsets.TryGetValue(topicPartitionStr, out var offset) || offset.Error.HasError || offset.Offset == Offset.Invalid)
+                    var topicPartitionOffset = topicPartitionOffsets[i];
+                    if (topicPartitionOffsets[i].Offset == storedOffset)
                     {
-                        if (offsetsForTimes.TryGetValue(topicPartitionStr, out var foundOffset) && !foundOffset.Error.HasError && foundOffset.Offset != Offset.Invalid)
+                        if (!storedOffsetsDict.TryGetValue(topicPartitionOffset.TopicPartition, out var offset) || offset.Error.HasError || offset.Offset == Offset.Invalid)
                         {
-                            var partitionOffset = new TopicPartitionOffset(topicPartitionOffset.TopicPartition, foundOffset.Offset);
-                            log.Debug($"Set offset from searched: {partitionOffset}, consumerName: {consumer.Name}, memberId: {consumer.MemberId}");
-                            topicPartitionOffsets[i] = partitionOffset;
+                            if (offsetsByTimestampDict.TryGetValue(topicPartitionOffset.TopicPartition, out var foundOffset) && !foundOffset.Error.HasError && foundOffset.Offset != Offset.Invalid)
+                            {
+                                var partitionOffset = new TopicPartitionOffset(topicPartitionOffset.TopicPartition, foundOffset.Offset);
+                                log.Debug($"Set offset from searched: {partitionOffset}, consumerName: {consumer.Name}, memberId: {consumer.MemberId}");
+                                topicPartitionOffsets[i] = partitionOffset;
+                            }
                         }
                     }
                 }
