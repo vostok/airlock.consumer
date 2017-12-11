@@ -250,8 +250,9 @@ namespace Vostok.AirlockConsumer
                     var startTimestampOnRebalance = processorInfo.Processor.GetStartTimestampOnRebalance(routingKey);
                     if (!startTimestampOnRebalance.HasValue)
                     {
+                        var storedOffsets = consumer.Position(newPartitions.Select(x => new TopicPartition(routingKey, x)));
                         log.Debug("startTimestampOnRebalance is null");
-                        topicPartitionOffsets.AddRange(newPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Stored)));
+                        topicPartitionOffsets.AddRange(newPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
                     }
                     else
                     {
@@ -266,7 +267,7 @@ namespace Vostok.AirlockConsumer
                                 var offset = topicPartitionOffset.Offset;
                                 if (offset == timestampToSearch.UnixTimestampMs)
                                 {
-                                    offset = Offset.Stored;
+                                    offset = Offset.Invalid;
                                     log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} failed to get offset for timestamp: timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffset}");
                                 }
                                 log.Debug($"set offset {offset} for partition {topicPartitionOffset.TopicPartition}");
@@ -275,7 +276,7 @@ namespace Vostok.AirlockConsumer
                             else
                             {
                                 log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId}, failed to get offset for timestamp {startTimestampOnRebalance}: {topicPartitionOffset}");
-                                topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffset.TopicPartition, Offset.Stored));
+                                topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffset.TopicPartition, Offset.Invalid));
                             }
                         }
                     }
@@ -283,7 +284,7 @@ namespace Vostok.AirlockConsumer
                 var remainingPartitions = partitionsToAssign.Except(topicPartitionOffsets.Where(x => x.Topic == routingKey).Select(x => x.Partition)).ToArray();
                 log.Debug("remainingPartitions = " + string.Join(",", remainingPartitions));
 
-                topicPartitionOffsets.AddRange(remainingPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Stored)));
+                topicPartitionOffsets.AddRange(remainingPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
                 processorInfo.ProcessorHost.AssignedPartitions = partitionsToAssign;
             }
 
