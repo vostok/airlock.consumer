@@ -176,7 +176,7 @@ namespace Vostok.AirlockConsumer
                 log.Error($"Could not get metadata, consumerName: {consumer.Name}, memberId: {consumer.MemberId}", e);
                 return true;
             }
-            log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
+            //log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
 
             var topicsToSubscribeTo = new HashSet<string>();
             foreach (var topicMetadata in metadata.Topics)
@@ -223,6 +223,7 @@ namespace Vostok.AirlockConsumer
         // todo (avk, 19.10.2017), rafactoring: move AssignedPartitions initialization logic into ProcessorHost
         private List<TopicPartitionOffset> HandlePartitionsAssignment(List<TopicPartition> topicPartitions)
         {
+            log.Debug("HandlePartitionsAssignment");
             var routingKeysToAssign = new List<string>();
             var topicPartitionOffsets = new List<TopicPartitionOffset>();
             foreach (var topicPartitionsByRoutingKeyGroup in topicPartitions.GroupBy(x => x.Topic))
@@ -303,6 +304,7 @@ namespace Vostok.AirlockConsumer
 
         private void OnMessage(Message<Null, byte[]> message)
         {
+            log.Info("OnMessage");
             metrics.IncrementMessage();
             if (!processorInfos.TryGetValue(message.Topic, out var processorInfo))
                 throw new InvalidOperationException($"Invalid routingKey: {message.Topic}");

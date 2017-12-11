@@ -15,7 +15,7 @@ namespace Vostok.AirlockConsumer
                 .MinimumLevel.Debug()
                 .WriteTo.RollingFile(pathFormat, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3} [{Thread}] {SourceContext} {Message:l}{NewLine}{Exception}");
             if (writeToConsole)
-                loggerConfiguration = loggerConfiguration.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff} {Level:u3} [{Thread}] {Message:l}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Information);
+                loggerConfiguration = loggerConfiguration.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss.fff} {Level:u3} [{Thread}] {Message:l}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Debug);
             var logger = loggerConfiguration.CreateLogger();
             return new SerilogLog(logger).WithFlowContext();
         }
