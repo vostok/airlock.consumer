@@ -50,7 +50,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         Assert.AreEqual(span.SpanId, spanResult.SpanId);
                     }
                     return true;
-                },15);
+                },180);
 
             //applicationHost.Stop();
         }
