@@ -39,7 +39,8 @@ namespace Vostok.AirlockConsumer
         {
             var consumerGroupId = GetConsumerGroupId(environmentVariables);
             var kafkaBootstrapEndpoints = GetKafkaBootstrapEndpoints(environmentVariables);
-            var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, processorHostSettings);
+            var autoResetOffsetPolicy = GetKafkaAutoOffsetReset(environmentVariables);
+            var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, processorHostSettings, autoResetOffsetPolicy);
             log.Info($"ConsumerGroupHostSettings: {consumerGroupHostSettings.ToPrettyJson()}");
             return consumerGroupHostSettings;
         }
@@ -56,6 +57,12 @@ namespace Vostok.AirlockConsumer
             if (!environmentVariables.TryGetValue("AIRLOCK_KAFKA_BOOTSTRAP_ENDPOINTS", out var kafkaBootstrapEndpoints))
                 kafkaBootstrapEndpoints = defaultKafkaBootstrapEndpoints;
             return kafkaBootstrapEndpoints;
+        }
+        private static string GetKafkaAutoOffsetReset(Dictionary<string, string> environmentVariables)
+        {
+            if (!environmentVariables.TryGetValue("AIRLOCK_KAFKA_AUTO_OFFSET_RESET", out var autoOffsetReset))
+                autoOffsetReset = AutoResetOffsetPolicy.Latest;
+            return autoOffsetReset;
         }
     }
 }

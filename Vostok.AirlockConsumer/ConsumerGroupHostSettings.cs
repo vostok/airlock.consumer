@@ -6,20 +6,20 @@ namespace Vostok.AirlockConsumer
 {
     public class ConsumerGroupHostSettings
     {
-        public ConsumerGroupHostSettings(string bootstrapServers, string consumerGroupId, ProcessorHostSettings processorHostSettings, string clientId = null, AutoResetOffsetPolicy autoResetOffsetPolicy = AutoResetOffsetPolicy.Latest)
+        public ConsumerGroupHostSettings(string bootstrapServers, string consumerGroupId, ProcessorHostSettings processorHostSettings, string autoResetOffsetPolicy, string clientId = null)
         {
             BootstrapServers = bootstrapServers;
             ConsumerGroupId = consumerGroupId;
             ProcessorHostSettings = processorHostSettings;
             ClientId = clientId ?? $"airlock@{Dns.GetHostName()}";
-            AutoResetOffsetPolicy = autoResetOffsetPolicy;
+            AutoResetOffset = autoResetOffsetPolicy;
         }
 
         public string BootstrapServers { get; }
         public string ConsumerGroupId { get; }
         public ProcessorHostSettings ProcessorHostSettings { get; }
         public string ClientId { get; }
-        public AutoResetOffsetPolicy AutoResetOffsetPolicy { get; }
+        public string AutoResetOffset { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);
         public TimeSpan UpdateSubscriptionInterval { get; } = TimeSpan.FromSeconds(30);
         public TimeSpan UpdateSubscriptionTimeout { get; } = TimeSpan.FromSeconds(10);
@@ -39,7 +39,6 @@ namespace Vostok.AirlockConsumer
                 {"enable.auto.commit", false},
                 {"enable.auto.offset.store", false},
                 {"offset.store.method", "broker"},
-                {"auto.offset.reset", FormatAutoResetOffsetPolicy(AutoResetOffsetPolicy)},
                 {"session.timeout.ms", 10000},
                 {"heartbeat.interval.ms", 3000},
                 {"socket.timeout.ms", 60000},
@@ -56,20 +55,12 @@ namespace Vostok.AirlockConsumer
                 {"queued.max.messages.kbytes", 1000000},
                 {"receive.message.max.bytes", 100000000},
                 {"max.in.flight.requests.per.connection", 1000000},
+                { "default.topic.config", new Dictionary<string, object>
+                    {
+                        { "auto.offset.reset", AutoResetOffset }
+                    }
+                }
             };
-        }
-
-        private static string FormatAutoResetOffsetPolicy(AutoResetOffsetPolicy autoResetOffsetPolicy)
-        {
-            switch (autoResetOffsetPolicy)
-            {
-                case AutoResetOffsetPolicy.Latest:
-                    return "latest";
-                case AutoResetOffsetPolicy.Earliest:
-                    return "earliest";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(autoResetOffsetPolicy), autoResetOffsetPolicy, null);
-            }
         }
     }
 }

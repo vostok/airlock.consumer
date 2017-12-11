@@ -1,8 +1,8 @@
 namespace Vostok.AirlockConsumer
 {
-    public enum AutoResetOffsetPolicy
+    public static class AutoResetOffsetPolicy
     {
-        Latest,
-        Earliest,
+        public const string Latest = "latest";
+        public const string Earliest = "earliest";
     }
 }
