@@ -27,7 +27,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
         public void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
         {
             var httpServerSpanEvents = events
-                .Where(x => x.Payload.Annotations.TryGetValue("kind", out var kind) && kind == "http-server")
+                .Where(x => x.Payload.Annotations.TryGetValue(TracingAnnotationNames.Kind, out var kind) && kind == "http-server")
                 .Where(x => x.Payload.EndTimestamp.HasValue)
                 .ToList();
             if (httpServerSpanEvents.Count == 0)
@@ -38,6 +38,8 @@ namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
                 var metricEvent = MetricEventBuilder.Build(@event.Payload);
                 metricEvents.Add(new AirlockEvent<MetricEvent> { Payload = metricEvent, RoutingKey = metricRoutingKey, Timestamp = metricEvent.Timestamp });
             }
+            var sum = metricEvents.SelectMany(x => x.Payload.Values.Values).Sum();
+            log.Info("Process span events. Sum of duration: " + sum);
             metricsAggregatorProcessor.Process(metricEvents, messageProcessedCounter);
         }
 
