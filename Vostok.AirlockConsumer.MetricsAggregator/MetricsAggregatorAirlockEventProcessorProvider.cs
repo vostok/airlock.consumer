@@ -29,7 +29,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             if (RoutingKey.LastSuffixMatches(routingKey, RoutingKey.TracesSuffix))
             {
-                var tracesProcessor = new TracesToEventsProcessor(airlockClient, rootMetricScope, settings, routingKey);
+                var tracesProcessor = new HttpServerTracesProcessor(airlockClient, rootMetricScope, settings, routingKey);
                 return new DefaultAirlockEventProcessor<Span>(spanAirlockSerializer, tracesProcessor);
             }
             var processor = new MetricsAggregatorProcessor(airlockClient, rootMetricScope, settings, routingKey);

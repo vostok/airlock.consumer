@@ -8,12 +8,12 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
 {
-    public class TracesToEventsProcessor : IAirlockEventProcessor<Span>
+    public class HttpServerTracesProcessor : IAirlockEventProcessor<Span>
     {
         private readonly MetricsAggregatorProcessor metricsAggregatorProcessor;
         private readonly string metricRoutingKey;
 
-        public TracesToEventsProcessor(IAirlockClient airlockClient, IMetricScope rootMetricScope, MetricsAggregatorSettings settings, string routingKey)
+        public HttpServerTracesProcessor(IAirlockClient airlockClient, IMetricScope rootMetricScope, MetricsAggregatorSettings settings, string routingKey)
         {
             metricRoutingKey = RoutingKey.ReplaceSuffix(routingKey, RoutingKey.TraceEventsSuffix);
             metricsAggregatorProcessor = new MetricsAggregatorProcessor(airlockClient, rootMetricScope, settings, metricRoutingKey);
@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
 
         public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
         {
-            return metricsAggregatorProcessor.GetStartTimestampOnRebalance(routingKey);
+            return metricsAggregatorProcessor.GetStartTimestampOnRebalance(metricRoutingKey);
         }
 
         public void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
