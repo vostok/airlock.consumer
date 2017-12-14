@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Vostok.Airlock;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
+using Vostok.Tracing;
+
+namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
+{
+    public class TracesToEventsProcessor : IAirlockEventProcessor<Span>
+    {
+        private readonly MetricsAggregatorProcessor metricsAggregatorProcessor;
+        private readonly string metricRoutingKey;
+
+        public TracesToEventsProcessor(IAirlockClient airlockClient, IMetricScope rootMetricScope, MetricsAggregatorSettings settings, string routingKey)
+        {
+            metricRoutingKey = RoutingKey.ReplaceSuffix(routingKey, RoutingKey.TraceEventsSuffix);
+            metricsAggregatorProcessor = new MetricsAggregatorProcessor(airlockClient, rootMetricScope, settings, metricRoutingKey);
+        }
+
+        public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
+        {
+            return metricsAggregatorProcessor.GetStartTimestampOnRebalance(routingKey);
+        }
+
+        public void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
+        {
+            var httpServerSpanEvents = events
+                .Where(x => x.Payload.Annotations.TryGetValue("kind", out var kind) && kind == "http-server")
+                .Where(x => x.Payload.EndTimestamp.HasValue)
+                .ToList();
+            if (httpServerSpanEvents.Count == 0)
+                return;
+            var metricEvents = new List<AirlockEvent<MetricEvent>>();
+            foreach (var @event in httpServerSpanEvents)
+            {
+                var metricEvent = MetricEventBuilder.Build(@event.Payload);
+                metricEvents.Add(new AirlockEvent<MetricEvent> { Payload = metricEvent, RoutingKey = metricRoutingKey, Timestamp = metricEvent.Timestamp });
+            }
+            metricsAggregatorProcessor.Process(metricEvents, messageProcessedCounter);
+        }
+
+        public void Release(string routingKey)
+        {
+            metricsAggregatorProcessor.Release(routingKey);
+        }
+    }
+}

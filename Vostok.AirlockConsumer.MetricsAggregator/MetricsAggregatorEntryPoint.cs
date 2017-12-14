@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Logging;
@@ -23,8 +24,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
-            // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то https://github.com/vostok/airlock.consumer/issues/18
-            routingKeyFilter = new DirtyRoutingKeyFilter("-events");
+            routingKeyFilter = new MetricAggregatorKeyFilter();
 
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
 
@@ -32,16 +32,17 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, AirlockClient, settings);
         }
 
-        private class DirtyRoutingKeyFilter : IRoutingKeyFilter
+        private class MetricAggregatorKeyFilter : IRoutingKeyFilter
         {
-            private readonly string suffix;
-
-            public DirtyRoutingKeyFilter(string suffix)
+            public bool Matches(string routingKey)
             {
-                this.suffix = suffix;
+                if (!RoutingKey.TryParse(routingKey, out var _, out var _, out var _, out var suffix))
+                    return false;
+                var lastSuffix = suffix.LastOrDefault();
+                if (lastSuffix == null)
+                    return false;
+                return lastSuffix.Equals(RoutingKey.AppEventsSuffix, StringComparison.OrdinalIgnoreCase) || lastSuffix.Equals(RoutingKey.TracesSuffix, StringComparison.OrdinalIgnoreCase);
             }
-
-            public bool Matches(string routingKey) => routingKey.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -2,7 +2,7 @@
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.TracesToEvents
+namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
 {
     public static class MetricEventBuilder
     {
