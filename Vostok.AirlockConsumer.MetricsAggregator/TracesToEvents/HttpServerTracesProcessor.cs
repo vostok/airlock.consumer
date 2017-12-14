@@ -38,8 +38,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
                 var metricEvent = MetricEventBuilder.Build(@event.Payload);
                 metricEvents.Add(new AirlockEvent<MetricEvent> { Payload = metricEvent, RoutingKey = metricRoutingKey, Timestamp = metricEvent.Timestamp });
             }
-            var sum = metricEvents.SelectMany(x => x.Payload.Values.Values).Sum();
-            log.Info("Process span events. Sum of duration: " + sum);
             metricsAggregatorProcessor.Process(metricEvents, messageProcessedCounter);
         }
 
