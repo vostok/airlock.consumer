@@ -4,7 +4,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.MetricsAggregator;
 
-namespace Vostok.AirlockConsumer.UnitTests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 {
     public class BucketKeyProvider_Tests
     {
@@ -19,7 +19,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
         {
             var provider = new BucketKeyProvider(splittableTags.Split("|"));
             var keys = provider.GetBucketKeys(Parse(source));
-            keys.Select(Format).Should().BeEquivalentTo(expected);
+            AssertionExtensions.Should((IEnumerable<string>) keys.Select(Format)).BeEquivalentTo(expected);
         }
 
         [Test]
@@ -27,8 +27,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
         {
             var provider = new BucketKeyProvider();
             var keys = provider.GetBucketKeys(Parse("host:vm1|operation:read|status:200|type:requests|gfv:100501"));
-            keys.Select(Format)
-                .Should()
+            AssertionExtensions.Should((IEnumerable<string>) keys.Select(Format))
                 .BeEquivalentTo(
                     "host:vm1|operation:read|status:200|type:requests|gfv:100501",
                     "host:vm1|operation:read|status:any|type:requests|gfv:100501",

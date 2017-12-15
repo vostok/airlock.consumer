@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vostok.Airlock;
+using Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents;
+using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
@@ -9,45 +11,43 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricsAggregatorProcessor : IAirlockEventProcessor<MetricEvent>
     {
-        private readonly IAirlockClient airlockClient;
-        private readonly IMetricScope rootMetricScope;
         private readonly MetricsAggregatorSettings settings;
         private readonly string eventsRoutingKey;
-        private IEventsTimestampProvider eventsTimestampProvider;
-        private IMetricAggregator aggregator;
-        private MetricResetDaemon resetDaemon;
-        private Task resetDaemonTask;
-        private bool started;
+        private readonly IEventsTimestampProvider eventsTimestampProvider;
+        private readonly IMetricAggregator aggregator;
+        private readonly MetricResetDaemon resetDaemon;
+        private readonly Task resetDaemonTask;
+        private bool rebalanced;
+        private readonly Borders initialBorders;
 
         public MetricsAggregatorProcessor(
             IAirlockClient airlockClient,
             IMetricScope rootMetricScope,
             MetricsAggregatorSettings settings,
-            string eventsRoutingKey)
+            string eventsRoutingKey,
+            ILog log)
         {
-            this.airlockClient = airlockClient;
-            this.rootMetricScope = rootMetricScope;
             this.settings = settings;
             this.eventsRoutingKey = eventsRoutingKey;
-        }
-
-        public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
-        {
-            ValidateRoutingKey(routingKey);
-            if (started)
-                throw new InvalidOperationException($"Unexpected {nameof(GetStartTimestampOnRebalance)} call. Possible reason: many partitions for one topic are not supported for aggregation");
-            started = true;
             eventsTimestampProvider = new EventsTimestampProvider(1000);
-            var initialBorders = CreateBorders(DateTimeOffset.UtcNow);
+            initialBorders = CreateBorders(DateTimeOffset.UtcNow);
             aggregator = new MetricAggregator(
                 rootMetricScope,
                 new BucketKeyProvider(),
                 airlockClient,
                 settings.MetricAggregationPastGap,
                 initialBorders,
-                routingKey);
+                eventsRoutingKey, log);
             resetDaemon = new MetricResetDaemon(eventsTimestampProvider, settings, aggregator);
             resetDaemonTask = resetDaemon.StartAsync(initialBorders);
+        }
+
+        public DateTimeOffset? GetStartTimestampOnRebalance(string routingKey)
+        {
+            ValidateRoutingKey(routingKey);
+            if (rebalanced)
+                throw new InvalidOperationException($"Unexpected {nameof(GetStartTimestampOnRebalance)} call. Possible reason: many partitions for one topic are not supported for aggregation");
+            rebalanced = true;
             return initialBorders.Past;
         }
 

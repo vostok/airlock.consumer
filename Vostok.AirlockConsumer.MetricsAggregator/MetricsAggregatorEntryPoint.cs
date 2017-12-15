@@ -29,7 +29,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             AirlockSerializerRegistry.Register(new MetricEventSerializer());
 
             var settings = new MetricsAggregatorSettings();
-            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, AirlockClient, settings);
+            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, AirlockClient, settings, log);
         }
 
         private class MetricAggregatorKeyFilter : IRoutingKeyFilter

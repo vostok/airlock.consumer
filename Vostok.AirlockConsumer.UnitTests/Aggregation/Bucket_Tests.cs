@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Vostok.AirlockConsumer.MetricsAggregator;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.UnitTests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 {
     public class Bucket_Tests
     {
@@ -27,7 +27,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
             now = DateTimeOffset.UtcNow;
             borders = NormalizeBorders(new Borders(now, now.AddMinutes(10)));
             now = now = borders.Past;
-            bucket = new Bucket(metricScope, null, period, TimeSpan.FromMilliseconds(10), borders);
+            bucket = new Bucket(new AggregatorMetrics(metricScope), null, period, TimeSpan.FromMilliseconds(10), borders);
         }
 
         [Test]
@@ -37,11 +37,11 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
             bucket.Consume(increment, now.AddSeconds(1));
             bucket.Consume(increment, now.AddSeconds(2));
             bucket.Consume(increment, now.AddSeconds(10));
-            var metricEvents = bucket.Flush(new Borders(borders.Future, borders.Future.AddMinutes(10))).OrderBy(m => m.Timestamp).ToArray();
+            var metricEvents = Enumerable.ToArray<MetricEvent>(bucket.Flush(new Borders(borders.Future, borders.Future.AddMinutes(10))).OrderBy(m => m.Timestamp));
             //Console.WriteLine(metricEvents.ToPrettyJson());
             Assert.AreEqual(2, metricEvents.Length);
-            Assert.AreEqual(3, metricEvents[0].Values["count"], doubleDelta);
-            Assert.AreEqual(1, metricEvents[1].Values["count"], doubleDelta);
+            Assert.AreEqual((double) 3, metricEvents[0].Values["count"], (double) doubleDelta);
+            Assert.AreEqual((double) 1, metricEvents[1].Values["count"], (double) doubleDelta);
         }
 
         [Test]
@@ -52,11 +52,11 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
             bucket.Consume(increment, borders.Past.AddSeconds(1));
             bucket.Consume(increment, borders.Future.AddSeconds(-1));
             bucket.Consume(increment, borders.Future);
-            var metricEvents = bucket.Flush(new Borders(borders.Future, borders.Future.AddMinutes(10))).OrderBy(m => m.Timestamp).ToArray();
+            var metricEvents = Enumerable.ToArray<MetricEvent>(bucket.Flush(new Borders(borders.Future, borders.Future.AddMinutes(10))).OrderBy(m => m.Timestamp));
             Console.WriteLine(metricEvents.ToPrettyJson());
             Assert.AreEqual(2, metricEvents.Length);
-            Assert.AreEqual(2, metricEvents[0].Values["count"], doubleDelta);
-            Assert.AreEqual(1, metricEvents[1].Values["count"], doubleDelta);
+            Assert.AreEqual((double) 2, metricEvents[0].Values["count"], (double) doubleDelta);
+            Assert.AreEqual((double) 1, metricEvents[1].Values["count"], (double) doubleDelta);
         }
 
         [Test]
@@ -92,15 +92,15 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
             {
                 var metricSum = metricEvent.Values[inc.Key + "_sum"];
                 Assert.AreEqual(7.5, metricEvent.Values[inc.Key + "_mean"], 0.3);
-                Assert.AreEqual((inc.Value + increment2[inc.Key])*taskCount*comsumeCount, metricSum, doubleDelta);
+                Assert.AreEqual((double) ((inc.Value + increment2[inc.Key])*taskCount*comsumeCount), metricSum, (double) doubleDelta);
             }
             Assert.AreEqual(4.5, metricEvent.Values["k1_stddev"], 0.1);
-            Assert.AreEqual(3, metricEvent.Values["k1_upper25"], doubleDelta);
-            Assert.AreEqual(12, metricEvent.Values["k1_upper100"], doubleDelta);
+            Assert.AreEqual((double) 3, metricEvent.Values["k1_upper25"], (double) doubleDelta);
+            Assert.AreEqual((double) 12, metricEvent.Values["k1_upper100"], (double) doubleDelta);
 
             Assert.AreEqual(0.5, metricEvent.Values["k2_stddev"], 0.1);
-            Assert.AreEqual(7, metricEvent.Values["k2_upper25"], doubleDelta);
-            Assert.AreEqual(8, metricEvent.Values["k2_upper100"], doubleDelta);
+            Assert.AreEqual((double) 7, metricEvent.Values["k2_upper25"], (double) doubleDelta);
+            Assert.AreEqual((double) 8, metricEvent.Values["k2_upper100"], (double) doubleDelta);
 
             metricEvent = timeBin.TryFlush(null);
             Assert.Null(metricEvent);
