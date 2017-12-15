@@ -8,7 +8,7 @@ using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
-    public class AggreationTests
+    public class AggregationTests
     {
         private static readonly string tracesRoutingKey = RoutingKey.Create(IntegrationTestsEnvironment.Project, IntegrationTestsEnvironment.Environment, nameof(TracingTests), RoutingKey.TracesSuffix);
         private static readonly string appEventsRoutingKey = RoutingKey.Create(IntegrationTestsEnvironment.Project, IntegrationTestsEnvironment.Environment, nameof(TracingTests), RoutingKey.AppEventsSuffix);
