@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
 using Vostok.Logging;
-using Vostok.Logging.Logs;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 using Vostok.Tracing;
@@ -12,13 +11,13 @@ namespace Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents
 {
     public class HttpServerTracesProcessor : IAirlockEventProcessor<Span>
     {
-        private readonly ILog log;
+        //private readonly ILog log;
         private readonly MetricsAggregatorProcessor metricsAggregatorProcessor;
         private readonly string metricRoutingKey;
 
         public HttpServerTracesProcessor(IAirlockClient airlockClient, IMetricScope rootMetricScope, MetricsAggregatorSettings settings, string routingKey, ILog log)
         {
-            this.log = log;
+            //this.log = log;
             metricRoutingKey = RoutingKey.ReplaceSuffix(routingKey, RoutingKey.TraceEventsSuffix);
             metricsAggregatorProcessor = new MetricsAggregatorProcessor(airlockClient, rootMetricScope, settings, metricRoutingKey, log);
         }

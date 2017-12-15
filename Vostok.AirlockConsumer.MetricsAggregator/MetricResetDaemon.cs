@@ -29,7 +29,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             {
                 try
                 {
-                    await Task.Delay(5000, cts.Token);
+                    await Task.Delay(settings.DaemonIterationPeriod, cts.Token);
                 }
                 catch (OperationCanceledException)
                 {

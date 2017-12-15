@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vostok.Airlock;
-using Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents;
 using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;

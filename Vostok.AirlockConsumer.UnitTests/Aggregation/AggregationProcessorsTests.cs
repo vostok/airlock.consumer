@@ -5,12 +5,10 @@ using System.Linq;
 using System.Threading;
 using FluentAssertions;
 using NSubstitute;
-using NSubstitute.Extensions;
 using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.AirlockConsumer.MetricsAggregator;
 using Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents;
-using Vostok.Contrails.Client;
 using Vostok.Logging.Logs;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
@@ -33,14 +31,15 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 
             var metricsAggregatorSettings = new MetricsAggregatorSettings
             {
-                MetricAggregationPastGap = 1.Seconds()
+                MetricAggregationPastGap = 10.Milliseconds(),
+                DaemonIterationPeriod = 100.Milliseconds()
             };
             var processor = new HttpServerTracesProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey, new ConsoleLog());
             var eventCount = 10;
             var spans = GenerateSpans(eventCount);
             var processedCounter = new Counter();
             processor.Process(spans, processedCounter);
-            Thread.Sleep(7000);
+            Thread.Sleep(1000);
             processor.Release(routingKey);
             Console.WriteLine($"processed = {processedCounter.GetValue()}");
             var metricEvent = pushed.FirstOrDefault(m => m.Tags[MetricsTagNames.Host]=="any" && m.Tags[MetricsTagNames.Operation] == "any" && m.Tags[MetricsTagNames.Status]=="any");
