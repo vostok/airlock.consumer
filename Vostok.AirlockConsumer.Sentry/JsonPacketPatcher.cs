@@ -9,7 +9,7 @@ namespace Vostok.AirlockConsumer.Sentry
             jsonPacket.ServerName = null;
             jsonPacket.User = new SentryUser("");
             jsonPacket.Modules.Clear();
-            if (jsonPacket.Tags.TryGetValue("SourceContext", out var sourceContext))
+            if (jsonPacket.Tags != null && jsonPacket.Tags.TryGetValue("SourceContext", out var sourceContext))
             {
                 jsonPacket.Logger = sourceContext;
                 jsonPacket.Tags.Remove("SourceContext");

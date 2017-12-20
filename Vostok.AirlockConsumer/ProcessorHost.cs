@@ -11,6 +11,30 @@ using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
+    public class ProcessorMetrics : IDisposable
+    {
+        public ICounter MessageProcessedCounter { get; }
+        public ICounter MessageIgnoredCounter { get; }
+        public ICounter SendingErrorCounter { get; }
+        public ICounter MessageFailedCounter { get; }
+
+        public ProcessorMetrics(IMetricScope metricScope, TimeSpan flushMetricsInterval)
+        {
+            MessageProcessedCounter = metricScope.Counter(flushMetricsInterval, "message_processed");
+            MessageIgnoredCounter = metricScope.Counter(flushMetricsInterval, "message_ignored");
+            SendingErrorCounter = metricScope.Counter(flushMetricsInterval, "sending_errors");
+            MessageFailedCounter = metricScope.Counter(flushMetricsInterval, "message_failed");
+        }
+
+        public void Dispose()
+        {
+            (MessageProcessedCounter as IDisposable)?.Dispose();
+            (MessageIgnoredCounter as IDisposable)?.Dispose();
+            (SendingErrorCounter as IDisposable)?.Dispose();
+            (MessageFailedCounter as IDisposable)?.Dispose();
+        }
+    }
+
     public class ProcessorHost : IDisposable
     {
         private readonly string routingKey;
@@ -24,10 +48,10 @@ namespace Vostok.AirlockConsumer
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
         private readonly ICounter messageEnqueuedCounter;
-        private readonly ICounter messageProcessedCounter;
         private readonly IDisposable queueGauge;
         private readonly IDisposable pausedGauge;
         private int[] pausedPartitions;
+        private readonly ProcessorMetrics processorMetrics;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval, ProcessorHostSettings processorHostSettings)
         {
@@ -45,7 +69,7 @@ namespace Vostok.AirlockConsumer
             queueGauge = metricScope.Gauge(flushMetricsInterval, "queue_size", () => eventsQueue.Count);
             pausedGauge = metricScope.Gauge(flushMetricsInterval, "paused", () => pausedPartitions != null ? 1 : 0);
             messageEnqueuedCounter = metricScope.Counter(flushMetricsInterval, "message_enqueued");
-            messageProcessedCounter = metricScope.Counter(flushMetricsInterval, "message_processed");
+            processorMetrics = new ProcessorMetrics(metricScope, flushMetricsInterval);
         }
 
         public int[] AssignedPartitions { get; set; }
@@ -102,7 +126,7 @@ namespace Vostok.AirlockConsumer
         public void Dispose()
         {
             (messageEnqueuedCounter as IDisposable)?.Dispose();
-            (messageProcessedCounter as IDisposable)?.Dispose();
+            processorMetrics.Dispose();
             queueGauge.Dispose();
             pausedGauge.Dispose();
         }
@@ -189,7 +213,7 @@ namespace Vostok.AirlockConsumer
         {
             try
             {
-                processor.Process(airlockEvents, messageProcessedCounter);
+                processor.Process(airlockEvents, processorMetrics);
             }
             catch (Exception e)
             {

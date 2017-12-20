@@ -1,4 +1,5 @@
 ﻿using Vostok.Airlock;
+using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Logging;
 using Vostok.Metrics;
 
@@ -28,7 +29,7 @@ namespace Vostok.AirlockConsumer.Sentry
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
             var sentryApiClientSettings = GetSentryApiClientSettings(log, environmentVariables);
             var sentryApiClient = new SentryApiClient(sentryApiClientSettings);
-            processorProvider = new SentryAirlockProcessorProvider(sentryApiClient, log, sentryMaxTasks);
+            processorProvider = new SentryAirlockProcessorProvider(sentryApiClient, log, sentryMaxTasks, 1.Minutes(), 100);
         }
 
         private static SentryApiClientSettings GetSentryApiClientSettings(ILog log, AirlockEnvironmentVariables environmentVariables)

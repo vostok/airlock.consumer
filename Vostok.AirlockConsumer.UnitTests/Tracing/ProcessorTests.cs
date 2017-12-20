@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
+using Vostok.AirlockConsumer.UnitTests.Sentry;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
-using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.UnitTests.Tracing
@@ -42,7 +42,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Tracing
             }
             Console.WriteLine("Start");
 
-            processor.Process(airlockEvents, Substitute.For<ICounter>());
+            processor.Process(airlockEvents, new TestProcessorMetrics());
             Console.WriteLine("Finish");
             Assert.AreEqual(spanCount, counter);
         }

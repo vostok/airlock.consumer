@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
-using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
@@ -25,7 +24,7 @@ namespace Vostok.AirlockConsumer
             return airlockEventProcessor.GetStartTimestampOnRebalance(routingKey);
         }
 
-        public void Process(List<AirlockEvent<byte[]>> events, ICounter messageProcessedCounter)
+        public void Process(List<AirlockEvent<byte[]>> events, ProcessorMetrics processorMetrics)
         {
             var airlockEvents = events.Select(x => new AirlockEvent<T>
             {
@@ -33,7 +32,7 @@ namespace Vostok.AirlockConsumer
                 Timestamp = x.Timestamp,
                 Payload = airlockDeserializer.Deserialize(new ByteBufferAirlockSource(x.Payload)),
             }).ToList();
-            airlockEventProcessor.Process(airlockEvents, messageProcessedCounter);
+            airlockEventProcessor.Process(airlockEvents, processorMetrics);
         }
 
         public void Release(string routingKey)

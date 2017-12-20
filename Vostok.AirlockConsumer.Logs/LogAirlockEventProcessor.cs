@@ -36,27 +36,35 @@ namespace Vostok.AirlockConsumer.Logs
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
+        public sealed override void Process(List<AirlockEvent<LogEventData>> events, ProcessorMetrics processorMetrics)
         {
             Parallel.ForEach(
                 events.Batch(10000),
                 batch =>
                 {
-                    var bulkItems = new List<object>();
-                    var count = 0;
-                    foreach (var @event in batch)
+                    try 
                     {
-                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var _);
-                        bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
-                        bulkItems.Add(BuildIndexRecord(@event, service));
-                        count++;
+                        var bulkItems = new List<object>();
+                        var count = 0;
+                        foreach (var @event in batch)
+                        {
+                            RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var _);
+                            bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
+                            bulkItems.Add(BuildIndexRecord(@event, service));
+                            count++;
+                        }
+                        Index(bulkItems);
+                        processorMetrics.MessageProcessedCounter.Add(count);
                     }
-                    Index(bulkItems);
-                    messageProcessedCounter.Add(count);
+                    catch (Exception)
+                    {
+                        processorMetrics.MessageFailedCounter.Add(events.Count);
+                        throw;
+                    }
                 });
         }
 
-        private void Index(List<object> bulkItems)
+        private void Index(List<object> bulkItems, ICounter sendingErrorCounter)
         {
             var postData = new PostData<object>(bulkItems);
             retriableCallStrategy.Call(
@@ -66,7 +74,11 @@ namespace Vostok.AirlockConsumer.Logs
                     if (!response.Success)
                         throw response.OriginalException;
                 },
-                IsRetriableException,
+                ex =>
+                {
+                    sendingErrorCounter.Add();
+                    return IsRetriableException(ex);
+                },
                 log);
         }
 
