@@ -62,7 +62,7 @@ namespace Vostok.AirlockConsumer.Sentry
         {
             var lastTimestampIndex = 0L;
             var periodCounter = 0;
-            foreach (var airlockEvent in events.Where(ev => ev.Payload.Level == LogLevel.Error || ev.Payload.Level == LogLevel.Fatal))
+            foreach (var airlockEvent in events.Where(ev => ev.Payload.Level == LogLevel.Error || ev.Payload.Level == LogLevel.Fatal).OrderBy(ev => ev.Timestamp))
             {
                 var normalizedTimestampIndex = airlockEvent.Timestamp.Ticks / throttlingPeriodTicks;
                 if (normalizedTimestampIndex == lastTimestampIndex)

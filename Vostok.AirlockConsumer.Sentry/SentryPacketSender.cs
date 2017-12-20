@@ -24,7 +24,8 @@ namespace Vostok.AirlockConsumer.Sentry
             WebExceptionStatus.Timeout,
             WebExceptionStatus.ConnectionClosed,
             WebExceptionStatus.RequestCanceled,
-            WebExceptionStatus.KeepAliveFailure
+            WebExceptionStatus.KeepAliveFailure,
+            WebExceptionStatus.UnknownError,
         };
 
         private readonly ILog log;
