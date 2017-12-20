@@ -19,10 +19,11 @@ namespace Vostok.AirlockConsumer.Sentry
         public IAirlockEventProcessor GetProcessor(string routingKey)
         {
             RoutingKey.Parse(routingKey, out var project, out var environment, out _, out _);
-            if (!processorsByProjectAndEnv.TryGetValue($"{project}_{environment}", out var processor))
+            var projEnv = $"{project}_{environment}";
+            if (!processorsByProjectAndEnv.TryGetValue(projEnv, out var processor))
             {
                 processor = new DefaultAirlockEventProcessor<T>(airlockDeserializer, createProcessorForProjectAndEnv(project, environment));
-                processorsByProjectAndEnv.Add(project, processor);
+                processorsByProjectAndEnv.Add(projEnv, processor);
             }
             return processor;
         }
