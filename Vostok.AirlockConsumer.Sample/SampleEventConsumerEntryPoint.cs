@@ -89,8 +89,9 @@ namespace Vostok.AirlockConsumer.Sample
                 {
                     Reporter = new FakeMetricReporter()
                 });
+            var consumerMetrics = new ConsumerMetrics(settings.FlushMetricsInterval, rootMetricScope);
 
-            var consumer = new ConsumerGroupHost(settings, log, rootMetricScope, routingKeyFilter, processorProvider);
+            var consumer = new ConsumerGroupHost(settings, log, consumerMetrics, routingKeyFilter, processorProvider);
             consumer.Start();
             stopSignal.Wait(Timeout.Infinite);
             consumer.Stop();

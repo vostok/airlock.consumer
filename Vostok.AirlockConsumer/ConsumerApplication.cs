@@ -8,10 +8,11 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
-    public abstract class ConsumerApplication
+    public abstract class ConsumerApplication : IDisposable
     {
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
         protected IAirlockClient AirlockClient;
+        private ConsumerMetrics consumerMetrics;
 
         protected abstract string ServiceName { get; }
         protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
@@ -29,14 +30,17 @@ namespace Vostok.AirlockConsumer
                 {
                     Reporter = new AirlockMetricReporter(AirlockClient, RoutingKey.CreatePrefix("vostok", envName, ServiceName))
                 });
-
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables, ProcessorHostSettings);
+            consumerMetrics = new ConsumerMetrics(consumerGroupHostSettings.FlushMetricsInterval, rootMetricScope);
+
             DoInitialize(log, rootMetricScope, environmentVariables, out var routingKeyFilter, out var processorProvider);
-            return new ConsumerGroupHost(consumerGroupHostSettings, log, rootMetricScope, routingKeyFilter, processorProvider);
+
+            return new ConsumerGroupHost(consumerGroupHostSettings, log, consumerMetrics, routingKeyFilter, processorProvider);
         }
 
-        public void Stop()
+        public void Dispose()
         {
+            consumerMetrics?.Dispose();
             (AirlockClient as IDisposable)?.Dispose();
         }
 
