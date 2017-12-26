@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Elasticsearch.Net;
+using MoreLinq;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
@@ -36,15 +39,22 @@ namespace Vostok.AirlockConsumer.Logs
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
         {
-            var bulkItems = new List<object>();
-            foreach (var @event in events)
-            {
-                RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var suffix);
-                bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
-                bulkItems.Add(BuildIndexRecord(@event, service));
-            }
-            Index(bulkItems);
-            messageProcessedCounter.Add(events.Count);
+            Parallel.ForEach(
+                events.Batch(10000),
+                batch =>
+                {
+                    var bulkItems = new List<object>();
+                    var count = 0;
+                    foreach (var @event in batch)
+                    {
+                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var suffix);
+                        bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
+                        bulkItems.Add(BuildIndexRecord(@event, service));
+                        count++;
+                    }
+                    Index(bulkItems);
+                    messageProcessedCounter.Add(count);
+                });
         }
 
         private void Index(List<object> bulkItems)
