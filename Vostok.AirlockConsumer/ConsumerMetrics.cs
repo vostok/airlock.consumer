@@ -6,7 +6,7 @@ using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer
 {
-    public class ConsumerMetrics
+    public class ConsumerMetrics : IDisposable
     {
         public readonly ICounter CriticalErrorCounter;
         public readonly ICounter ConsumeErrorCounter;
@@ -28,6 +28,11 @@ namespace Vostok.AirlockConsumer
             CriticalErrorCounter = errorsScope.Counter(flushMetricsInterval, "critical");
             ConsumeErrorCounter = errorsScope.Counter(flushMetricsInterval, "consume");
             MetricClocks.Get(flushMetricsInterval).Register(WriteMetrics);
+        }
+
+        public void Dispose()
+        {
+            MetricClocks.Stop();
         }
 
         public IMetricScope GetProcessorScope(string routingKey)

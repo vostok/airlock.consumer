@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -71,13 +70,13 @@ namespace Vostok.AirlockConsumer.Logs
                 log);
         }
 
-        private bool IsRetriableException(Exception ex)
+        private static bool IsRetriableException(Exception ex)
         {
             var elasticsearchClientException = ExceptionFinder.FindException<ElasticsearchClientException>(ex);
             var httpStatusCode = elasticsearchClientException?.Response?.HttpStatusCode;
             if (httpStatusCode == null)
                 return false;
-            var statusCode = (HttpStatusCode)httpStatusCode.Value;
+            var statusCode = (HttpStatusCode) httpStatusCode.Value;
             return retriableHttpStatusCodes.Contains(statusCode);
         }
 

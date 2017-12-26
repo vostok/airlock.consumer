@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
@@ -7,10 +8,11 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
-    public abstract class ConsumerApplication
+    public abstract class ConsumerApplication : IDisposable
     {
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
         protected IAirlockClient AirlockClient;
+        private ConsumerMetrics consumerMetrics;
 
         protected abstract string ServiceName { get; }
         protected abstract ProcessorHostSettings ProcessorHostSettings { get; }
@@ -28,10 +30,18 @@ namespace Vostok.AirlockConsumer
                 {
                     Reporter = new AirlockMetricReporter(AirlockClient, RoutingKey.CreatePrefix("vostok", envName, ServiceName))
                 });
-
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables, ProcessorHostSettings);
+            consumerMetrics = new ConsumerMetrics(consumerGroupHostSettings.FlushMetricsInterval, rootMetricScope);
+
             DoInitialize(log, rootMetricScope, environmentVariables, out var routingKeyFilter, out var processorProvider);
-            return new ConsumerGroupHost(consumerGroupHostSettings, log, rootMetricScope, routingKeyFilter, processorProvider);
+
+            return new ConsumerGroupHost(consumerGroupHostSettings, log, consumerMetrics, routingKeyFilter, processorProvider);
+        }
+
+        public void Dispose()
+        {
+            consumerMetrics?.Dispose();
+            (AirlockClient as IDisposable)?.Dispose();
         }
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
