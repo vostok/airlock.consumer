@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer.Sentry
             var maxTasks = SentryMaxTasks;
             processorProvider = new SentryAirlockProcessorProvider<LogEventData, LogEventDataSerializer>((project,env) =>
             {
-                var ravenClient = sentryClientProvider.GetOrCreateClient(project,env);
+                var ravenClient = sentryClientProvider.CreateClient(project,env);
                 return new SentryAirlockProcessor(ravenClient, log, maxTasks);
             });
         }
