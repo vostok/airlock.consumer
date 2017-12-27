@@ -108,8 +108,8 @@ namespace Vostok.AirlockConsumer.Logs
             };
             if (!string.IsNullOrEmpty(@event.Payload.Message))
                 indexRecord.Add("Message", @event.Payload.Message);
-            if (!string.IsNullOrEmpty(@event.Payload.Exception))
-                indexRecord.Add("Exception", @event.Payload.Exception);
+            if (@event.Payload.Exceptions != null && @event.Payload.Exceptions.Count > 0)
+                indexRecord.Add("Exception", string.Join("\n   ---\n", @event.Payload.Exceptions));
             foreach (var kvp in @event.Payload.Properties)
             {
                 if (!indexRecord.ContainsKey(kvp.Key))
