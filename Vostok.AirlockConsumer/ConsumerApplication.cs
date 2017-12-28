@@ -73,16 +73,10 @@ namespace Vostok.AirlockConsumer
         {
             var consumerGroupId = environmentVariables.GetValue("CONSUMER_GROUP_ID", $"{GetType().Name}@{Dns.GetHostName()}");
             var kafkaBootstrapEndpoints = environmentVariables.GetValue("KAFKA_BOOTSTRAP_ENDPOINTS", defaultKafkaBootstrapEndpoints);
-            var autoResetOffsetPolicy = GetKafkaAutoOffsetReset(environmentVariables);
+            var autoResetOffsetPolicy = environmentVariables.GetValue("KAFKA_AUTO_OFFSET_RESET", AutoResetOffsetPolicy.Latest);
             var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, ProcessorHostSettings, autoResetOffsetPolicy);
             log.Info($"ConsumerGroupHostSettings: {consumerGroupHostSettings.ToPrettyJson()}");
             return consumerGroupHostSettings;
-        }
-        private static string GetKafkaAutoOffsetReset(Dictionary<string, string> environmentVariables)
-        {
-            if (!environmentVariables.TryGetValue("AIRLOCK_KAFKA_AUTO_OFFSET_RESET", out var autoOffsetReset))
-                autoOffsetReset = AutoResetOffsetPolicy.Latest;
-            return autoOffsetReset;
         }
     }
 }
