@@ -9,7 +9,6 @@ using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.AirlockConsumer.MetricsAggregator;
 using Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents;
-using Vostok.Logging.Logs;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 using Vostok.Tracing;
@@ -32,9 +31,9 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
             var metricsAggregatorSettings = new MetricsAggregatorSettings
             {
                 MetricAggregationPastGap = 10.Milliseconds(),
-                DaemonIterationPeriod = 100.Milliseconds()
+                MetricResetDaemonIterationPeriod = 100.Milliseconds()
             };
-            var processor = new HttpServerTracesProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey, new ConsoleLog());
+            var processor = new HttpServerTracesProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey);
             var eventCount = 10;
             var spans = GenerateSpans(eventCount);
             var processedCounter = new Counter();
