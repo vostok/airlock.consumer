@@ -6,7 +6,6 @@ using System.Threading;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
 using Vostok.Logging;
-using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
@@ -25,13 +24,13 @@ namespace Vostok.AirlockConsumer
         private HashSet<string> topicsAlreadySubscribedTo = new HashSet<string>();
         private volatile Thread pollingThread;
 
-        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, IMetricScope rootMetricScope, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
+        public ConsumerGroupHost(ConsumerGroupHostSettings settings, ILog log, ConsumerMetrics metrics, IRoutingKeyFilter routingKeyFilter, IAirlockEventProcessorProvider processorProvider)
         {
             this.settings = settings;
             this.log = log;
+            this.metrics = metrics;
             this.routingKeyFilter = routingKeyFilter;
             this.processorProvider = processorProvider;
-            metrics = new ConsumerMetrics(settings.FlushMetricsInterval, rootMetricScope);
 
             consumer = new Consumer<Null, byte[]>(settings.GetConsumerConfig(), keyDeserializer: null, valueDeserializer: new ByteArrayDeserializer());
             consumer.OnError += (_, error) =>

@@ -4,26 +4,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using SharpRaven;
 using SharpRaven.Data;
-using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.Sentry
 {
-    public class SentryResenderProcessor : SimpleAirlockEventProcessorBase<LogEventData>
+    public class SentryAirlockProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
-        private const int maxSentryTasks = 100;
         private readonly ILog log;
         private readonly SentryPacketSender packetSender;
-        private readonly Dsn dsn;
+        private readonly int maxSentryTasks;
         private readonly ExceptionParser exceptionParser = new ExceptionParser();
+        private readonly string projectId;
 
-        public SentryResenderProcessor(string sentryDsn, ILog log)
+        public SentryAirlockProcessor(RavenClient ravenClient, ILog log, int maxSentryTasks)
         {
             this.log = log;
-            dsn = new Dsn(sentryDsn);
-            packetSender = new SentryPacketSender(dsn, log);
+            packetSender = new SentryPacketSender(ravenClient, log);
+            projectId = ravenClient.CurrentDsn.ProjectID;
+            this.maxSentryTasks = maxSentryTasks;
         }
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
@@ -35,20 +35,17 @@ namespace Vostok.AirlockConsumer.Sentry
                 {
                     try
                     {
-                        RoutingKey.Parse(@event.RoutingKey, out var _, out var environment, out var _, out var _);
                         var logEvent = @event.Payload;
-                        var jsonPacket = new JsonPacket(dsn.ProjectID)
+                        var jsonPacket = new JsonPacket(projectId)
                         {
                             Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
                             Tags = logEvent.Properties,
                             TimeStamp = logEvent.Timestamp.UtcDateTime,
-                            Environment = environment,
                             Exceptions = exceptionParser.Parse(logEvent.Exception),
                             Message = logEvent.Message,
                             MessageObject = logEvent.Message
                         };
                         JsonPacketPatcher.PatchPacket(jsonPacket);
-                        log.Debug("prepared packet: " + jsonPacket.ToPrettyJson());
                         packetSender.SendPacket(jsonPacket);
                         messageProcessedCounter.Add();
                     }

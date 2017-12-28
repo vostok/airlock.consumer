@@ -6,6 +6,7 @@ namespace Vostok.AirlockConsumer.TracesToEvents
 {
     public static class MetricEventBuilder
     {
+        private const string emptyTagValue = "emtpy";
         public static MetricEvent Build(Span span)
         {
             var tags = BuildTags(span);
@@ -37,15 +38,27 @@ namespace Vostok.AirlockConsumer.TracesToEvents
             {
                 result[MetricsTagNames.Host] = host;
             }
+            else
+            {
+                result[MetricsTagNames.Host] = emptyTagValue;
+            }
 
             if (span.Annotations.TryGetValue(TracingAnnotationNames.HttpCode, out var httpCode))
             {
                 result[MetricsTagNames.Status] = httpCode;
             }
+            else
+            {
+                result[MetricsTagNames.Status] = emptyTagValue;
+            }
 
             if (span.Annotations.TryGetValue(TracingAnnotationNames.Operation, out var operation))
             {
                 result[MetricsTagNames.Operation] = operation;
+            }
+            else
+            {
+                result[MetricsTagNames.Operation] = emptyTagValue;
             }
 
             result[MetricsTagNames.Type] = "requests";

@@ -22,12 +22,12 @@ namespace Vostok.AirlockConsumer.Sentry
         };
 
         private readonly ILog log;
-        private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy();
         private readonly RavenClient ravenClient;
+        private readonly RetriableCallStrategy retriableCallStrategy = new RetriableCallStrategy();
 
-        public SentryPacketSender(Dsn dsn, ILog log)
+        public SentryPacketSender(RavenClient ravenClient, ILog log)
         {
-            ravenClient = new RavenClient(dsn);
+            this.ravenClient = ravenClient;
             this.log = log;
         }
 

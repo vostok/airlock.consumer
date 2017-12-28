@@ -3,7 +3,6 @@ using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging;
-using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer
 {
@@ -18,7 +17,7 @@ namespace Vostok.AirlockConsumer
             var log = Logging.Configure();
             AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
             {
-                log.Fatal("Unhandled exception in curreant AppDomain", (Exception)eventArgs.ExceptionObject);
+                log.Fatal("Unhandled exception in curreant AppDomain", (Exception) eventArgs.ExceptionObject);
                 Environment.Exit(1);
             };
             TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
@@ -43,14 +42,16 @@ namespace Vostok.AirlockConsumer
             try
             {
                 log.Info($"Consumer application is starting: {typeof (TConsumerApp).Name}");
-                var consumerApplication = new TConsumerApp();
-                var consumerGroupHost = consumerApplication.Initialize(log, EnvironmentVariablesFactory.GetEnvironmentVariables(log));
-                log.Info($"Consumer application is initialized: {typeof (TConsumerApp).Name}");
-                consumerGroupHost.Start();
-                stopSignal.Wait(Timeout.Infinite);
-                log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
-                consumerGroupHost.Stop();
-                MetricClocks.Stop();
+                using (var consumerApplication = new TConsumerApp())
+                {
+                    var environmentVariables = AirlockEnvironmentVariables.CreateFromProcessEnvironment(log);
+                    var consumerGroupHost = consumerApplication.Initialize(log, environmentVariables);
+                    log.Info($"Consumer application is initialized: {typeof (TConsumerApp).Name}");
+                    consumerGroupHost.Start();
+                    stopSignal.Wait(Timeout.Infinite);
+                    log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
+                    consumerGroupHost.Stop();
+                }
                 log.Info($"Consumer application is stopped: {typeof (TConsumerApp).Name}");
                 terminationSignal.Set();
             }
