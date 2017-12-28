@@ -31,7 +31,7 @@ namespace Vostok.AirlockConsumer
             {
                 RoutingKey = x.RoutingKey,
                 Timestamp = x.Timestamp,
-                Payload = airlockDeserializer.Deserialize(new SimpleAirlockSource(x.Payload)),
+                Payload = airlockDeserializer.Deserialize(new ByteBufferAirlockSource(x.Payload)),
             }).ToList();
             airlockEventProcessor.Process(airlockEvents, messageProcessedCounter);
         }

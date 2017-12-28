@@ -2,35 +2,31 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
-using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class Bucket : IBucket
     {
+        private readonly AggregatorMetrics aggregatorMetrics;
         private readonly IReadOnlyDictionary<string, string> tags;
         private readonly TimeSpan period;
         private readonly TimeSpan cooldownPeriod;
         private readonly ConcurrentDictionary<DateTimeOffset, TimeBin> timeBins;
-        private readonly ICounter missedPastEvents;
-        private readonly ICounter missedFutureEvents;
         private Borders borders;
 
         public Bucket(
-            IMetricScope metricScope,
+            AggregatorMetrics aggregatorMetrics,
             IReadOnlyDictionary<string, string> tags,
             TimeSpan period,
             TimeSpan cooldownPeriod,
             Borders borders)
         {
+            this.aggregatorMetrics = aggregatorMetrics;
             this.tags = tags;
             this.period = period;
             this.cooldownPeriod = cooldownPeriod;
             timeBins = new ConcurrentDictionary<DateTimeOffset, TimeBin>();
-            missedPastEvents = metricScope.Counter(1.Minutes(), "missed_past_events");
-            missedFutureEvents = metricScope.Counter(1.Minutes(), "missed_future_events");
             this.borders = NormalizeBorders(borders);
         }
 
@@ -41,13 +37,13 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
 
             if (normalizedTimestamp < currentBorders.Past)
             {
-                missedPastEvents.Add();
+                aggregatorMetrics.MissedPastEvents.Add();
                 return;
             }
 
             if (normalizedTimestamp >= currentBorders.Future)
             {
-                missedFutureEvents.Add();
+                aggregatorMetrics.MissedFutureEvents.Add();
                 return;
             }
 

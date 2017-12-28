@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Vostok.AirlockConsumer.MetricsAggregator;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.UnitTests.Metrics
+namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 {
     public class Bucket_Tests
     {
@@ -27,7 +27,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Metrics
             now = DateTimeOffset.UtcNow;
             borders = NormalizeBorders(new Borders(now, now.AddMinutes(10)));
             now = now = borders.Past;
-            bucket = new Bucket(metricScope, null, period, TimeSpan.FromMilliseconds(10), borders);
+            bucket = new Bucket(new AggregatorMetrics(metricScope), null, period, TimeSpan.FromMilliseconds(10), borders);
         }
 
         [Test]
