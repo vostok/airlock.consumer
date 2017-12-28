@@ -19,7 +19,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
         {
             var provider = new BucketKeyProvider(splittableTags.Split("|"));
             var keys = provider.GetBucketKeys(Parse(source));
-            AssertionExtensions.Should((IEnumerable<string>) keys.Select(Format)).BeEquivalentTo(expected);
+            keys.Select(Format).Should().BeEquivalentTo(expected);
         }
 
         [Test]
@@ -27,7 +27,8 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
         {
             var provider = new BucketKeyProvider();
             var keys = provider.GetBucketKeys(Parse("host:vm1|operation:read|status:200|type:requests|gfv:100501"));
-            AssertionExtensions.Should((IEnumerable<string>) keys.Select(Format))
+            keys.Select(Format)
+                .Should()
                 .BeEquivalentTo(
                     "host:vm1|operation:read|status:200|type:requests|gfv:100501",
                     "host:vm1|operation:read|status:any|type:requests|gfv:100501",
