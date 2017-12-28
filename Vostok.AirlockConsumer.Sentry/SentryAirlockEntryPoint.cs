@@ -19,8 +19,8 @@ namespace Vostok.AirlockConsumer.Sentry
 
         protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings
         {
-            MaxBatchSize = sentryProcessorSettings.MaxTasks * 10,
-            MaxProcessorQueueSize = sentryProcessorSettings.MaxTasks * 100
+            MaxBatchSize = 10_000,
+            MaxProcessorQueueSize = 100_000
         };
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
