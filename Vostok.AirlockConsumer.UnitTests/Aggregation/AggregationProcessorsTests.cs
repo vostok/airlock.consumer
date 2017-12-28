@@ -7,8 +7,8 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Airlock;
+using Vostok.Airlock.Tracing;
 using Vostok.AirlockConsumer.MetricsAggregator;
-using Vostok.AirlockConsumer.MetricsAggregator.TracesToEvents;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 using Vostok.Tracing;
@@ -17,6 +17,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 {
     public class AggregationProcessorsTests
     {
+        private readonly SpanAirlockSerializer spanAirlockSerializer = new SpanAirlockSerializer();
         private readonly string routingKey = RoutingKey.Create("vostok","ci","test",RoutingKey.TracesSuffix);
 
         [Test]
@@ -33,11 +34,12 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
                 MetricAggregationPastGap = 10.Milliseconds(),
                 MetricResetDaemonIterationPeriod = 100.Milliseconds()
             };
-            var processor = new HttpServerTracesProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey);
-            var eventCount = 10;
+            var processor = new MetricsAggregatorProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey);
+            processor.GetStartTimestampOnRebalance(routingKey);
+            const int eventCount = 10;
             var spans = GenerateSpans(eventCount);
             var processedCounter = new Counter();
-            processor.Process(spans, processedCounter);
+            processor.Process(Serialize(spans), processedCounter);
             Thread.Sleep(1000);
             processor.Release(routingKey);
             Console.WriteLine($"processed = {processedCounter.GetValue()}");
@@ -50,6 +52,21 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
                 Debug.Assert(x.Payload.EndTimestamp != null, "x.Payload.EndTimestamp != null");
                 return x.Payload.EndTimestamp.Value.ToUnixTimeMilliseconds() - x.Payload.BeginTimestamp.ToUnixTimeMilliseconds();
             }), 1e-10);
+        }
+
+        private List<AirlockEvent<byte[]>> Serialize(List<AirlockEvent<Span>> spans)
+        {
+            return spans.Select(x =>
+            {
+                var airlockSink = new NonReusableByteBufferAirlockSink();
+                spanAirlockSerializer.Serialize(x.Payload, airlockSink);
+                return new AirlockEvent<byte[]>
+                {
+                    RoutingKey = x.RoutingKey,
+                    Timestamp = x.Timestamp,
+                    Payload = airlockSink.FilledBuffer,
+                };
+            }).ToList();
         }
 
         private List<AirlockEvent<Span>> GenerateSpans(int count)
