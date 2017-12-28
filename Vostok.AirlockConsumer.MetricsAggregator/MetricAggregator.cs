@@ -8,9 +8,9 @@ using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    public class MetricAggregator : IMetricAggregator
+    public class MetricAggregator : IDisposable
     {
-        private readonly IMetricScope metricScope;
+        private readonly AggregatorMetrics aggregatorMetrics;
         private readonly IBucketKeyProvider bucketKeyProvider;
         private readonly IAirlockClient airlockClient;
         private readonly TimeSpan cooldownPeriod;
@@ -26,10 +26,10 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             Borders borders,
             string eventsRoutingKey)
         {
-            this.metricScope = metricScope.WithTags(new Dictionary<string, string>
+            aggregatorMetrics = new AggregatorMetrics(metricScope.WithTags(new Dictionary<string, string>
             {
                 {MetricsTagNames.Type, "aggregation"}, {"routingKey", eventsRoutingKey}
-            });
+            }));
             this.bucketKeyProvider = bucketKeyProvider;
             this.airlockClient = airlockClient;
             this.cooldownPeriod = cooldownPeriod;
@@ -46,7 +46,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             {
                 var bucket = buckets.GetOrAdd(
                     bucketKey,
-                    bk => new Bucket(metricScope, bk.Tags, 1.Minutes(), cooldownPeriod, currentBorders));
+                    bk => new Bucket(aggregatorMetrics, bk.Tags, 1.Minutes(), cooldownPeriod, currentBorders));
                 bucket.Consume(metricEvent.Values, metricEvent.Timestamp);
             }
         }
@@ -54,7 +54,6 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         public void Flush(Borders nextBorders)
         {
             Interlocked.Exchange(ref borders, nextBorders);
-
             foreach (var bucket in buckets)
             {
                 var metrics = bucket.Value.Flush(nextBorders);
@@ -65,9 +64,12 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         private void PushToAirlock(IEnumerable<MetricEvent> metrics)
         {
             foreach (var metricEvent in metrics)
-            {
                 airlockClient.Push(metricsRoutingKey, metricEvent);
-            }
+        }
+
+        public void Dispose()
+        {
+            aggregatorMetrics.Dispose();
         }
     }
 }

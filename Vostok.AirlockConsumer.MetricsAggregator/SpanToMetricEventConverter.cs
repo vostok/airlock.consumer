@@ -2,16 +2,16 @@
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.TracesToEvents
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
-    public static class MetricEventBuilder
+    public static class SpanToMetricEventConverter
     {
         private const string emptyTagValue = "emtpy";
-        public static MetricEvent Build(Span span)
+
+        public static MetricEvent ToMetricEvent(this Span span)
         {
             var tags = BuildTags(span);
             var values = BuildValues(span);
-
             return new MetricEvent
             {
                 // ReSharper disable once PossibleInvalidOperationException - сюда попадают только метрики, где EndTimestamp!=null

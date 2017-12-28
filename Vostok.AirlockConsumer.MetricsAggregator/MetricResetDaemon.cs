@@ -8,14 +8,13 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
     {
         private readonly IEventsTimestampProvider eventsTimestampProvider;
         private readonly MetricsAggregatorSettings settings;
-        private readonly IMetricAggregator aggregator;
-
+        private readonly MetricAggregator aggregator;
         private readonly CancellationTokenSource cts;
 
         public MetricResetDaemon(
             IEventsTimestampProvider eventsTimestampProvider,
             MetricsAggregatorSettings settings,
-            IMetricAggregator aggregator)
+            MetricAggregator aggregator)
         {
             this.eventsTimestampProvider = eventsTimestampProvider;
             this.settings = settings;
@@ -29,7 +28,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             {
                 try
                 {
-                    await Task.Delay(5000, cts.Token);
+                    await Task.Delay(settings.MetricResetDaemonIterationPeriod, cts.Token);
                 }
                 catch (OperationCanceledException)
                 {
