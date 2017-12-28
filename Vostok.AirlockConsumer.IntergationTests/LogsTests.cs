@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
@@ -69,7 +70,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Category("Load")]
         public void PushManyLogEventsToAirlock()
         {
-            PushToAirlock(GenerateLogEvens(count: 100_000));
+            PushToAirlock(GenerateLogEvens(count: 100));
         }
 
         private static LogEventData[] GenerateLogEvens(int count)
@@ -77,13 +78,23 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var utcNow = DateTimeOffset.UtcNow;
             var testId = Guid.NewGuid().ToString("N");
             return Enumerable.Range(0, count)
-                             .Select(i => new LogEventData
-                             {
-                                 Message = "hello!" + i,
-                                 Level = LogLevel.Debug,
-                                 Timestamp = utcNow.AddMilliseconds(-i*10),
-                                 Properties = new Dictionary<string, string> {["testId"] = testId}
-                             }).ToArray();
+                             .Select(i =>
+                {
+                    try
+                    {
+                        throw new InvalidDataException("hello!" + i);
+                    }
+                    catch (Exception e)
+                    {
+                        return new LogEventData(e)
+                        {
+                            //Message = "hello!" + i,
+                            Level = LogLevel.Error,
+                            Timestamp = utcNow.AddMilliseconds(-i * 10),
+                            Properties = new Dictionary<string, string> { ["testId"] = testId },
+                        };
+                    }
+                }).ToArray();
         }
 
         private static void PushToAirlock(LogEventData[] logEvents)
