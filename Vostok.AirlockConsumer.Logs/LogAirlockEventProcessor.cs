@@ -53,7 +53,7 @@ namespace Vostok.AirlockConsumer.Logs
                             bulkItems.Add(BuildIndexRecord(@event, service));
                             count++;
                         }
-                        Index(bulkItems);
+                        Index(bulkItems, processorMetrics.SendingErrorCounter);
                         processorMetrics.MessageProcessedCounter.Add(count);
                     }
                     catch (Exception)

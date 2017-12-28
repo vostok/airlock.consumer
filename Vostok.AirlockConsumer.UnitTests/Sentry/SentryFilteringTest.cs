@@ -24,7 +24,13 @@ namespace Vostok.AirlockConsumer.UnitTests.Sentry
         {
             var packetSender = Substitute.For<ISentryPacketSender>();
             var throttlingPeriod = throttlingPeriodMinutes.Minutes();
-            var processor = new SentryAirlockProcessor(packetSender, new SilentLog(), 100, throttlingPeriod, throttlingThreshold);
+            var sentryProcessorSettings = new SentryProcessorSettings
+            {
+                MaxTasks = 100,
+                ThrottlingPeriod = throttlingPeriod,
+                ThrottlingThreshold = throttlingThreshold
+            };
+            var processor = new SentryAirlockProcessor(packetSender, new SilentLog(), sentryProcessorSettings);
             var utcNow = DateTimeOffset.UtcNow;
             var normalizedNow = new DateTimeOffset(utcNow.Ticks - utcNow.Ticks%throttlingPeriod.Ticks, TimeSpan.Zero);
             var eventStep = throttlingPeriod/eventsPerPeriod;

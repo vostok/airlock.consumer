@@ -12,18 +12,16 @@ namespace Vostok.AirlockConsumer.Sentry
     public class SentryAirlockProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
         private readonly ILog log;
+        private readonly SentryProcessorSettings processorSettings;
         private readonly ISentryPacketSender packetSender;
-        private readonly int maxSentryTasks;
         private readonly ExceptionParser exceptionParser = new ExceptionParser();
         private readonly long throttlingPeriodTicks;
-        private readonly int throttlingThreshold;
 
-        public SentryAirlockProcessor(ISentryPacketSender sentryPacketSender, ILog log, int maxSentryTasks, TimeSpan throttlingPeriod, int throttlingThreshold)
+        public SentryAirlockProcessor(ISentryPacketSender sentryPacketSender, ILog log, SentryProcessorSettings processorSettings)
         {
             this.log = log;
-            this.maxSentryTasks = maxSentryTasks;
-            this.throttlingThreshold = throttlingThreshold;
-            throttlingPeriodTicks = throttlingPeriod.Ticks;
+            this.processorSettings = processorSettings;
+            throttlingPeriodTicks = processorSettings.ThrottlingPeriod.Ticks;
             packetSender = sentryPacketSender;
         }
 
@@ -31,7 +29,7 @@ namespace Vostok.AirlockConsumer.Sentry
         {
             Parallel.ForEach(
                 FilterEvents(events, processorMetrics.MessageIgnoredCounter),
-                new ParallelOptions {MaxDegreeOfParallelism = maxSentryTasks},
+                new ParallelOptions {MaxDegreeOfParallelism = processorSettings.MaxTasks},
                 @event =>
                 {
                     try
@@ -74,7 +72,7 @@ namespace Vostok.AirlockConsumer.Sentry
                     periodCounter = 0;
                     lastTimestampIndex = normalizedTimestampIndex;
                 }
-                if (periodCounter < throttlingThreshold)
+                if (periodCounter < processorSettings.ThrottlingThreshold)
                     yield return airlockEvent;
                 else
                     messageIgnoredCounter.Add();

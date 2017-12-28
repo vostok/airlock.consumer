@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Vostok.Logging;
 
@@ -31,6 +32,34 @@ namespace Vostok.AirlockConsumer
             if (!environmentVariables.TryGetValue($"AIRLOCK_{name}", out var value))
                 value = defaultValue;
             return value;
+        }
+
+        public int GetIntValue(string name, int defaultValue)
+        {
+            var strValue = GetValue(name, defaultValue.ToString());
+            try
+            {
+                var value = int.Parse(strValue);
+                return value;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidDataException($"invalid int value for '{name}' setting: '{strValue}'", e);
+            }
+        }
+
+        public TimeSpan GetTimespan(string name, TimeSpan defaultValue)
+        {
+            var strValue = GetValue(name, defaultValue.ToString());
+            try
+            {
+                var value = TimeSpan.Parse(strValue);
+                return value;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidDataException($"invalid timespan value for '{name}' setting: '{strValue}'", e);
+            }
         }
     }
 }

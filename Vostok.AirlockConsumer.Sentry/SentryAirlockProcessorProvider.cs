@@ -12,15 +12,15 @@ namespace Vostok.AirlockConsumer.Sentry
     {
         private readonly SentryApiClient sentryApiClient;
         private readonly ILog log;
-        private readonly int sentryMaxTasks;
+        private readonly SentryProcessorSettings processorSettings;
         private readonly LogEventDataSerializer airlockDeserializer = new LogEventDataSerializer();
         private readonly Dictionary<string, DefaultAirlockEventProcessor<LogEventData>> processorsByProjectAndEnv = new Dictionary<string, DefaultAirlockEventProcessor<LogEventData>>();
 
-        public SentryAirlockProcessorProvider(SentryApiClient sentryApiClient, ILog log, int sentryMaxTasks)
+        public SentryAirlockProcessorProvider(SentryApiClient sentryApiClient, ILog log, SentryProcessorSettings processorSettings)
         {
             this.sentryApiClient = sentryApiClient;
             this.log = log;
-            this.sentryMaxTasks = sentryMaxTasks;
+            this.processorSettings = processorSettings;
         }
 
         public IAirlockEventProcessor GetProcessor(string routingKey)
@@ -30,7 +30,8 @@ namespace Vostok.AirlockConsumer.Sentry
             if (!processorsByProjectAndEnv.TryGetValue(projEnv, out var processor))
             {
                 var ravenClient = CreateRavenClient(project, environment);
-                var sentryAirlockProcessor = new SentryAirlockProcessor(ravenClient, log, sentryMaxTasks);
+                var sentryPacketSender = new SentryPacketSender(ravenClient, log);
+                var sentryAirlockProcessor = new SentryAirlockProcessor(sentryPacketSender, log, processorSettings);
                 processor = new DefaultAirlockEventProcessor<LogEventData>(airlockDeserializer, sentryAirlockProcessor);
                 processorsByProjectAndEnv.Add(projEnv, processor);
             }
