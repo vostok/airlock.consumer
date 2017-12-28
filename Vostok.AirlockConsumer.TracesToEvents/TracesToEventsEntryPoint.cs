@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Vostok.Airlock;
+﻿using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Airlock.Tracing;
 using Vostok.Logging;
@@ -16,13 +15,14 @@ namespace Vostok.AirlockConsumer.TracesToEvents
         }
 
         protected override string ServiceName => "traces-to-events";
+
         protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings
         {
             MaxBatchSize = 100000,
             MaxProcessorQueueSize = 1000000
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
             AirlockSerializerRegistry.Register(new MetricEventSerializer());

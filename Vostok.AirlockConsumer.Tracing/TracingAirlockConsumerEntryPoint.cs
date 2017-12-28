@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
 using Vostok.Airlock.Tracing;
@@ -21,29 +20,30 @@ namespace Vostok.AirlockConsumer.Tracing
 
         protected override string ServiceName => "consumer-tracing";
 
-        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
+        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings
         {
             MaxBatchSize = 3000,
             MaxProcessorQueueSize = 100000
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.TracesSuffix);
-            var contrailsClientSettings = GetContrailsClientSettings();
+            var contrailsClientSettings = GetContrailsClientSettings(log, environmentVariables);
             var contrailsClient = new ContrailsClient(contrailsClientSettings, log);
             processorProvider = new DefaultAirlockEventProcessorProvider<Span, SpanAirlockSerializer>(project => new TracingAirlockEventProcessor(contrailsClient, log, maxCassandraTasks: 1000));
         }
 
-        private ContrailsClientSettings GetContrailsClientSettings()
+        private static ContrailsClientSettings GetContrailsClientSettings(ILog log, AirlockEnvironmentVariables environmentVariables)
         {
-            var cassandraEndpoints = GetSettingByName("CASSANDRA_ENDPOINTS", defaultCassandraEndpoints);
+            var cassandraEndpoints = environmentVariables.GetValue("CASSANDRA_ENDPOINTS", defaultCassandraEndpoints);
             var contrailsClientSettings = new ContrailsClientSettings
             {
                 CassandraNodes = cassandraEndpoints.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(x => x).ToArray(),
                 Keyspace = "airlock",
                 CassandraRetryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings(),
             };
+            log.Info($"ContrailsClientSettings: {contrailsClientSettings.ToPrettyJson()}");
             return contrailsClientSettings;
         }
     }

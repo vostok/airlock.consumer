@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Vostok.Airlock;
-using Vostok.Airlock.Logging;
+﻿using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Metrics;
 
@@ -8,6 +6,7 @@ namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryAirlockEntryPoint : ConsumerApplication
     {
+        private const int sentryMaxTasks = 100;
         private const string defaultSentryUrl = "http://vostok-sentry:9000";
         private const string defaultSentryToken = "f61df24ac3864c55bbda24bfe68aea0c051ed4786d13475c93dd6d1534280a75";
 
@@ -17,26 +16,33 @@ namespace Vostok.AirlockConsumer.Sentry
         }
 
         protected override string ServiceName => "consumer-sentry";
+
         protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings
         {
-            MaxBatchSize = SentryMaxTasks * 10,
-            MaxProcessorQueueSize = SentryMaxTasks * 100
+            MaxBatchSize = sentryMaxTasks * 10,
+            MaxProcessorQueueSize = sentryMaxTasks * 100
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string,string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
-            var sentryApiClient = new SentryApiClient(GetSettingByName("SENTRY_URL", defaultSentryUrl), GetSettingByName("SENTRY_TOKEN", defaultSentryToken));
-            var sentryClientProvider = new SentryClientProvider(sentryApiClient);
-            var maxTasks = SentryMaxTasks;
-            processorProvider = new SentryAirlockProcessorProvider<LogEventData, LogEventDataSerializer>((project,env) =>
-            {
-                var ravenClient = sentryClientProvider.CreateClient(project,env);
-                return new SentryAirlockProcessor(ravenClient, log, maxTasks);
-            });
+            var sentryApiClientSettings = GetSentryApiClientSettings(log, environmentVariables);
+            var sentryApiClient = new SentryApiClient(sentryApiClientSettings);
+            processorProvider = new SentryAirlockProcessorProvider(sentryApiClient, log, sentryMaxTasks);
         }
 
-        private int? sentryMaxTasks;
-        private int SentryMaxTasks => sentryMaxTasks ?? (sentryMaxTasks = int.Parse(GetSettingByName("SENTRY_MAX_TASKS", "100"))).Value;
+        private static SentryApiClientSettings GetSentryApiClientSettings(ILog log, AirlockEnvironmentVariables environmentVariables)
+        {
+            var sentryUrl = environmentVariables.GetValue("SENTRY_URL", defaultSentryUrl);
+            var sentryToken = environmentVariables.GetValue("SENTRY_TOKEN", defaultSentryToken);
+            var sentryApiClientSettings = new SentryApiClientSettings
+            {
+                Url = sentryUrl,
+                Token = sentryToken,
+                Organization = "sentry",
+            };
+            log.Info($"SentryApiClientSettings: {sentryApiClientSettings.ToPrettyJson()}");
+            return sentryApiClientSettings;
+        }
     }
 }

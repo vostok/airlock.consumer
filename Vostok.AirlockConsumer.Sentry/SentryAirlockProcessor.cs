@@ -18,10 +18,10 @@ namespace Vostok.AirlockConsumer.Sentry
         private readonly ExceptionParser exceptionParser = new ExceptionParser();
         private readonly string projectId;
 
-        public SentryAirlockProcessor(IRavenClient ravenClient, ILog log, int maxSentryTasks)
+        public SentryAirlockProcessor(RavenClient ravenClient, ILog log, int maxSentryTasks)
         {
             this.log = log;
-            packetSender = new SentryPacketSender(ravenClient.CurrentDsn, log);
+            packetSender = new SentryPacketSender(ravenClient, log);
             projectId = ravenClient.CurrentDsn.ProjectID;
             this.maxSentryTasks = maxSentryTasks;
         }
@@ -46,7 +46,6 @@ namespace Vostok.AirlockConsumer.Sentry
                             MessageObject = logEvent.Message
                         };
                         JsonPacketPatcher.PatchPacket(jsonPacket);
-                        log.Debug("prepared packet: " + jsonPacket.ToPrettyJson());
                         packetSender.SendPacket(jsonPacket);
                         messageProcessedCounter.Add();
                     }

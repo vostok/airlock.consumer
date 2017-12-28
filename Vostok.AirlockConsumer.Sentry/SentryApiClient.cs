@@ -10,19 +10,17 @@ namespace Vostok.AirlockConsumer.Sentry
     public class SentryApiClient
     {
         private const string apiPrefix = "/api/0";
-        private const string defaultOrgName = "sentry";
-
         private readonly string organization;
         private readonly HttpClient httpClient;
 
-        public SentryApiClient(string hostUrl, string token, string organization = null)
+        public SentryApiClient(SentryApiClientSettings settings)
         {
-            this.organization = organization ?? defaultOrgName;
+            organization = settings.Organization;
             httpClient = new HttpClient
             {
-                BaseAddress = new Uri(hostUrl)
+                BaseAddress = new Uri(settings.Url)
             };
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + settings.Token);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
@@ -80,12 +78,6 @@ namespace Vostok.AirlockConsumer.Sentry
                 throw new HttpListenerException((int) httpResponseMessage.StatusCode, httpResponseMessage.ReasonPhrase);
             var httpResponseBody = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             return JToken.Parse(httpResponseBody);
-        }
-
-        public class SentryTeam
-        {
-            public string Name { get; set; }
-            public string[] Projects { get; set; }
         }
     }
 }
