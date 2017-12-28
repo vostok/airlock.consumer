@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Logging;
@@ -15,13 +14,14 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         }
 
         protected override string ServiceName => "metrics-aggregator";
-        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings()
+
+        protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings
         {
             MaxBatchSize = 1000,
             MaxProcessorQueueSize = 100000
         };
 
-        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, Dictionary<string, string> environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
+        protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             // todo (spaceorc 05.10.2017) "-events" это не очень красиво - подумать и исправить как-то https://github.com/vostok/airlock.consumer/issues/18
             routingKeyFilter = new DirtyRoutingKeyFilter("-events");
