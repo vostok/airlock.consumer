@@ -20,7 +20,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var spans = GenerateSpans(eventCount);
             PushToAirlock(spans);
 
-            // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
             var contrailsClient = new ContrailsClient(new ContrailsClientSettings
             {
                 CassandraNodes = new[] {"localhost:9042"},

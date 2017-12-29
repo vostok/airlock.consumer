@@ -22,7 +22,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
 
-            // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
             var connectionPool = new StickyConnectionPool(new[] {new Uri("http://localhost:9200")});
             var elasticConfig = new ConnectionConfiguration(connectionPool);
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
