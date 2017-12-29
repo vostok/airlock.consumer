@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.AirlockConsumer.Tracing;
-using Vostok.AirlockConsumer.UnitTests.Sentry;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using FluentAssertions;
@@ -10,7 +9,6 @@ using Vostok.Airlock;
 using Vostok.Airlock.Tracing;
 using Vostok.AirlockConsumer.MetricsAggregator;
 using Vostok.Metrics;
-using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.UnitTests.Aggregation
@@ -38,20 +36,16 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
             processor.GetStartTimestampOnRebalance(routingKey);
             const int eventCount = 10;
             var spans = GenerateSpans(eventCount);
-            var processedCounter = new Counter();
-            processor.Process(Serialize(spans), processedCounter);
+            var processorMetrics = new TestProcessorMetrics();
+            processor.Process(Serialize(spans), processorMetrics);
             Thread.Sleep(1000);
             processor.Release(routingKey);
-            Console.WriteLine($"processed = {processedCounter.GetValue()}");
             var metricEvent = pushed.FirstOrDefault(m => m.Tags[MetricsTagNames.Host]=="any" && m.Tags[MetricsTagNames.Operation] == "any" && m.Tags[MetricsTagNames.Status]=="any");
             Assert.NotNull(metricEvent);
             Console.WriteLine($"pushed ts={metricEvent.Timestamp:s}, tags={string.Join(",", metricEvent.Tags.Select(x => $"{x.Key}=>{x.Value}"))}, values={string.Join(",", metricEvent.Values.Select(x => $"{x.Key}=>{x.Value}"))}");
             Assert.AreEqual(metricEvent.Values["count"], eventCount, 1e-10);
-            Assert.AreEqual(metricEvent.Values["duration_sum"], spans.Sum(x =>
-            {
-                Debug.Assert(x.Payload.EndTimestamp != null, "x.Payload.EndTimestamp != null");
-                return x.Payload.EndTimestamp.Value.ToUnixTimeMilliseconds() - x.Payload.BeginTimestamp.ToUnixTimeMilliseconds();
-            }), 1e-10);
+            // ReSharper disable once PossibleInvalidOperationException
+            Assert.AreEqual(metricEvent.Values["duration_sum"], spans.Sum(x => x.Payload.EndTimestamp.Value.ToUnixTimeMilliseconds() - x.Payload.BeginTimestamp.ToUnixTimeMilliseconds()), 1e-10);
         }
 
         private List<AirlockEvent<byte[]>> Serialize(List<AirlockEvent<Span>> spans)
