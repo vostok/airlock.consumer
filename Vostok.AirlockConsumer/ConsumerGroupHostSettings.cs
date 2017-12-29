@@ -12,14 +12,14 @@ namespace Vostok.AirlockConsumer
             ConsumerGroupId = consumerGroupId;
             ProcessorHostSettings = processorHostSettings;
             ClientId = clientId ?? $"airlock@{Dns.GetHostName()}";
-            AutoResetOffset = autoResetOffsetPolicy;
+            AutoResetOffsetPolicy = autoResetOffsetPolicy;
         }
 
         public string BootstrapServers { get; }
         public string ConsumerGroupId { get; }
         public ProcessorHostSettings ProcessorHostSettings { get; }
         public string ClientId { get; }
-        public string AutoResetOffset { get; }
+        public string AutoResetOffsetPolicy { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);
         public TimeSpan UpdateSubscriptionInterval { get; } = TimeSpan.FromSeconds(30);
         public TimeSpan UpdateSubscriptionTimeout { get; } = TimeSpan.FromSeconds(10);
@@ -39,6 +39,7 @@ namespace Vostok.AirlockConsumer
                 {"enable.auto.commit", false},
                 {"enable.auto.offset.store", false},
                 {"offset.store.method", "broker"},
+                {"auto.offset.reset", AutoResetOffsetPolicy},
                 {"session.timeout.ms", 10000},
                 {"heartbeat.interval.ms", 3000},
                 {"socket.timeout.ms", 60000},
@@ -55,11 +56,6 @@ namespace Vostok.AirlockConsumer
                 {"queued.max.messages.kbytes", 1000000},
                 {"receive.message.max.bytes", 100000000},
                 {"max.in.flight.requests.per.connection", 1000000},
-                { "default.topic.config", new Dictionary<string, object>
-                    {
-                        { "auto.offset.reset", AutoResetOffset }
-                    }
-                }
             };
         }
     }
