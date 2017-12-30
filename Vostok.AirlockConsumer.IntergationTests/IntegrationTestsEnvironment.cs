@@ -14,9 +14,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
     {
         public const string Project = "vostok";
         public const string Environment = "ci";
-
-        // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
-        private const string airlockGateEndpoints = "http://vostok.dev.kontur.ru:6306";
+        private const string airlockGateEndpoints = "http://localhost:6306";
 
         public static readonly ConsoleLog Log = new ConsoleLog();
 
@@ -29,14 +27,13 @@ namespace Vostok.AirlockConsumer.IntergationTests
             {
                 foreach (var @event in events)
                     airlockClient.Push(routingKey, @event, getTimestamp(@event));
-                airlockClient.FlushAsync().Wait();
             }
             Log.Debug($"SentItemsCount: {airlockClient.SentItemsCount}, LostItemsCount: {airlockClient.LostItemsCount}, Elapsed: {sw.Elapsed}");
             airlockClient.LostItemsCount.Should().Be(0);
             airlockClient.SentItemsCount.Should().Be(events.Length);
         }
 
-        public static ParallelAirlockClient CreateAirlockClient()
+        private static ParallelAirlockClient CreateAirlockClient()
         {
             var airlockConfig = GetAirlockConfig();
             return new ParallelAirlockClient(airlockConfig, 10, Log.FilterByLevel(LogLevel.Warn));

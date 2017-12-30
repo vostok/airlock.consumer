@@ -3,4 +3,5 @@
 	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=6213539160F8274D8705B60032F64142/RelativePath/@EntryValue">..\..\core\CSharpCodeStyle.DotSettings</s:String>
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=6213539160F8274D8705B60032F64142/@KeyIndexDefined">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File6213539160F8274D8705B60032F64142/@KeyIndexDefined">True</s:Boolean>
-	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File6213539160F8274D8705B60032F64142/RelativePriority/@EntryValue">1</s:Double></wpf:ResourceDictionary>
+	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File6213539160F8274D8705B60032F64142/RelativePriority/@EntryValue">1</s:Double>
+	<s:String x:Key="/Default/Environment/UnitTesting/ExcludedCategoriesList/@EntryValue">Manual,Load</s:String></wpf:ResourceDictionary>

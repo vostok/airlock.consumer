@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using JetBrains.Annotations;
+using Vostok.Logging;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
@@ -17,7 +18,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("wait attempt failed: {0}", ex);
+                    IntegrationTestsEnvironment.Log.Debug("Wait attempt failed", ex);
                     return WaitAction.ContinueWaiting;
                 }
             }, timeOutSeconds, throwException, exceptionMessage);
@@ -34,7 +35,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("wait attempt failed: {0}", ex);
+                    IntegrationTestsEnvironment.Log.Debug("Wait attempt failed", ex);
                     return WaitAction.ContinueWaiting;
                 }
             }, timeOutSeconds, throwException, exceptionMessage);

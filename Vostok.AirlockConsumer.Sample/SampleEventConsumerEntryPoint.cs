@@ -82,7 +82,7 @@ namespace Vostok.AirlockConsumer.Sample
                 routingKeys = new[] {defaultRoutingKey};
             var routingKeyFilter = new SampleRoutingKeyFilter(routingKeys);
             var processorProvider = new DefaultAirlockEventProcessorProvider<SampleEvent, SampleEventSerializer>(project => new SampleDataAirlockEventProcessor(log, recedeGap));
-            var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, new ProcessorHostSettings(), autoResetOffsetPolicy: AutoResetOffsetPolicy.Earliest);
+            var settings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, new ProcessorHostSettings(), AutoResetOffsetPolicy.Earliest);
 
             IMetricScope rootMetricScope = new RootMetricScope(
                 new MetricConfiguration

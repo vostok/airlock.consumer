@@ -21,27 +21,21 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
 
-            //var applicationHost = new ConsumerApplicationHost<ElasticLogsIndexerEntryPoint>();
-            //var task = new Task(
-            //    () =>
-            //    {
-            //        applicationHost.Run();
-            //    },
-            //    TaskCreationOptions.LongRunning);
-            //task.Start();
-
-            // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
-            var connectionPool = new StickyConnectionPool(new[] {new Uri("http://devops-consul1.dev.kontur.ru:9200")});
-            var elasticConfig = new ConnectionConfiguration(connectionPool);
+            var connectionPool = new StickyConnectionPool(new[] {new Uri("http://localhost:9200")});
+            var elasticConfig = new ConnectionConfiguration(connectionPool, cfg =>
+            {
+                cfg.EnableDebugMode();
+                return null;
+            });
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
             var indexName = $"{IntegrationTestsEnvironment.Project}-{IntegrationTestsEnvironment.Environment}-{logEvents.First().Timestamp:yyyy.MM.dd}";
 
             var testId = logEvents.First().Properties["testId"];
             var expectedLogMessages = new HashSet<string>(logEvents.Select(x => x.Message));
-            WaitHelper.Wait(
+            WaitHelper.WaitSafe(
                 () =>
                 {
-                    var response = elasticClient.Search<string>(
+                    var elasticsearchResponse = elasticClient.Search<string>(
                         indexName,
                         "LogEvent",
                         new
@@ -56,11 +50,10 @@ namespace Vostok.AirlockConsumer.IntergationTests
                                 }
                             }
                         });
-                    IntegrationTestsEnvironment.Log.Debug("elastic responce: " + response.Body);
-                    if (!response.Success)
-                        throw new Exception("elastic error");
-                    dynamic jObject = JObject.Parse(response.Body);
-                    var hits = (JArray)jObject.hits.hits;
+                    IntegrationTestsEnvironment.Log.Debug(elasticsearchResponse.DebugInformation);
+                    if (!elasticsearchResponse.Success)
+                        return WaitAction.ContinueWaiting;
+                    var hits = (JArray) ((dynamic) JObject.Parse(elasticsearchResponse.Body)).hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
                         return WaitAction.ContinueWaiting;
                     foreach (dynamic hit in hits)
@@ -70,8 +63,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     }
                     return WaitAction.StopWaiting;
                 });
-
-            //applicationHost.Stop();
         }
 
         [Test]

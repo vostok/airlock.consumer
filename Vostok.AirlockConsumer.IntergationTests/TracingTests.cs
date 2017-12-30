@@ -20,19 +20,9 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var spans = GenerateSpans(eventCount);
             PushToAirlock(spans);
 
-            //var applicationHost = new ConsumerApplicationHost<TracingAirlockConsumerEntryPoint>();
-            //var task = new Task(
-            //    () =>
-            //    {
-            //        applicationHost.Run();
-            //    },
-            //    TaskCreationOptions.LongRunning);
-            //task.Start();
-
-            // todo (andrew, 06.12.2017): use local spaceport in integration tests with the consumers built from commit being tested
             var contrailsClient = new ContrailsClient(new ContrailsClientSettings
             {
-                CassandraNodes = new[] {"vm-ke-cass1:9042", "vm-ke-cass2:9042", "vm-ke-cass3:9042"},
+                CassandraNodes = new[] {"localhost:9042"},
                 Keyspace = "airlock",
                 CassandraRetryExecutionStrategySettings = new CassandraRetryExecutionStrategySettings(),
             }, IntegrationTestsEnvironment.Log);
@@ -53,8 +43,6 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     }
                     return true;
                 });
-
-            //applicationHost.Stop();
         }
 
         [Test]
