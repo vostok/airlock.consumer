@@ -30,11 +30,11 @@ namespace Vostok.AirlockConsumer.Tracing
             try
             {
                 contrailsClient.AddSpan(@event.Payload).GetAwaiter().GetResult();
-                processorMetrics.MessageProcessedCounter.Add();
+                processorMetrics.EventProcessedCounter.Add();
             }
             catch (Exception e)
             {
-                processorMetrics.MessageFailedCounter.Add();
+                processorMetrics.EventFailedCounter.Add();
                 processorMetrics.SendingErrorCounter.Add();
                 log.Error(e);
             }

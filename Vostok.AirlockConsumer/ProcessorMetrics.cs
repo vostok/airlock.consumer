@@ -6,25 +6,25 @@ namespace Vostok.AirlockConsumer
 {
     public class ProcessorMetrics : IDisposable
     {
-        public ICounter MessageProcessedCounter { get; }
-        public ICounter MessageIgnoredCounter { get; }
+        public ICounter EventProcessedCounter { get; }
+        public ICounter EventIgnoredCounter { get; }
+        public ICounter EventFailedCounter { get; }
         public ICounter SendingErrorCounter { get; }
-        public ICounter MessageFailedCounter { get; }
 
         public ProcessorMetrics(IMetricScope metricScope, TimeSpan flushMetricsInterval)
         {
-            MessageProcessedCounter = metricScope.Counter(flushMetricsInterval, "message_processed");
-            MessageIgnoredCounter = metricScope.Counter(flushMetricsInterval, "message_ignored");
+            EventProcessedCounter = metricScope.Counter(flushMetricsInterval, "event_processed");
+            EventIgnoredCounter = metricScope.Counter(flushMetricsInterval, "event_ignored");
+            EventFailedCounter = metricScope.Counter(flushMetricsInterval, "event_failed");
             SendingErrorCounter = metricScope.Counter(flushMetricsInterval, "sending_errors");
-            MessageFailedCounter = metricScope.Counter(flushMetricsInterval, "message_failed");
         }
 
         public void Dispose()
         {
-            (MessageProcessedCounter as IDisposable)?.Dispose();
-            (MessageIgnoredCounter as IDisposable)?.Dispose();
+            (EventProcessedCounter as IDisposable)?.Dispose();
+            (EventIgnoredCounter as IDisposable)?.Dispose();
             (SendingErrorCounter as IDisposable)?.Dispose();
-            (MessageFailedCounter as IDisposable)?.Dispose();
+            (EventFailedCounter as IDisposable)?.Dispose();
         }
     }
 }

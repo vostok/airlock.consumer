@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Vostok.Logging;
 
@@ -37,29 +36,25 @@ namespace Vostok.AirlockConsumer
         public int GetIntValue(string name, int defaultValue)
         {
             var strValue = GetValue(name, defaultValue.ToString());
-            try
-            {
-                var value = int.Parse(strValue);
-                return value;
-            }
-            catch (Exception e)
-            {
-                throw new InvalidDataException($"invalid int value for '{name}' setting: '{strValue}'", e);
-            }
+            if (!int.TryParse(strValue, out var value))
+                throw new InvalidOperationException($"Invalid int value for {name} variable: {strValue}");
+            return value;
         }
 
-        public TimeSpan GetTimespan(string name, TimeSpan defaultValue)
+        public TimeSpan GetTimeSpanValue(string name, TimeSpan defaultValue)
         {
             var strValue = GetValue(name, defaultValue.ToString());
-            try
-            {
-                var value = TimeSpan.Parse(strValue);
-                return value;
-            }
-            catch (Exception e)
-            {
-                throw new InvalidDataException($"invalid timespan value for '{name}' setting: '{strValue}'", e);
-            }
+            if (!TimeSpan.TryParse(strValue, out var value))
+                throw new InvalidOperationException($"Invalid TimeSpan value for {name} variable: {strValue}");
+            return value;
+        }
+
+        public T GetEnumValue<T>(string name, T defaultValue) where T : struct
+        {
+            var strValue = GetValue(name, defaultValue.ToString());
+            if (!Enum.TryParse(strValue, out T value))
+                throw new InvalidOperationException($"Invalid {typeof(T).Name} enum value for {name} variable: {strValue}");
+            return value;
         }
     }
 }

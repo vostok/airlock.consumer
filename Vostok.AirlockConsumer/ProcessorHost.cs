@@ -23,11 +23,11 @@ namespace Vostok.AirlockConsumer
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
-        private readonly ICounter messageEnqueuedCounter;
         private readonly IDisposable queueGauge;
         private readonly IDisposable pausedGauge;
-        private int[] pausedPartitions;
+        private readonly ICounter messageEnqueuedCounter;
         private readonly ProcessorMetrics processorMetrics;
+        private int[] pausedPartitions;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval, ProcessorHostSettings processorHostSettings)
         {

@@ -28,7 +28,7 @@ namespace Vostok.AirlockConsumer.Sentry
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ProcessorMetrics processorMetrics)
         {
             Parallel.ForEach(
-                FilterEvents(events, processorMetrics.MessageIgnoredCounter),
+                FilterEvents(events, processorMetrics.EventIgnoredCounter),
                 new ParallelOptions {MaxDegreeOfParallelism = processorSettings.MaxTasks},
                 @event =>
                 {
@@ -46,11 +46,11 @@ namespace Vostok.AirlockConsumer.Sentry
                         };
                         JsonPacketPatcher.PatchPacket(jsonPacket);
                         packetSender.SendPacket(jsonPacket, processorMetrics.SendingErrorCounter);
-                        processorMetrics.MessageProcessedCounter.Add();
+                        processorMetrics.EventProcessedCounter.Add();
                     }
                     catch (Exception e)
                     {
-                        processorMetrics.MessageFailedCounter.Add();
+                        processorMetrics.EventFailedCounter.Add();
                         log.Error(e);
                     }
                 });

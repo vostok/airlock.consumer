@@ -26,22 +26,22 @@ namespace Vostok.AirlockConsumer.Metrics
 
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ProcessorMetrics processorMetrics)
         {
+            var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload)).ToArray();
             try
             {
-                var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
-                SendBatchAsync(metrics.ToArray(), processorMetrics).GetAwaiter().GetResult();
-                processorMetrics.MessageProcessedCounter.Add(events.Count);
+                SendBatchAsync(metrics, processorMetrics).GetAwaiter().GetResult();
+                processorMetrics.EventProcessedCounter.Add(events.Count);
             }
             catch (Exception)
             {
-                processorMetrics.MessageFailedCounter.Add(events.Count);
+                processorMetrics.EventFailedCounter.Add(events.Count);
                 throw;
             }
         }
 
-        private async Task SendBatchAsync(IReadOnlyCollection<Metric> events, ProcessorMetrics processorMetrics)
+        private async Task SendBatchAsync(Metric[] metrics, ProcessorMetrics processorMetrics)
         {
-            await retriableCallStrategy.CallAsync(() => graphiteClient.SendAsync(events), ex =>
+            await retriableCallStrategy.CallAsync(() => graphiteClient.SendAsync(metrics), ex =>
             {
                 processorMetrics.SendingErrorCounter.Add();
                 return true;

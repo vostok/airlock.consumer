@@ -69,7 +69,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                     eventsTimestampProvider.AddTimestamp(metricEvent.Timestamp);
                     aggregator.ProcessMetricEvent(metricEvent);
                 }
-                processorMetrics.MessageProcessedCounter.Add();
+                processorMetrics.EventProcessedCounter.Add();
             }
         }
 

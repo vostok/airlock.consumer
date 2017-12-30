@@ -50,7 +50,7 @@ namespace Vostok.AirlockConsumer.Sentry
         {
             var sentryProcessorSettings = new SentryProcessorSettings();
             sentryProcessorSettings.MaxTasks = environmentVariables.GetIntValue("SENTRY_MAX_TASKS", sentryProcessorSettings.MaxTasks);
-            sentryProcessorSettings.ThrottlingPeriod = environmentVariables.GetTimespan("SENTRY_THROTTLING_PERIOD", sentryProcessorSettings.ThrottlingPeriod);
+            sentryProcessorSettings.ThrottlingPeriod = environmentVariables.GetTimeSpanValue("SENTRY_THROTTLING_PERIOD", sentryProcessorSettings.ThrottlingPeriod);
             sentryProcessorSettings.ThrottlingThreshold = environmentVariables.GetIntValue("SENTRY_THROTTLING_THRESHOLD", sentryProcessorSettings.ThrottlingThreshold);
             log.Info($"SentryProcessorSettings: {sentryProcessorSettings.ToPrettyJson()}");
             return sentryProcessorSettings;
