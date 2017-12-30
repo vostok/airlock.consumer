@@ -22,7 +22,11 @@ namespace Vostok.AirlockConsumer.IntergationTests
             PushToAirlock(logEvents);
 
             var connectionPool = new StickyConnectionPool(new[] {new Uri("http://localhost:9200")});
-            var elasticConfig = new ConnectionConfiguration(connectionPool);
+            var elasticConfig = new ConnectionConfiguration(connectionPool, cfg =>
+            {
+                cfg.EnableDebugMode();
+                return null;
+            });
             var elasticClient = new ElasticLowLevelClient(elasticConfig);
             var indexName = $"{IntegrationTestsEnvironment.Project}-{IntegrationTestsEnvironment.Environment}-{logEvents.First().Timestamp:yyyy.MM.dd}";
 
