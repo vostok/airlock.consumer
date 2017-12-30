@@ -7,7 +7,6 @@ using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
-using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.IntergationTests
 {
@@ -29,36 +28,30 @@ namespace Vostok.AirlockConsumer.IntergationTests
 
             var testId = logEvents.First().Properties["testId"];
             var expectedLogMessages = new HashSet<string>(logEvents.Select(x => x.Message));
-            var callStrategy = new RetriableCallStrategy();
-            WaitHelper.Wait(
+            WaitHelper.WaitSafe(
                 () =>
                 {
-                    var response = callStrategy.Call(() =>
-                    {
-                        var elasticsearchResponse = elasticClient.Search<string>(
-                            indexName,
-                            "LogEvent",
-                            new
+                    var elasticsearchResponse = elasticClient.Search<string>(
+                        indexName,
+                        "LogEvent",
+                        new
+                        {
+                            from = 0,
+                            size = eventCount,
+                            query = new
                             {
-                                from = 0,
-                                size = eventCount,
-                                query = new
+                                match = new
                                 {
-                                    match = new
-                                    {
-                                        testId,
-                                    }
+                                    testId,
                                 }
-                            });
-                        if (!elasticsearchResponse.Success)
-                            throw new Exception("elastic error " + elasticsearchResponse.OriginalException);
-                        return elasticsearchResponse;
-                    }, ex => true, IntegrationTestsEnvironment.Log);
-                    dynamic jObject = JObject.Parse(response.Body);
-                    var hits = (JArray)jObject.hits.hits;
+                            }
+                        });
+                    IntegrationTestsEnvironment.Log.Debug(elasticsearchResponse.DebugInformation);
+                    if (!elasticsearchResponse.Success)
+                        return WaitAction.ContinueWaiting;
+                    var hits = (JArray) ((dynamic) JObject.Parse(elasticsearchResponse.Body)).hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
                         return WaitAction.ContinueWaiting;
-                    IntegrationTestsEnvironment.Log.Debug("elastic responce: " + response.Body);
                     foreach (dynamic hit in hits)
                     {
                         string message = hit._source.Message;
