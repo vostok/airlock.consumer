@@ -1,4 +1,5 @@
-﻿using Vostok.Airlock;
+﻿using System;
+using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Metrics;
 
@@ -6,7 +7,6 @@ namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryAirlockEntryPoint : ConsumerApplication
     {
-        private const int sentryMaxTasks = 100;
         private const string defaultSentryUrl = "http://vostok-sentry:9000";
         private const string defaultSentryToken = "f61df24ac3864c55bbda24bfe68aea0c051ed4786d13475c93dd6d1534280a75";
 
@@ -19,16 +19,17 @@ namespace Vostok.AirlockConsumer.Sentry
 
         protected override ProcessorHostSettings ProcessorHostSettings => new ProcessorHostSettings
         {
-            MaxBatchSize = sentryMaxTasks * 10,
-            MaxProcessorQueueSize = sentryMaxTasks * 100
+            MaxBatchSize = 10_000,
+            MaxProcessorQueueSize = 100_000
         };
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
             routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.LogsSuffix);
             var sentryApiClientSettings = GetSentryApiClientSettings(log, environmentVariables);
-            var sentryApiClient = new SentryApiClient(sentryApiClientSettings);
-            processorProvider = new SentryAirlockProcessorProvider(sentryApiClient, log, sentryMaxTasks);
+            var sentryApiClient = new SentryApiClient(sentryApiClientSettings, log);
+            var sentryProcessorSettings = GetSentryProcessorSettings(log, environmentVariables);
+            processorProvider = new SentryAirlockProcessorProvider(sentryApiClient, log, sentryProcessorSettings);
         }
 
         private static SentryApiClientSettings GetSentryApiClientSettings(ILog log, AirlockEnvironmentVariables environmentVariables)
@@ -43,6 +44,18 @@ namespace Vostok.AirlockConsumer.Sentry
             };
             log.Info($"SentryApiClientSettings: {sentryApiClientSettings.ToPrettyJson()}");
             return sentryApiClientSettings;
+        }
+
+        private static SentryProcessorSettings GetSentryProcessorSettings(ILog log, AirlockEnvironmentVariables environmentVariables)
+        {
+            var sentryProcessorSettings = new SentryProcessorSettings
+            {
+                MaxTasks = environmentVariables.GetIntValue("SENTRY_MAX_TASKS", 100),
+                ThrottlingPeriod = environmentVariables.GetTimeSpanValue("SENTRY_THROTTLING_PERIOD", TimeSpan.FromMinutes(1)),
+                ThrottlingThreshold = environmentVariables.GetIntValue("SENTRY_THROTTLING_THRESHOLD", 100)
+            };
+            log.Info($"SentryProcessorSettings: {sentryProcessorSettings.ToPrettyJson()}");
+            return sentryProcessorSettings;
         }
     }
 }

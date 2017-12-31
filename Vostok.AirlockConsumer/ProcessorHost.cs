@@ -23,10 +23,10 @@ namespace Vostok.AirlockConsumer
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly BlockingCollection<Message<Null, byte[]>> eventsQueue = new BlockingCollection<Message<Null, byte[]>>(new ConcurrentQueue<Message<Null, byte[]>>());
         private readonly Thread processorThread;
-        private readonly ICounter messageEnqueuedCounter;
-        private readonly ICounter messageProcessedCounter;
         private readonly IDisposable queueGauge;
         private readonly IDisposable pausedGauge;
+        private readonly ICounter messageEnqueuedCounter;
+        private readonly ProcessorMetrics processorMetrics;
         private int[] pausedPartitions;
 
         public ProcessorHost(string consumerGroupHostId, string routingKey, IAirlockEventProcessor processor, ILog log, Consumer<Null, byte[]> consumer, IMetricScope metricScope, TimeSpan flushMetricsInterval, ProcessorHostSettings processorHostSettings)
@@ -45,7 +45,7 @@ namespace Vostok.AirlockConsumer
             queueGauge = metricScope.Gauge(flushMetricsInterval, "queue_size", () => eventsQueue.Count);
             pausedGauge = metricScope.Gauge(flushMetricsInterval, "paused", () => pausedPartitions != null ? 1 : 0);
             messageEnqueuedCounter = metricScope.Counter(flushMetricsInterval, "message_enqueued");
-            messageProcessedCounter = metricScope.Counter(flushMetricsInterval, "message_processed");
+            processorMetrics = new ProcessorMetrics(metricScope, flushMetricsInterval);
         }
 
         public int[] AssignedPartitions { get; set; }
@@ -102,7 +102,7 @@ namespace Vostok.AirlockConsumer
         public void Dispose()
         {
             (messageEnqueuedCounter as IDisposable)?.Dispose();
-            (messageProcessedCounter as IDisposable)?.Dispose();
+            processorMetrics.Dispose();
             queueGauge.Dispose();
             pausedGauge.Dispose();
         }
@@ -189,7 +189,7 @@ namespace Vostok.AirlockConsumer
         {
             try
             {
-                processor.Process(airlockEvents, messageProcessedCounter);
+                processor.Process(airlockEvents, processorMetrics);
             }
             catch (Exception e)
             {

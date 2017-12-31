@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Vostok.Logging;
-using Vostok.Metrics.Meters;
 
 namespace Vostok.AirlockConsumer.Sample
 {
@@ -25,7 +24,7 @@ namespace Vostok.AirlockConsumer.Sample
             return startTimestampOnRebalance;
         }
 
-        public void Process(List<AirlockEvent<SampleEvent>> events, ICounter messageProcessedCounter)
+        public void Process(List<AirlockEvent<SampleEvent>> events, ProcessorMetrics processorMetrics)
         {
             log.Info($"New events batch has arrived of size {events.Count}");
             foreach (var @event in events)

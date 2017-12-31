@@ -4,18 +4,24 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using Vostok.Logging;
+using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryApiClient
     {
+        private readonly ILog log;
         private const string apiPrefix = "/api/0";
         private readonly string organization;
         private readonly HttpClient httpClient;
+        private readonly RetriableCallStrategy callStrategy = new RetriableCallStrategy();
 
-        public SentryApiClient(SentryApiClientSettings settings)
+        public SentryApiClient(SentryApiClientSettings settings, ILog log)
         {
             organization = settings.Organization;
+            this.log = log;
+
             httpClient = new HttpClient
             {
                 BaseAddress = new Uri(settings.Url)
@@ -63,21 +69,63 @@ namespace Vostok.AirlockConsumer.Sentry
 
         private string Get(string uri)
         {
-            var httpResponseMessage = httpClient.GetAsync($"{apiPrefix}{uri}").GetAwaiter().GetResult();
-            if (!httpResponseMessage.IsSuccessStatusCode)
-                throw new HttpListenerException((int) httpResponseMessage.StatusCode, httpResponseMessage.ReasonPhrase);
-            return httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            try
+            {
+                return callStrategy.Call(
+                    () =>
+                    {
+                        var httpResponseMessage = httpClient.GetAsync($"{apiPrefix}{uri}").GetAwaiter().GetResult();
+                        if (!httpResponseMessage.IsSuccessStatusCode)
+                            throw new HttpListenerException((int)httpResponseMessage.StatusCode, httpResponseMessage.ReasonPhrase);
+                        return httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    }, IsExceptionRetriable, log);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Could not get data by URL " + uri, ex);
+            }
+        }
+
+        private static readonly HttpStatusCode[] retriableHttpStatusCodes =
+        {
+            HttpStatusCode.BadGateway,
+            HttpStatusCode.GatewayTimeout,
+            HttpStatusCode.RequestTimeout,
+            HttpStatusCode.ServiceUnavailable,
+            HttpStatusCode.TemporaryRedirect,
+        };
+
+        private bool IsExceptionRetriable(Exception ex)
+        {
+            if (ex is HttpListenerException httpListenerEx)
+            {
+                return retriableHttpStatusCodes.Contains((HttpStatusCode) httpListenerEx.ErrorCode);
+            }
+            return ex is HttpRequestException;
         }
 
         private dynamic Post(string uri, object body)
         {
-            var content = new StringContent(body.ToJson());
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            var httpResponseMessage = httpClient.PostAsync($"{apiPrefix}{uri}", content).GetAwaiter().GetResult();
-            if (!httpResponseMessage.IsSuccessStatusCode)
-                throw new HttpListenerException((int) httpResponseMessage.StatusCode, httpResponseMessage.ReasonPhrase);
-            var httpResponseBody = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            return JToken.Parse(httpResponseBody);
+            try
+            {
+                var content = new StringContent(body.ToJson());
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                return callStrategy.Call(
+                    () =>
+                    {
+                        var httpResponseMessage = httpClient.PostAsync($"{apiPrefix}{uri}", content).GetAwaiter().GetResult();
+                        if (!httpResponseMessage.IsSuccessStatusCode)
+                            throw new HttpListenerException((int)httpResponseMessage.StatusCode, httpResponseMessage.ReasonPhrase);
+                        var httpResponseBody = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        return JToken.Parse(httpResponseBody);
+                    }, IsExceptionRetriable, log);
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Could not post data to URL " + uri, e);
+            }
         }
     }
 }

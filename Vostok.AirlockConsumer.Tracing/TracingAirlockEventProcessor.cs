@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
-using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.Tracing
@@ -21,20 +20,22 @@ namespace Vostok.AirlockConsumer.Tracing
             this.log = log;
         }
 
-        public sealed override void Process(List<AirlockEvent<Span>> events, ICounter messageProcessedCounter)
+        public sealed override void Process(List<AirlockEvent<Span>> events, ProcessorMetrics processorMetrics)
         {
-            Parallel.ForEach(events, new ParallelOptions {MaxDegreeOfParallelism = maxCassandraTasks}, @event => ProcessEvent(@event, messageProcessedCounter));
+            Parallel.ForEach(events, new ParallelOptions {MaxDegreeOfParallelism = maxCassandraTasks}, @event => ProcessEvent(@event, processorMetrics));
         }
 
-        private void ProcessEvent(AirlockEvent<Span> @event, ICounter messageProcessedCounter)
+        private void ProcessEvent(AirlockEvent<Span> @event, ProcessorMetrics processorMetrics)
         {
             try
             {
                 contrailsClient.AddSpan(@event.Payload).GetAwaiter().GetResult();
-                messageProcessedCounter.Add();
+                processorMetrics.EventProcessedCounter.Add();
             }
             catch (Exception e)
             {
+                processorMetrics.EventFailedCounter.Add();
+                processorMetrics.SendingErrorCounter.Add();
                 log.Error(e);
             }
         }

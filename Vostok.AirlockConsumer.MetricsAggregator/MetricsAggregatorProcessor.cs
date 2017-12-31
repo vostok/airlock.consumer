@@ -6,7 +6,6 @@ using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Airlock.Tracing;
 using Vostok.Metrics;
-using Vostok.Metrics.Meters;
 using Vostok.Tracing;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
@@ -59,7 +58,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
             return initialBorders.Past;
         }
 
-        public void Process(List<AirlockEvent<byte[]>> events, ICounter messageProcessedCounter)
+        public void Process(List<AirlockEvent<byte[]>> events, ProcessorMetrics processorMetrics)
         {
             foreach (var @event in events)
             {
@@ -70,7 +69,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
                     eventsTimestampProvider.AddTimestamp(metricEvent.Timestamp);
                     aggregator.ProcessMetricEvent(metricEvent);
                 }
-                messageProcessedCounter.Add();
+                processorMetrics.EventProcessedCounter.Add();
             }
         }
 

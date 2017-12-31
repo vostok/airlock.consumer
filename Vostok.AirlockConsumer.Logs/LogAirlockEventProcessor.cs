@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using MoreLinq;
@@ -15,14 +14,6 @@ namespace Vostok.AirlockConsumer.Logs
 {
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
-        private static readonly HttpStatusCode[] retriableHttpStatusCodes =
-        {
-            HttpStatusCode.BadGateway,
-            HttpStatusCode.GatewayTimeout,
-            HttpStatusCode.RequestTimeout,
-            HttpStatusCode.ServiceUnavailable,
-            HttpStatusCode.TemporaryRedirect,
-        };
         private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
         private readonly RetriableCallStrategy retriableCallStrategy;
@@ -36,53 +27,67 @@ namespace Vostok.AirlockConsumer.Logs
             elasticClient = new ElasticLowLevelClient(elasticConfig);
         }
 
-        public sealed override void Process(List<AirlockEvent<LogEventData>> events, ICounter messageProcessedCounter)
+        public sealed override void Process(List<AirlockEvent<LogEventData>> events, ProcessorMetrics processorMetrics)
         {
-            Parallel.ForEach(
-                events.Batch(10000),
-                batch =>
-                {
-                    var bulkItems = new List<object>();
-                    var count = 0;
-                    foreach (var @event in batch)
+            var bulks = events
+                .Select(
+                    @event =>
                     {
                         RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var _);
-                        bulkItems.Add(BuildIndexRecordMeta(@event, project, environment));
-                        bulkItems.Add(BuildIndexRecord(@event, service));
-                        count++;
+                        var indexName = $"{project}-{environment}-{@event.Payload.Timestamp.Date:yyyy.MM.dd}";
+                        var indexRecordMeta = BuildIndexRecordMeta(indexName);
+                        var indexRecord = BuildIndexRecord(@event, service);
+                        return new {indexName, indexRecordMeta, indexRecord};
+                    })
+                .GroupBy(x => x.indexName)
+                .SelectMany(g => g.Batch(10000).Select(records =>
+                {
+                    var postDataItems = new List<object>();
+                    foreach (var record in records)
+                    {
+                        postDataItems.Add(record.indexRecordMeta);
+                        postDataItems.Add(record.indexRecord);
                     }
-                    Index(bulkItems);
-                    messageProcessedCounter.Add(count);
+                    var postData = new PostData<object>(postDataItems);
+                    return new {postData, recordsCount = postDataItems.Count / 2};
+                }))
+                .ToList();
+            Parallel.ForEach(
+                bulks,
+                bulk =>
+                {
+                    try
+                    {
+                        BulkIndex(bulk.postData, processorMetrics.SendingErrorCounter);
+                        processorMetrics.EventProcessedCounter.Add(bulk.recordsCount);
+                    }
+                    catch (Exception)
+                    {
+                        processorMetrics.EventFailedCounter.Add(bulk.recordsCount);
+                        throw;
+                    }
                 });
         }
 
-        private void Index(List<object> bulkItems)
+        private void BulkIndex(PostData<object> bulkIndexPostData, ICounter sendingErrorCounter)
         {
-            var postData = new PostData<object>(bulkItems);
             retriableCallStrategy.Call(
                 () =>
                 {
-                    var response = elasticClient.Bulk<byte[]>(postData);
+                    var response = elasticClient.Bulk<byte[]>(bulkIndexPostData);
                     if (!response.Success)
-                        throw response.OriginalException;
+                        throw new ElasticOperationFailedException(response);
                 },
-                IsRetriableException,
+                ex =>
+                {
+                    sendingErrorCounter.Add();
+                    return (ex as ElasticOperationFailedException)?.IsRetriable == true;
+                },
                 log);
         }
 
-        private static bool IsRetriableException(Exception ex)
+        private static object BuildIndexRecordMeta(string indexName)
         {
-            var elasticsearchClientException = ExceptionFinder.FindException<ElasticsearchClientException>(ex);
-            var httpStatusCode = elasticsearchClientException?.Response?.HttpStatusCode;
-            if (httpStatusCode == null)
-                return false;
-            var statusCode = (HttpStatusCode) httpStatusCode.Value;
-            return retriableHttpStatusCodes.Contains(statusCode);
-        }
-
-        private static object BuildIndexRecordMeta(AirlockEvent<LogEventData> @event, string project, string environment)
-        {
-            var indexName = $"{project}-{environment}-{@event.Payload.Timestamp.Date:yyyy.MM.dd}";
             return new
             {
                 index = new
@@ -111,6 +116,17 @@ namespace Vostok.AirlockConsumer.Logs
                     indexRecord.Add(kvp.Key, kvp.Value);
             }
             return indexRecord;
+        }
+
+        private class ElasticOperationFailedException : Exception
+        {
+            public ElasticOperationFailedException(ElasticsearchResponse<byte[]> response)
+                : base(response.DebugInformation, response.OriginalException)
+            {
+                IsRetriable = !response.SuccessOrKnownError;
+            }
+
+            public bool IsRetriable { get; }
         }
     }
 }

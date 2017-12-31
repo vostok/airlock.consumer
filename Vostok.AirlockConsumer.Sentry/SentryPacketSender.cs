@@ -4,11 +4,12 @@ using System.Net;
 using SharpRaven;
 using SharpRaven.Data;
 using Vostok.Logging;
+using Vostok.Metrics.Meters;
 using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Sentry
 {
-    public class SentryPacketSender
+    public class SentryPacketSender : ISentryPacketSender
     {
         private static readonly WebExceptionStatus[] retriableHttpStatusCodes =
         {
@@ -18,7 +19,8 @@ namespace Vostok.AirlockConsumer.Sentry
             WebExceptionStatus.Timeout,
             WebExceptionStatus.ConnectionClosed,
             WebExceptionStatus.RequestCanceled,
-            WebExceptionStatus.KeepAliveFailure
+            WebExceptionStatus.KeepAliveFailure,
+            WebExceptionStatus.UnknownError,
         };
 
         private readonly ILog log;
@@ -31,23 +33,24 @@ namespace Vostok.AirlockConsumer.Sentry
             this.log = log;
         }
 
-        public void SendPacket(JsonPacket packet)
+        public void SendPacket(JsonPacket packet, ICounter sendingErrorCounter)
         {
             retriableCallStrategy.Call(() =>
             {
                 var requester = new Requester(packet, ravenClient);
                 return requester.Request();
-            }, IsRetriableException, log);
+            }, e =>
+            {
+                sendingErrorCounter.Add();
+                return IsRetriableException(e);
+            }, log);
         }
 
-        private static bool IsRetriableException(Exception ex)
+        private static bool IsRetriableException(Exception e)
         {
-            var webException = ExceptionFinder.FindException<WebException>(ex);
+            var webException = ExceptionFinder.FindException<WebException>(e);
             var httpStatusCode = webException?.Status;
-            if (httpStatusCode == null)
-                return false;
-            var statusCode = httpStatusCode.Value;
-            return retriableHttpStatusCodes.Contains(statusCode);
+            return httpStatusCode.HasValue && retriableHttpStatusCodes.Contains(httpStatusCode.Value);
         }
     }
 }

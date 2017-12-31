@@ -32,5 +32,29 @@ namespace Vostok.AirlockConsumer
                 value = defaultValue;
             return value;
         }
+
+        public int GetIntValue(string name, int defaultValue)
+        {
+            var strValue = GetValue(name, defaultValue.ToString());
+            if (!int.TryParse(strValue, out var value))
+                throw new InvalidOperationException($"Invalid int value for {name} variable: {strValue}");
+            return value;
+        }
+
+        public TimeSpan GetTimeSpanValue(string name, TimeSpan defaultValue)
+        {
+            var strValue = GetValue(name, defaultValue.ToString());
+            if (!TimeSpan.TryParse(strValue, out var value))
+                throw new InvalidOperationException($"Invalid TimeSpan value for {name} variable: {strValue}");
+            return value;
+        }
+
+        public T GetEnumValue<T>(string name, T defaultValue) where T : struct
+        {
+            var strValue = GetValue(name, defaultValue.ToString());
+            if (!Enum.TryParse(strValue, out T value))
+                throw new InvalidOperationException($"Invalid {typeof(T).Name} enum value for {name} variable: {strValue}");
+            return value;
+        }
     }
 }

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Vostok.Graphite.Client;
 using Vostok.Logging;
 using Vostok.Metrics;
-using Vostok.Metrics.Meters;
 using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Metrics
@@ -25,16 +24,28 @@ namespace Vostok.AirlockConsumer.Metrics
             graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port);
         }
 
-        public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ICounter messageProcessedCounter)
+        public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ProcessorMetrics processorMetrics)
         {
-            var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload));
-            SendBatchAsync(metrics.ToArray()).GetAwaiter().GetResult();
-            messageProcessedCounter.Add(events.Count);
+            var metrics = events.SelectMany(x => metricConverter.Convert(x.RoutingKey, x.Payload)).ToArray();
+            try
+            {
+                SendBatchAsync(metrics, processorMetrics).GetAwaiter().GetResult();
+                processorMetrics.EventProcessedCounter.Add(events.Count);
+            }
+            catch (Exception)
+            {
+                processorMetrics.EventFailedCounter.Add(events.Count);
+                throw;
+            }
         }
 
-        private async Task SendBatchAsync(IReadOnlyCollection<Metric> batchMetrics)
+        private async Task SendBatchAsync(Metric[] metrics, ProcessorMetrics processorMetrics)
         {
-            await retriableCallStrategy.CallAsync(() => graphiteClient.SendAsync(batchMetrics), ex => true, log);
+            await retriableCallStrategy.CallAsync(() => graphiteClient.SendAsync(metrics), ex =>
+            {
+                processorMetrics.SendingErrorCounter.Add();
+                return true;
+            }, log);
         }
     }
 }
