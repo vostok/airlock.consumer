@@ -11,58 +11,68 @@ namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryAirlockProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {
-        private readonly ILog log;
+        private readonly string sentryProjectId;
         private readonly SentryProcessorSettings processorSettings;
+        private readonly ILog log;
         private readonly ISentryPacketSender packetSender;
         private readonly ExceptionParser exceptionParser = new ExceptionParser();
-        private readonly long throttlingPeriodTicks;
 
-        public SentryAirlockProcessor(ISentryPacketSender sentryPacketSender, ILog log, SentryProcessorSettings processorSettings)
+        public SentryAirlockProcessor(string sentryProjectId, SentryProcessorSettings processorSettings, ILog log, ISentryPacketSender sentryPacketSender)
         {
-            this.log = log;
+            this.sentryProjectId = sentryProjectId;
             this.processorSettings = processorSettings;
-            throttlingPeriodTicks = processorSettings.ThrottlingPeriod.Ticks;
+            this.log = log;
             packetSender = sentryPacketSender;
         }
 
         public sealed override void Process(List<AirlockEvent<LogEventData>> events, ProcessorMetrics processorMetrics)
         {
-            Parallel.ForEach(
-                FilterEvents(events, processorMetrics.EventIgnoredCounter),
-                new ParallelOptions {MaxDegreeOfParallelism = processorSettings.MaxTasks},
-                @event =>
+            var errorEvents = events.Where(x => x.Payload.Level == LogLevel.Error || x.Payload.Level == LogLevel.Fatal);
+            var throttledErrorEvents = ThrottleEvents(errorEvents.OrderBy(x => x.Timestamp), processorMetrics.EventIgnoredCounter);
+            var packets = throttledErrorEvents.Select(
+                x =>
                 {
+                    var logEvent = x.Payload;
+                    var jsonPacket = new JsonPacket(sentryProjectId)
+                    {
+                        Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
+                        Tags = logEvent.Properties,
+                        TimeStamp = logEvent.Timestamp.UtcDateTime,
+                        Exceptions = exceptionParser.Parse(logEvent.Exception),
+                        Message = logEvent.Message,
+                        MessageObject = logEvent.Message
+                    };
+                    JsonPacketPatcher.PatchPacket(jsonPacket);
+                    return jsonPacket;
+                });
+            Parallel.ForEach(
+                packets,
+                new ParallelOptions {MaxDegreeOfParallelism = processorSettings.MaxTasks},
+                packet =>
+                {
+                    var success = false;
                     try
                     {
-                        var logEvent = @event.Payload;
-                        var jsonPacket = new JsonPacket("default")
-                        {
-                            Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
-                            Tags = logEvent.Properties,
-                            TimeStamp = logEvent.Timestamp.UtcDateTime,
-                            Exceptions = exceptionParser.Parse(logEvent.Exception),
-                            Message = logEvent.Message,
-                            MessageObject = logEvent.Message
-                        };
-                        JsonPacketPatcher.PatchPacket(jsonPacket);
-                        packetSender.SendPacket(jsonPacket, processorMetrics.SendingErrorCounter);
-                        processorMetrics.EventProcessedCounter.Add();
+                        packetSender.SendPacket(packet, processorMetrics.SendingErrorCounter);
+                        success = true;
                     }
                     catch (Exception e)
                     {
                         processorMetrics.EventFailedCounter.Add();
                         log.Error(e);
                     }
+                    if (success)
+                        processorMetrics.EventProcessedCounter.Add();
                 });
         }
 
-        private IEnumerable<AirlockEvent<LogEventData>> FilterEvents(IEnumerable<AirlockEvent<LogEventData>> events, ICounter messageIgnoredCounter)
+        private IEnumerable<AirlockEvent<LogEventData>> ThrottleEvents(IEnumerable<AirlockEvent<LogEventData>> events, ICounter messageIgnoredCounter)
         {
             var lastTimestampIndex = 0L;
             var periodCounter = 0;
-            foreach (var airlockEvent in events.Where(ev => ev.Payload.Level == LogLevel.Error || ev.Payload.Level == LogLevel.Fatal).OrderBy(ev => ev.Timestamp))
+            foreach (var airlockEvent in events)
             {
-                var normalizedTimestampIndex = airlockEvent.Timestamp.Ticks / throttlingPeriodTicks;
+                var normalizedTimestampIndex = airlockEvent.Timestamp.Ticks/processorSettings.ThrottlingPeriod.Ticks;
                 if (normalizedTimestampIndex == lastTimestampIndex)
                 {
                     periodCounter++;

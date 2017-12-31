@@ -30,8 +30,9 @@ namespace Vostok.AirlockConsumer.Sentry
             if (!processorsByProjectAndEnv.TryGetValue(projEnv, out var processor))
             {
                 var ravenClient = CreateRavenClient(project, environment);
+                var sentryProjectId = ravenClient.CurrentDsn.ProjectID;
                 var sentryPacketSender = new SentryPacketSender(ravenClient, log);
-                var sentryAirlockProcessor = new SentryAirlockProcessor(sentryPacketSender, log, processorSettings);
+                var sentryAirlockProcessor = new SentryAirlockProcessor(sentryProjectId, processorSettings, log, sentryPacketSender);
                 processor = new DefaultAirlockEventProcessor<LogEventData>(airlockDeserializer, sentryAirlockProcessor);
                 processorsByProjectAndEnv.Add(projEnv, processor);
             }

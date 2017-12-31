@@ -30,7 +30,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Sentry
                 ThrottlingPeriod = throttlingPeriod,
                 ThrottlingThreshold = throttlingThreshold
             };
-            var processor = new SentryAirlockProcessor(packetSender, new SilentLog(), sentryProcessorSettings);
+            var processor = new SentryAirlockProcessor("default", sentryProcessorSettings, new SilentLog(), packetSender);
             var utcNow = DateTimeOffset.UtcNow;
             var normalizedNow = new DateTimeOffset(utcNow.Ticks - utcNow.Ticks%throttlingPeriod.Ticks, TimeSpan.Zero);
             var eventStep = throttlingPeriod/eventsPerPeriod;
