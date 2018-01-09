@@ -19,6 +19,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
             const int eventCount = 10;
+            var log = IntegrationTestsEnvironment.Log;
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
 
@@ -51,12 +52,21 @@ namespace Vostok.AirlockConsumer.IntergationTests
                                 }
                             }
                         });
-                    IntegrationTestsEnvironment.Log.Debug(elasticsearchResponse.DebugInformation);
+                    log.Debug(elasticsearchResponse.DebugInformation);
                     if (!elasticsearchResponse.Success)
+                    {
+                        log.Error(elasticsearchResponse.OriginalException);
                         return WaitAction.ContinueWaiting;
+                    }
+
                     var hits = (JArray) ((dynamic) JObject.Parse(elasticsearchResponse.Body)).hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
+                    {
+                        log.Error($"Invalid event count: {hits.Count}, expected: {expectedLogMessages.Count}");
                         return WaitAction.ContinueWaiting;
+                        
+                    }
+
                     foreach (dynamic hit in hits)
                     {
                         string message = hit._source.Message;
