@@ -98,7 +98,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     {
                         return new LogEventData(e)
                         {
-                            //Message = "hello!" + i,
+                            Message = "hello!" + i,
                             Level = LogLevel.Error,
                             Timestamp = utcNow.AddMilliseconds(-i * 10),
                             Properties = new Dictionary<string, string> { ["testId"] = testId },
