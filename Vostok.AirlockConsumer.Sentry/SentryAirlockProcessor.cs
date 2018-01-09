@@ -37,7 +37,7 @@ namespace Vostok.AirlockConsumer.Sentry
                         Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
                         Tags = logEvent.Properties,
                         TimeStamp = logEvent.Timestamp.UtcDateTime,
-                        Exceptions =  logEvent.Exceptions?.Select(x => x.ToSentry()).ToList(),
+                        Exceptions =  logEvent.Exceptions?.Select(ex => ex.ToSentry()).ToList(),
                         Message = logEvent.Message,
                         MessageObject = logEvent.Message
                     };
@@ -49,19 +49,16 @@ namespace Vostok.AirlockConsumer.Sentry
                 new ParallelOptions {MaxDegreeOfParallelism = processorSettings.MaxTasks},
                 packet =>
                 {
-                    var success = false;
                     try
                     {
                         packetSender.SendPacket(packet, processorMetrics.SendingErrorCounter);
-                        success = true;
+                        processorMetrics.EventProcessedCounter.Add();
                     }
                     catch (Exception e)
                     {
                         processorMetrics.EventFailedCounter.Add();
                         log.Error(e);
                     }
-                    if (success)
-                        processorMetrics.EventProcessedCounter.Add();
                 });
         }
 
