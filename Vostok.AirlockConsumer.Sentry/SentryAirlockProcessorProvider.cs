@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using SharpRaven;
@@ -48,8 +49,9 @@ namespace Vostok.AirlockConsumer.Sentry
             {
                 team = sentryApiClient.GetTeam(sentryTeam);
             }
-            catch (HttpListenerException e) when (e.ErrorCode == 404)
+            catch (Exception e) //when (e.ErrorCode == 404)
             {
+                log.Error(e);
                 team = null;
             }
             if (team == null)
