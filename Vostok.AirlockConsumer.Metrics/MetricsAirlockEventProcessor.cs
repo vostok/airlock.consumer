@@ -21,7 +21,7 @@ namespace Vostok.AirlockConsumer.Metrics
             this.log = log;
             var graphiteNameBuidler = new GraphiteNameBuilder();
             metricConverter = new MetricConverter(graphiteNameBuidler);
-            graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port);
+            graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port, log);
         }
 
         public sealed override void Process(List<AirlockEvent<MetricEvent>> events, ProcessorMetrics processorMetrics)
