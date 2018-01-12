@@ -1,5 +1,4 @@
-﻿using System;
-using Vostok.Airlock.Metrics;
+﻿using Vostok.Airlock.Metrics;
 using Vostok.Logging;
 using Vostok.Metrics;
 
@@ -7,8 +6,6 @@ namespace Vostok.AirlockConsumer.Metrics
 {
     public class MetricsAirlockConsumerEntryPoint : ConsumerApplication
     {
-        private const string defaultGraphiteEndpoint = "graphite:2003";
-
         public static void Main()
         {
             new ConsumerApplicationHost<MetricsAirlockConsumerEntryPoint>().Run();
@@ -27,14 +24,6 @@ namespace Vostok.AirlockConsumer.Metrics
             routingKeyFilter = new DefaultRoutingKeyFilter(Airlock.RoutingKey.MetricsSuffix);
             var graphiteUri = GetGraphiteUri(log, environmentVariables);
             processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => new MetricsAirlockEventProcessor(graphiteUri, log));
-        }
-
-        private static Uri GetGraphiteUri(ILog log, AirlockEnvironmentVariables environmentVariables)
-        {
-            var graphiteEndpoint = environmentVariables.GetValue("GRAPHITE_ENDPOINT", defaultGraphiteEndpoint);
-            var graphiteUri = new Uri($"tcp://{graphiteEndpoint}");
-            log.Info($"GraphiteUri: {graphiteUri}");
-            return graphiteUri;
         }
     }
 }

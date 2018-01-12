@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Graphite.Client;
+using Vostok.Graphite.Reporter;
 using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.RetriableCall;
@@ -20,7 +21,7 @@ namespace Vostok.AirlockConsumer.Metrics
         {
             this.log = log;
             var graphiteNameBuidler = new GraphiteNameBuilder();
-            metricConverter = new MetricConverter(graphiteNameBuidler);
+            metricConverter = new MetricConverter(graphiteNameBuidler, log);
             graphiteClient = new GraphiteClient(graphiteUri.Host, graphiteUri.Port, log);
         }
 

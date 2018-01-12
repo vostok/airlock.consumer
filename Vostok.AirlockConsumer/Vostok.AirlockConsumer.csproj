@@ -10,6 +10,7 @@
     <PackageReference Include="Vostok.Core" Version="1.0.0-pre000462" />
     <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000462" />
     <PackageReference Include="Vostok.Logging.Serilog" Version="1.0.0-pre000142" />
+    <PackageReference Include="Vostok.Graphite.Reporter" Version="1.0.0-pre000084-MetricReporter" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
   </ItemGroup>

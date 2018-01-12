@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Net;
 using Vostok.Airlock;
-using Vostok.Airlock.Metrics;
 using Vostok.Clusterclient.Topology;
+using Vostok.Graphite.Client;
+using Vostok.Graphite.Reporter;
 using Vostok.Logging;
 using Vostok.Metrics;
 
@@ -14,6 +15,7 @@ namespace Vostok.AirlockConsumer
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
         private const string defaultAirlockGateEndpoints = "http://gate:6306";
         private const string defaultAirlockGateApiKey = "UniversalApiKey";
+        private const string defaultGraphiteEndpoint = "graphite:2003";
         protected IAirlockClient AirlockClient;
         private ConsumerMetrics consumerMetrics;
 
@@ -27,10 +29,17 @@ namespace Vostok.AirlockConsumer
 
             var environment = environmentVariables.GetValue("VOSTOK_ENV", "dev");
             var metricRoutingKeyPrefix = RoutingKey.CreatePrefix("vostok", environment, ServiceName);
+            var graphiteUri = GetGraphiteUri(log, environmentVariables);
+            var graphiteSinkConfig = new GraphiteSinkConfig
+            {
+                GraphiteHost = graphiteUri.Host,
+                GraphitePort = graphiteUri.Port
+            };
+            log.Info($"GraphiteSinkConfig: {graphiteSinkConfig.ToPrettyJson()}");
             IMetricScope rootMetricScope = new RootMetricScope(
                 new MetricConfiguration
                 {
-                    Reporter = new AirlockMetricReporter(AirlockClient, metricRoutingKeyPrefix)
+                    Reporter = new GraphiteMetricReporter(new GraphiteSink(graphiteSinkConfig, log), metricRoutingKeyPrefix, log)
                 });
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables);
             consumerMetrics = new ConsumerMetrics(consumerGroupHostSettings.FlushMetricsInterval, rootMetricScope);
@@ -77,6 +86,14 @@ namespace Vostok.AirlockConsumer
             var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, ProcessorHostSettings, autoResetOffsetPolicy);
             log.Info($"ConsumerGroupHostSettings: {consumerGroupHostSettings.ToPrettyJson()}");
             return consumerGroupHostSettings;
+        }
+
+        protected static Uri GetGraphiteUri(ILog log, AirlockEnvironmentVariables environmentVariables)
+        {
+            var graphiteEndpoint = environmentVariables.GetValue("GRAPHITE_ENDPOINT", defaultGraphiteEndpoint);
+            var graphiteUri = new Uri($"tcp://{graphiteEndpoint}");
+            log.Info($"GraphiteUri: {graphiteUri}");
+            return graphiteUri;
         }
     }
 }
