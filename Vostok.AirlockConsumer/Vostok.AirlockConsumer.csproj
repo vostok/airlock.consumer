@@ -7,7 +7,7 @@
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Confluent.Kafka" Version="0.11.3-vostok-4" />
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000420-ExceptionDetailization" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000431-ExceptionDetailization" />
     <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000420-ExceptionDetailization" />
     <PackageReference Include="Vostok.Logging.Serilog" Version="1.0.0-pre000136-ExceptionDetalization" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
