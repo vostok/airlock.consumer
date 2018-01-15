@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpRaven" Version="1.0.0.10" />
     <PackageReference Include="Vostok.Core" Version="1.0.0-pre000419" />
+    <PackageReference Include="VostokSharpRaven" Version="1.0.0.18" />
   </ItemGroup>
 
   <ItemGroup>
