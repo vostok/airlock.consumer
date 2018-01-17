@@ -23,7 +23,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
 
-            var connectionPool = new StickyConnectionPool(new[] {new Uri("http://localhost:9200")});
+            var connectionPool = new StickyConnectionPool(new[] { new Uri("http://localhost:9200") });
             var elasticConfig = new ConnectionConfiguration(connectionPool, cfg =>
             {
                 cfg.EnableDebugMode();
@@ -59,12 +59,12 @@ namespace Vostok.AirlockConsumer.IntergationTests
                         return WaitAction.ContinueWaiting;
                     }
 
-                    var hits = (JArray) ((dynamic) JObject.Parse(elasticsearchResponse.Body)).hits.hits;
+                    var hits = (JArray)((dynamic)JObject.Parse(elasticsearchResponse.Body)).hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
                     {
                         log.Error($"Invalid event count: {hits.Count}, expected: {expectedLogMessages.Count}");
                         return WaitAction.ContinueWaiting;
-                        
+
                     }
 
                     foreach (dynamic hit in hits)
@@ -87,8 +87,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         {
             var utcNow = DateTimeOffset.UtcNow;
             var testId = Guid.NewGuid().ToString("N");
-            return Enumerable.Range(0, count)
-                             .Select(i =>
+            return Enumerable.Range(0, count).Select(i =>
                 {
                     try
                     {
@@ -96,11 +95,12 @@ namespace Vostok.AirlockConsumer.IntergationTests
                     }
                     catch (Exception e)
                     {
-                        return new LogEventData(e)
+                        return new LogEventData
                         {
                             Message = "hello!" + i,
                             Level = LogLevel.Error,
                             Timestamp = utcNow.AddMilliseconds(-i * 10),
+                            Exceptions = e.Parse(),
                             Properties = new Dictionary<string, string> { ["testId"] = testId },
                         };
                     }

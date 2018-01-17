@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000431-ExceptionDetailization" />
-    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000420-ExceptionDetailization" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000456-ExceptionDetailization" />
+    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000456-ExceptionDetailization" />
   </ItemGroup>
 
   <ItemGroup>

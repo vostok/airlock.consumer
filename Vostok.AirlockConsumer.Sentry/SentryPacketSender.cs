@@ -48,7 +48,7 @@ namespace Vostok.AirlockConsumer.Sentry
 
         private static bool IsRetriableException(Exception e)
         {
-            var webException = ExceptionFinder.FindException<WebException>(e);
+            var webException = e.FindFirstException<WebException>();
             var httpStatusCode = webException?.Status;
             return httpStatusCode.HasValue && retriableHttpStatusCodes.Contains(httpStatusCode.Value);
         }
