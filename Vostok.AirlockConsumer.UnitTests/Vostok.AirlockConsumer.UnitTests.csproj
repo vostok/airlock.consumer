@@ -22,8 +22,4 @@
     <ProjectReference Include="..\Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Sentry\" />
-  </ItemGroup>
-
 </Project>
