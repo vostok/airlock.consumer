@@ -34,7 +34,8 @@ namespace Vostok.AirlockConsumer.Logs
                 .Select(
                     @event =>
                     {
-                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var _);
+                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service,
+                            out var _);
                         var indexName = $"{project}-{environment}-{@event.Payload.Timestamp.Date:yyyy.MM.dd}";
                         var indexRecordMeta = BuildIndexRecordMeta(indexName);
                         var indexRecord = BuildIndexRecord(@event, service);
@@ -49,6 +50,7 @@ namespace Vostok.AirlockConsumer.Logs
                         postDataItems.Add(record.indexRecordMeta);
                         postDataItems.Add(record.indexRecord);
                     }
+
                     var postData = new PostData<object>(postDataItems);
                     return new {postData, recordsCount = postDataItems.Count / 2};
                 }))
@@ -120,6 +122,7 @@ namespace Vostok.AirlockConsumer.Logs
                 if (!indexRecord.ContainsKey(kvp.Key))
                     indexRecord.Add(kvp.Key, kvp.Value);
             }
+
             return indexRecord;
         }
 
@@ -133,6 +136,5 @@ namespace Vostok.AirlockConsumer.Logs
 
             public bool IsRetriable { get; }
         }
-
     }
 }
