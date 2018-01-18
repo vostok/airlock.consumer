@@ -26,9 +26,16 @@ namespace Vostok.AirlockConsumer.Sentry
                 ColumnNumber = frame.ColumnNumber,
                 LineNumber = frame.LineNumber,
                 Function = frame.Function,
-                InApp = frame.ColumnNumber > 0,
+                InApp = !IsSystemModuleName(frame.Module),
                 Source = frame.Source
             };
+        }
+
+        private static bool IsSystemModuleName(string moduleName)
+        {
+            return !string.IsNullOrEmpty(moduleName) &&
+                   (moduleName.StartsWith("System.", System.StringComparison.Ordinal) ||
+                    moduleName.StartsWith("Microsoft.", System.StringComparison.Ordinal));
         }
     }
 }
