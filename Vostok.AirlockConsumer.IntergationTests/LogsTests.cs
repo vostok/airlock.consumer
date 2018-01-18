@@ -79,7 +79,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         [Category("Load")]
         public void PushManyLogEventsToAirlock()
         {
-            PushToAirlock(GenerateLogEvens(count: 100));
+            PushToAirlock(GenerateLogEvens(count: 100_000));
         }
 
         private static LogEventData[] GenerateLogEvens(int count)
