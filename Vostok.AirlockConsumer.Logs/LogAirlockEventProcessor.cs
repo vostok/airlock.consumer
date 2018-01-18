@@ -17,6 +17,7 @@ namespace Vostok.AirlockConsumer.Logs
         private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
         private readonly RetriableCallStrategy retriableCallStrategy;
+        private const int maxExceptionLength = 32 * 1024;
 
         public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
@@ -109,7 +110,11 @@ namespace Vostok.AirlockConsumer.Logs
             if (!string.IsNullOrEmpty(@event.Payload.Message))
                 indexRecord.Add("Message", @event.Payload.Message);
             if (@event.Payload.Exceptions != null && @event.Payload.Exceptions.Count > 0)
-                indexRecord.Add("Exception", string.Join("\n   ---\n", @event.Payload.Exceptions));
+            {
+                var exception = string.Join("\n   ---\n", @event.Payload.Exceptions).Truncate(maxExceptionLength);
+                indexRecord.Add("Exception", exception);
+            }
+
             foreach (var kvp in @event.Payload.Properties)
             {
                 if (!indexRecord.ContainsKey(kvp.Key))
@@ -128,5 +133,6 @@ namespace Vostok.AirlockConsumer.Logs
 
             public bool IsRetriable { get; }
         }
+
     }
 }
