@@ -52,7 +52,14 @@ namespace Vostok.AirlockConsumer.Sentry
                     try
                     {
                         packetSender.SendPacket(packet, processorMetrics.SendingErrorCounter);
-                        processorMetrics.EventProcessedCounter.Add();
+                        try
+                        {
+                            processorMetrics.EventProcessedCounter.Add();
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error(e);
+                        }
                     }
                     catch (Exception e)
                     {
