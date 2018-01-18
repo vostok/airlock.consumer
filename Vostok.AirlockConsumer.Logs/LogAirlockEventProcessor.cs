@@ -17,6 +17,7 @@ namespace Vostok.AirlockConsumer.Logs
         private readonly ILog log;
         private readonly ElasticLowLevelClient elasticClient;
         private readonly RetriableCallStrategy retriableCallStrategy;
+        private const int maxExceptionLength = 32 * 1024;
 
         public LogAirlockEventProcessor(Uri[] elasticUris, ILog log)
         {
@@ -33,7 +34,8 @@ namespace Vostok.AirlockConsumer.Logs
                 .Select(
                     @event =>
                     {
-                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service, out var _);
+                        RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service,
+                            out var _);
                         var indexName = $"{project}-{environment}-{@event.Payload.Timestamp.Date:yyyy.MM.dd}";
                         var indexRecordMeta = BuildIndexRecordMeta(indexName);
                         var indexRecord = BuildIndexRecord(@event, service);
@@ -48,6 +50,7 @@ namespace Vostok.AirlockConsumer.Logs
                         postDataItems.Add(record.indexRecordMeta);
                         postDataItems.Add(record.indexRecord);
                     }
+
                     var postData = new PostData<object>(postDataItems);
                     return new {postData, recordsCount = postDataItems.Count / 2};
                 }))
@@ -108,13 +111,18 @@ namespace Vostok.AirlockConsumer.Logs
             };
             if (!string.IsNullOrEmpty(@event.Payload.Message))
                 indexRecord.Add("Message", @event.Payload.Message);
-            if (!string.IsNullOrEmpty(@event.Payload.Exception))
-                indexRecord.Add("Exception", @event.Payload.Exception);
+            if (@event.Payload.Exceptions != null && @event.Payload.Exceptions.Count > 0)
+            {
+                var exception = string.Join("\n   ---\n", @event.Payload.Exceptions).Truncate(maxExceptionLength);
+                indexRecord.Add("Exception", exception);
+            }
+
             foreach (var kvp in @event.Payload.Properties)
             {
                 if (!indexRecord.ContainsKey(kvp.Key))
                     indexRecord.Add(kvp.Key, kvp.Value);
             }
+
             return indexRecord;
         }
 

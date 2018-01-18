@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using SharpRaven;
 using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
+using Vostok.RetriableCall;
 
 namespace Vostok.AirlockConsumer.Sentry
 {
@@ -48,8 +50,11 @@ namespace Vostok.AirlockConsumer.Sentry
             {
                 team = sentryApiClient.GetTeam(sentryTeam);
             }
-            catch (HttpListenerException e) when (e.ErrorCode == 404)
+            catch (Exception e)
             {
+                if (!e.HasException(ex => ex is HttpListenerException http && http.ErrorCode == 404))
+                    throw;
+                log.Error(e);
                 team = null;
             }
             if (team == null)

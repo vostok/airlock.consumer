@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
@@ -18,6 +19,7 @@ namespace Vostok.AirlockConsumer.IntergationTests
         public void SendLogEventsToAirlock_GotItAtElastic()
         {
             const int eventCount = 10;
+            var log = IntegrationTestsEnvironment.Log;
             var logEvents = GenerateLogEvens(eventCount);
             PushToAirlock(logEvents);
 
@@ -50,12 +52,20 @@ namespace Vostok.AirlockConsumer.IntergationTests
                                 }
                             }
                         });
-                    IntegrationTestsEnvironment.Log.Debug(elasticsearchResponse.DebugInformation);
+                    log.Debug(elasticsearchResponse.DebugInformation);
                     if (!elasticsearchResponse.Success)
+                    {
+                        log.Error(elasticsearchResponse.OriginalException);
                         return WaitAction.ContinueWaiting;
-                    var hits = (JArray) ((dynamic) JObject.Parse(elasticsearchResponse.Body)).hits.hits;
+                    }
+
+                    var hits = (JArray)((dynamic)JObject.Parse(elasticsearchResponse.Body)).hits.hits;
                     if (expectedLogMessages.Count != hits.Count)
+                    {
+                        log.Error($"Invalid event count: {hits.Count}, expected: {expectedLogMessages.Count}");
                         return WaitAction.ContinueWaiting;
+                    }
+
                     foreach (dynamic hit in hits)
                     {
                         string message = hit._source.Message;
@@ -76,14 +86,24 @@ namespace Vostok.AirlockConsumer.IntergationTests
         {
             var utcNow = DateTimeOffset.UtcNow;
             var testId = Guid.NewGuid().ToString("N");
-            return Enumerable.Range(0, count)
-                             .Select(i => new LogEventData
-                             {
-                                 Message = "hello!" + i,
-                                 Level = LogLevel.Debug,
-                                 Timestamp = utcNow.AddMilliseconds(-i*10),
-                                 Properties = new Dictionary<string, string> {["testId"] = testId}
-                             }).ToArray();
+            return Enumerable.Range(0, count).Select(i =>
+            {
+                try
+                {
+                    throw new InvalidDataException("hello!" + i);
+                }
+                catch (Exception e)
+                {
+                    return new LogEventData
+                    {
+                        Message = "hello!" + i,
+                        Level = LogLevel.Error,
+                        Timestamp = utcNow.AddMilliseconds(-i*10),
+                        Exceptions = e.Parse(),
+                        Properties = new Dictionary<string, string> {["testId"] = testId},
+                    };
+                }
+            }).ToArray();
         }
 
         private static void PushToAirlock(LogEventData[] logEvents)

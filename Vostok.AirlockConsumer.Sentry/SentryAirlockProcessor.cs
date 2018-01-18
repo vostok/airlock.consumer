@@ -15,7 +15,6 @@ namespace Vostok.AirlockConsumer.Sentry
         private readonly SentryProcessorSettings processorSettings;
         private readonly ILog log;
         private readonly ISentryPacketSender packetSender;
-        private readonly ExceptionParser exceptionParser = new ExceptionParser();
 
         public SentryAirlockProcessor(string sentryProjectId, SentryProcessorSettings processorSettings, ILog log, ISentryPacketSender sentryPacketSender)
         {
@@ -38,7 +37,7 @@ namespace Vostok.AirlockConsumer.Sentry
                         Level = logEvent.Level == LogLevel.Error ? ErrorLevel.Error : ErrorLevel.Fatal,
                         Tags = logEvent.Properties,
                         TimeStamp = logEvent.Timestamp.UtcDateTime,
-                        Exceptions = exceptionParser.Parse(logEvent.Exception),
+                        Exceptions =  logEvent.Exceptions?.Select(ex => ex.ToSentry()).ToList(),
                         Message = logEvent.Message,
                         MessageObject = logEvent.Message
                     };
@@ -50,19 +49,23 @@ namespace Vostok.AirlockConsumer.Sentry
                 new ParallelOptions {MaxDegreeOfParallelism = processorSettings.MaxTasks},
                 packet =>
                 {
-                    var success = false;
                     try
                     {
                         packetSender.SendPacket(packet, processorMetrics.SendingErrorCounter);
-                        success = true;
+                        try
+                        {
+                            processorMetrics.EventProcessedCounter.Add();
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error(e);
+                        }
                     }
                     catch (Exception e)
                     {
                         processorMetrics.EventFailedCounter.Add();
                         log.Error(e);
                     }
-                    if (success)
-                        processorMetrics.EventProcessedCounter.Add();
                 });
         }
 
