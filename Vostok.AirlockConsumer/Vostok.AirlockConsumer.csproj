@@ -7,10 +7,10 @@
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Confluent.Kafka" Version="0.11.3-vostok-4" />
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000462" />
-    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000462" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000464" />
+    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000464" />
     <PackageReference Include="Vostok.Logging.Serilog" Version="1.0.0-pre000142" />
-    <PackageReference Include="Vostok.Graphite.Reporter" Version="1.0.0-pre000084-MetricReporter" />
+    <PackageReference Include="Vostok.Graphite.Reporter" Version="1.0.0-pre000087" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
   </ItemGroup>

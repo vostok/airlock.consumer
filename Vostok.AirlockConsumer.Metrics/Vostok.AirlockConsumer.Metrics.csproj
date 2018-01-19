@@ -8,9 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000462" />
-    <PackageReference Include="Vostok.Graphite.Client" Version="1.0.0-pre000084-MetricReporter" />
-    <PackageReference Include="Vostok.Graphite.Reporter" Version="1.0.0-pre000084-MetricReporter" />
+    <PackageReference Include="Vostok.Core" Version="1.0.0-pre000464" />
+    <PackageReference Include="Vostok.Graphite.Reporter" Version="1.0.0-pre000087" />
   </ItemGroup>
 
   <ItemGroup>
