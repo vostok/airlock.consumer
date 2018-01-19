@@ -15,4 +15,3 @@ Logs                    | {Project}.{Environment}.{ServiceName}.logs
 Traces                  | {Project}.{Environment}.{ServiceName}.traces
 Final metric            | {Project}.{Environment}.{ServiceName}.metrics
 Metric events           | {Project}.{Environment}.{ServiceName}.app-events
-Metric events by traces | {Project}.{Environment}.{ServiceName}.trace-events
