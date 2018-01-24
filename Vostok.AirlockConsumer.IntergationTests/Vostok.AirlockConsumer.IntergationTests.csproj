@@ -10,7 +10,25 @@
     <PackageReference Include="NUnit" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
-    <PackageReference Include="Vostok.Airlock.Client" Version="1.0.0-pre000464" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Vostok.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.core\Vostok.Core\bin\Release\netstandard2.0\Vostok.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.Airlock.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.airlock.client\Vostok.Airlock.Client\bin\Release\netstandard2.0\Vostok.Airlock.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.ClusterClient">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.clusterclient\Vostok.ClusterClient\bin\Release\netstandard2.0\Vostok.ClusterClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.Contrails.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.contrails.api\Vostok.Contrails.Client\bin\Release\netstandard2.0\Vostok.Contrails.Client.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -18,5 +36,6 @@
     <ProjectReference Include="..\Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj" />
     <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
   </ItemGroup>
+
 
 </Project>
