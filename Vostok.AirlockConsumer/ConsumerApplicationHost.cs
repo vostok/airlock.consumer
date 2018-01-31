@@ -45,12 +45,12 @@ namespace Vostok.AirlockConsumer
                 using (var consumerApplication = new TConsumerApp())
                 {
                     var environmentVariables = AirlockEnvironmentVariables.CreateFromProcessEnvironment(log);
-                    var consumerGroupHost = consumerApplication.Initialize(log, environmentVariables);
-                    log.Info($"Consumer application is initialized: {typeof (TConsumerApp).Name}");
-                    consumerGroupHost.Start();
-                    stopSignal.Wait(Timeout.Infinite);
-                    log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
-                    consumerGroupHost.Stop();
+                    using (consumerApplication.Initialize(log, environmentVariables))
+                    {
+                        log.Info($"Consumer application is started: {typeof (TConsumerApp).Name}");
+                        stopSignal.Wait(Timeout.Infinite);
+                        log.Info($"Stopping consumer group host for: {typeof (TConsumerApp).Name}");
+                    }
                 }
                 log.Info($"Consumer application is stopped: {typeof (TConsumerApp).Name}");
                 terminationSignal.Set();
@@ -60,11 +60,6 @@ namespace Vostok.AirlockConsumer
                 log.Fatal("Unhandled exception on the main thread", e);
                 Environment.Exit(3);
             }
-        }
-
-        public void Stop()
-        {
-            stopSignal.Set();
         }
     }
 }

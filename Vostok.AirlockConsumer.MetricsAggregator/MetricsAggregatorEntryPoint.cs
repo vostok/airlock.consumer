@@ -22,7 +22,7 @@ namespace Vostok.AirlockConsumer.MetricsAggregator
         {
             routingKeyFilter = new MetricsAggregatorRotingKeyFilter();
             var settings = new MetricsAggregatorSettings();
-            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, AirlockClient, settings);
+            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, new MetricSender(GraphiteSink, log), settings);
         }
     }
 }
