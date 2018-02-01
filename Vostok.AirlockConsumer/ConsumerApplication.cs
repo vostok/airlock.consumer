@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using Vostok.Airlock;
-using Vostok.Clusterclient.Topology;
 using Vostok.Graphite.Client;
 using Vostok.Graphite.Reporter;
 using Vostok.Logging;
@@ -13,11 +11,9 @@ namespace Vostok.AirlockConsumer
     public abstract class ConsumerApplication : IDisposable
     {
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
-        private const string defaultAirlockGateEndpoints = "http://gate:6306";
-        private const string defaultAirlockGateApiKey = "UniversalApiKey";
         private const string defaultGraphiteEndpoint = "graphite:2003";
-        protected IAirlockClient AirlockClient;
         private ConsumerMetrics consumerMetrics;
+        private GraphiteSink graphiteSink;
 
         protected abstract string ServiceName { get; }
 
@@ -25,8 +21,6 @@ namespace Vostok.AirlockConsumer
 
         public ConsumerGroupHost Initialize(ILog log, AirlockEnvironmentVariables environmentVariables)
         {
-            AirlockClient = CreateAirlockClient(log, environmentVariables);
-
             var environment = environmentVariables.GetValue("VOSTOK_ENV", "dev");
             var metricRoutingKeyPrefix = RoutingKey.CreatePrefix("vostok", environment, ServiceName);
             var graphiteUri = GetGraphiteUri(log, environmentVariables);
@@ -36,11 +30,11 @@ namespace Vostok.AirlockConsumer
                 GraphitePort = graphiteUri.Port
             };
             log.Info($"GraphiteSinkConfig: {graphiteSinkConfig.ToPrettyJson()}");
-            IMetricScope rootMetricScope = new RootMetricScope(
-                new MetricConfiguration
-                {
-                    Reporter = new GraphiteMetricReporter(new GraphiteSink(graphiteSinkConfig, log), metricRoutingKeyPrefix, log)
-                });
+            graphiteSink = new GraphiteSink(graphiteSinkConfig, log);
+            var rootMetricScope = new RootMetricScope(new MetricConfiguration
+            {
+                Reporter = new GraphiteMetricReporter(graphiteSink, metricRoutingKeyPrefix, log)
+            });
             var consumerGroupHostSettings = GetConsumerGroupHostSettings(log, environmentVariables);
             consumerMetrics = new ConsumerMetrics(consumerGroupHostSettings.FlushMetricsInterval, rootMetricScope);
 
@@ -49,33 +43,20 @@ namespace Vostok.AirlockConsumer
             return new ConsumerGroupHost(consumerGroupHostSettings, log, consumerMetrics, routingKeyFilter, processorProvider);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             consumerMetrics?.Dispose();
-            (AirlockClient as IDisposable)?.Dispose();
+            graphiteSink?.Dispose();
         }
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);
 
-        private static IAirlockClient CreateAirlockClient(ILog log, AirlockEnvironmentVariables environmentVariables)
+        protected static Uri GetGraphiteUri(ILog log, AirlockEnvironmentVariables environmentVariables)
         {
-            var airlockConfig = GetAirlockConfig(log, environmentVariables);
-            var airlockClientLog = Logging.Configure("./log/airlock-{Date}.log", writeToConsole: false);
-            return new AirlockClient(airlockConfig, airlockClientLog);
-        }
-
-        private static AirlockConfig GetAirlockConfig(ILog log, AirlockEnvironmentVariables environmentVariables)
-        {
-            var airlockGateApiKey = environmentVariables.GetValue("GATE_API_KEY", defaultAirlockGateApiKey);
-            var airlockGateEndpoints = environmentVariables.GetValue("GATE_ENDPOINTS", defaultAirlockGateEndpoints);
-            var airlockGateUris = airlockGateEndpoints.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries).Select(x => new Uri(x)).ToArray();
-            var airlockConfig = new AirlockConfig
-            {
-                ApiKey = airlockGateApiKey,
-                ClusterProvider = new FixedClusterProvider(airlockGateUris),
-            };
-            log.Info($"AirlockConfig: {airlockConfig.ToPrettyJson()}");
-            return airlockConfig;
+            var graphiteEndpoint = environmentVariables.GetValue("GRAPHITE_ENDPOINT", defaultGraphiteEndpoint);
+            var graphiteUri = new Uri($"tcp://{graphiteEndpoint}");
+            log.Info($"GraphiteUri: {graphiteUri}");
+            return graphiteUri;
         }
 
         private ConsumerGroupHostSettings GetConsumerGroupHostSettings(ILog log, AirlockEnvironmentVariables environmentVariables)
@@ -86,14 +67,6 @@ namespace Vostok.AirlockConsumer
             var consumerGroupHostSettings = new ConsumerGroupHostSettings(kafkaBootstrapEndpoints, consumerGroupId, ProcessorHostSettings, autoResetOffsetPolicy);
             log.Info($"ConsumerGroupHostSettings: {consumerGroupHostSettings.ToPrettyJson()}");
             return consumerGroupHostSettings;
-        }
-
-        protected static Uri GetGraphiteUri(ILog log, AirlockEnvironmentVariables environmentVariables)
-        {
-            var graphiteEndpoint = environmentVariables.GetValue("GRAPHITE_ENDPOINT", defaultGraphiteEndpoint);
-            var graphiteUri = new Uri($"tcp://{graphiteEndpoint}");
-            log.Info($"GraphiteUri: {graphiteUri}");
-            return graphiteUri;
         }
     }
 }

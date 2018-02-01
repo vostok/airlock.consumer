@@ -82,12 +82,6 @@ namespace Vostok.AirlockConsumer
             consumer.OnPartitionsRevoked += (_, topicPartitions) => { OnPartitionsRevoked(topicPartitions); };
             consumer.OnPartitionsAssigned += (_, topicPartitions) => { OnPartitionsAssigned(topicPartitions); };
             consumer.OnMessage += (_, message) => OnMessage(message);
-        }
-
-        public void Start()
-        {
-            if (pollingThread != null)
-                throw new InvalidOperationException("ConsumerGroupHost has been already run");
             pollingThread = new Thread(PollingThreadFunc)
             {
                 IsBackground = true,
@@ -96,17 +90,8 @@ namespace Vostok.AirlockConsumer
             pollingThread.Start();
         }
 
-        public void Stop()
-        {
-            if (pollingThread == null)
-                throw new InvalidOperationException("ConsumerGroupHost is not started");
-            Dispose();
-        }
-
         public void Dispose()
         {
-            if (pollingThread == null)
-                return;
             cancellationTokenSource.Cancel();
             pollingThread.Join();
             consumer.Dispose();

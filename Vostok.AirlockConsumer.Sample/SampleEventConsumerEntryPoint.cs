@@ -91,10 +91,11 @@ namespace Vostok.AirlockConsumer.Sample
                 });
             var consumerMetrics = new ConsumerMetrics(settings.FlushMetricsInterval, rootMetricScope);
 
-            var consumer = new ConsumerGroupHost(settings, log, consumerMetrics, routingKeyFilter, processorProvider);
-            consumer.Start();
-            stopSignal.Wait(Timeout.Infinite);
-            consumer.Stop();
+            using (new ConsumerGroupHost(settings, log, consumerMetrics, routingKeyFilter, processorProvider))
+            {
+                stopSignal.Wait(Timeout.Infinite);
+            }
+
             log.Info("Consumer finished");
         }
 
