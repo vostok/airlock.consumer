@@ -21,9 +21,9 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
         [Test]
         public void HttpServerTracesAggregationTest()
         {
-            var metricSender = Substitute.For<IMetricSender>();
+            var airlockClient = Substitute.For<IAirlockClient>();
             var pushed = new List<MetricEvent>();
-            metricSender.When(x => x.SendMetric(Arg.Any<string>(), Arg.Any<MetricEvent>())).Do(x => pushed.Add(x.ArgAt<MetricEvent>(1)));
+            airlockClient.When(x => x.Push(Arg.Any<string>(), Arg.Any<MetricEvent>(), Arg.Any<DateTimeOffset?>())).Do(x => pushed.Add(x.ArgAt<MetricEvent>(1)));
 
             var metricScope = Substitute.For<IMetricScope>();
 
@@ -32,7 +32,7 @@ namespace Vostok.AirlockConsumer.UnitTests.Aggregation
                 MetricAggregationPastGap = 10.Milliseconds(),
                 MetricResetDaemonIterationPeriod = 100.Milliseconds()
             };
-            var processor = new MetricsAggregatorProcessor(metricSender, metricScope, metricsAggregatorSettings, routingKey);
+            var processor = new MetricsAggregatorProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey);
             processor.GetStartTimestampOnRebalance(routingKey);
             const int eventCount = 10;
             var spans = GenerateSpans(eventCount);

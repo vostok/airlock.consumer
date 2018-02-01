@@ -13,7 +13,7 @@ namespace Vostok.AirlockConsumer
         private const string defaultKafkaBootstrapEndpoints = "kafka:9092";
         private const string defaultGraphiteEndpoint = "graphite:2003";
         private ConsumerMetrics consumerMetrics;
-        protected GraphiteSink GraphiteSink;
+        private GraphiteSink graphiteSink;
 
         protected abstract string ServiceName { get; }
 
@@ -30,8 +30,8 @@ namespace Vostok.AirlockConsumer
                 GraphitePort = graphiteUri.Port
             };
             log.Info($"GraphiteSinkConfig: {graphiteSinkConfig.ToPrettyJson()}");
-            GraphiteSink = new GraphiteSink(graphiteSinkConfig, log);
-            var graphiteMetricReporter = new GraphiteMetricReporter(GraphiteSink, metricRoutingKeyPrefix, log);
+            graphiteSink = new GraphiteSink(graphiteSinkConfig, log);
+            var graphiteMetricReporter = new GraphiteMetricReporter(graphiteSink, metricRoutingKeyPrefix, log);
             IMetricScope rootMetricScope = new RootMetricScope(
                 new MetricConfiguration
                 {
@@ -45,10 +45,10 @@ namespace Vostok.AirlockConsumer
             return new ConsumerGroupHost(consumerGroupHostSettings, log, consumerMetrics, routingKeyFilter, processorProvider);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             consumerMetrics?.Dispose();
-            GraphiteSink?.Dispose();
+            graphiteSink?.Dispose();
         }
 
         protected abstract void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider);

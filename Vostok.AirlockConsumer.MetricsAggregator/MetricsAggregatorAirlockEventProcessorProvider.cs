@@ -1,26 +1,27 @@
-﻿using Vostok.Metrics;
+﻿using Vostok.Airlock;
+using Vostok.Metrics;
 
 namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricsAggregatorAirlockEventProcessorProvider : IAirlockEventProcessorProvider
     {
         private readonly IMetricScope rootMetricScope;
-        private readonly IMetricSender metricSender;
+        private readonly IAirlockClient airlockClient;
         private readonly MetricsAggregatorSettings settings;
 
         public MetricsAggregatorAirlockEventProcessorProvider(
             IMetricScope rootMetricScope,
-            IMetricSender metricSender,
+            IAirlockClient airlockClient,
             MetricsAggregatorSettings settings)
         {
             this.rootMetricScope = rootMetricScope;
-            this.metricSender = metricSender;
+            this.airlockClient = airlockClient;
             this.settings = settings;
         }
 
         public IAirlockEventProcessor GetProcessor(string routingKey)
         {
-            return new MetricsAggregatorProcessor(metricSender, rootMetricScope, settings, routingKey);
+            return new MetricsAggregatorProcessor(airlockClient, rootMetricScope, settings, routingKey);
         }
     }
 }
