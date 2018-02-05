@@ -18,7 +18,7 @@ namespace Vostok.AirlockConsumer
             AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
             {
                 log.Fatal("Unhandled exception in curreant AppDomain", (Exception) eventArgs.ExceptionObject);
-                Environment.Exit(1);
+                Environment.ExitCode = 1;
             };
             TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
             {
@@ -37,7 +37,7 @@ namespace Vostok.AirlockConsumer
                 stopSignal.Set();
                 terminationSignal.Wait(Timeout.Infinite);
                 log.Info("Termination signal is set -> exiting...");
-                Environment.Exit(0);
+                Environment.ExitCode = 0;
             };
             try
             {
@@ -58,7 +58,7 @@ namespace Vostok.AirlockConsumer
             catch (Exception e)
             {
                 log.Fatal("Unhandled exception on the main thread", e);
-                Environment.Exit(3);
+                Environment.ExitCode = 3;
             }
         }
     }
