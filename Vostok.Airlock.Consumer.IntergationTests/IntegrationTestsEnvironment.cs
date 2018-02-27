@@ -6,6 +6,7 @@ using Vostok.Clusterclient.Topology;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Logging;
 using Vostok.Logging.Logs;
+using Vostok.Metrics;
 
 namespace Vostok.Airlock.Consumer.IntergationTests
 {
@@ -27,9 +28,12 @@ namespace Vostok.Airlock.Consumer.IntergationTests
                 foreach (var @event in events)
                     airlockClient.Push(routingKey, @event, getTimestamp(@event));
             }
-            Log.Debug($"SentItemsCount: {airlockClient.SentItemsCount}, LostItemsCount: {airlockClient.LostItemsCount}, Elapsed: {sw.Elapsed}");
-            airlockClient.LostItemsCount.Should().Be(0);
-            airlockClient.SentItemsCount.Should().Be(events.Length);
+
+            var airlockClientCounters = airlockClient.Counters;
+            Log.Debug($"SentItemsCount: {airlockClientCounters.SentItems.GetValue()}, LostItemsCount: {airlockClientCounters.LostItems.GetValue()}, Elapsed: {sw.Elapsed}");
+            airlockClientCounters.LostItems.GetValue().Should().Be(0);
+            airlockClientCounters.SentItems.GetValue().Should().Be(events.Length);
+            MetricClocks.Stop();
         }
 
         private static ParallelAirlockClient CreateAirlockClient()
@@ -53,7 +57,7 @@ namespace Vostok.Airlock.Consumer.IntergationTests
                 MaximumMemoryConsumption = 300.Megabytes(),
                 InitialPooledBufferSize = 10.Megabytes(),
                 InitialPooledBuffersCount = 10,
-                EnableTracing = false,
+                EnableTracing = false
             };
             Log.Debug($"AirlockConfig: {airlockConfig.ToPrettyJson()}");
             return airlockConfig;

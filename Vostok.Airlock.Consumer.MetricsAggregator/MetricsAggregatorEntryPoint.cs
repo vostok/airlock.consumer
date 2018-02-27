@@ -10,7 +10,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
     {
         private const string defaultAirlockGateEndpoints = "http://gate:6306";
         private const string defaultAirlockGateApiKey = "UniversalApiKey";
-        private AirlockClient airlockClient;
+        private IAirlockClient airlockClient;
 
         public static void Main()
         {
@@ -33,17 +33,17 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
-            airlockClient = CreateAirlockClient(log, environmentVariables);
+            airlockClient = CreateAirlockClient(log, environmentVariables, rootMetricScope);
             routingKeyFilter = new MetricsAggregatorRotingKeyFilter();
             var settings = new MetricsAggregatorSettings();
             processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, airlockClient, settings);
         }
 
-        private static AirlockClient CreateAirlockClient(ILog log, AirlockEnvironmentVariables environmentVariables)
+        private static IAirlockClient CreateAirlockClient(ILog log, AirlockEnvironmentVariables environmentVariables, IMetricScope rootMetricScope)
         {
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
             var airlockClientLog = Logging.Configure("./log/airlock-{Date}.log", writeToConsole: false);
-            return new AirlockClient(airlockConfig, airlockClientLog);
+            return AirlockClientFactory.CreateAirlockClient(airlockConfig, airlockClientLog, rootMetricScope);
         }
 
         private static AirlockConfig GetAirlockConfig(ILog log, AirlockEnvironmentVariables environmentVariables)
@@ -55,6 +55,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             {
                 ApiKey = airlockGateApiKey,
                 ClusterProvider = new FixedClusterProvider(airlockGateUris),
+                EnableMetrics = true
             };
             log.Info($"AirlockConfig: {airlockConfig.ToPrettyJson()}");
             return airlockConfig;
