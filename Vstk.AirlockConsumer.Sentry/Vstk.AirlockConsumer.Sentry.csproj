@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="VostokSharpRaven" Version="1.0.0.18" />
+    <PackageReference Include="Serilog" Version="2.5.0" />
+    <Reference Include="Vstk.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.core\Vstk.Core\bin\Release\netstandard2.0\Vstk.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Airlock.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.airlock.client\Vstk.Airlock.Client\bin\Release\netstandard2.0\Vstk.Airlock.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Logging.Serilog">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.logging.serilog\Vstk.Logging.Serilog\bin\Release\netstandard2.0\Vstk.Logging.Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Graphite.Reporter">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.graphite.reporter\Vstk.Graphite.Reporter\bin\Release\netstandard2.0\Vstk.Graphite.Reporter.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Graphite.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.graphite.reporter\Vstk.Graphite.Client\bin\Release\netstandard2.0\Vstk.Graphite.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.core\Vstk.Core\bin\Release\netstandard2.0\Vstk.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.ClusterClient">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.clusterclient\Vstk.ClusterClient\bin\Release\netstandard2.0\Vstk.ClusterClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.ClusterClient.Transport.Http">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.clusterclient.transport.http\Vstk.ClusterClient.Transport.Http\bin\Release\netstandard2.0\Vstk.ClusterClient.Transport.Http.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vstk.AirlockConsumer\Vstk.AirlockConsumer.csproj" />
+  </ItemGroup>
+
+</Project>

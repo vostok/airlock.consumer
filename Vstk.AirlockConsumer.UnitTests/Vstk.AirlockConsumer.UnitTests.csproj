@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="NUnit" Version="3.9.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="FluentAssertions" Version="4.19.4" />
+    <PackageReference Include="NSubstitute" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Vstk.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.core\Vstk.Core\bin\Release\netstandard2.0\Vstk.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Airlock.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.airlock.client\Vstk.Airlock.Client\bin\Release\netstandard2.0\Vstk.Airlock.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Vstk.Contrails.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vstk.contrails.api\Vstk.Contrails.Client\bin\Release\netstandard2.0\Vstk.Contrails.Client.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vstk.AirlockConsumer.MetricsAggregator\Vstk.AirlockConsumer.MetricsAggregator.csproj" />
+    <ProjectReference Include="..\Vstk.AirlockConsumer.Sentry\Vstk.AirlockConsumer.Sentry.csproj" />
+    <ProjectReference Include="..\Vstk.AirlockConsumer.Tracing\Vstk.AirlockConsumer.Tracing.csproj" />
+    <ProjectReference Include="..\Vstk.AirlockConsumer\Vstk.AirlockConsumer.csproj" />
+    <ProjectReference Include="..\Vstk.AirlockConsumer.Logs\Vstk.AirlockConsumer.Logs.csproj" />
+    <ProjectReference Include="..\Vstk.AirlockConsumer.Metrics\Vstk.AirlockConsumer.Metrics.csproj" />
+  </ItemGroup>
+
+</Project>
