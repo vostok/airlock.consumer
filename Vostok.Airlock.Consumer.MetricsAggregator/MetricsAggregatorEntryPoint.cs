@@ -43,7 +43,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
         {
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
             var airlockClientLog = Logging.Configure("./log/airlock-{Date}.log", writeToConsole: false);
-            return AirlockClientFactory.CreateAirlockClient(airlockConfig, airlockClientLog, rootMetricScope);
+            return new AirlockClient(airlockConfig, airlockClientLog, rootMetricScope);
         }
 
         private static AirlockConfig GetAirlockConfig(ILog log, AirlockEnvironmentVariables environmentVariables)

@@ -22,7 +22,7 @@ namespace Vostok.Airlock.Consumer.IntergationTests
         {
             Log.Debug($"Pushing {events.Length} events to airlock");
             var sw = Stopwatch.StartNew();
-            ParallelAirlockClient airlockClient;
+            AirlockClient airlockClient;
             using (airlockClient = CreateAirlockClient())
             {
                 foreach (var @event in events)
@@ -36,10 +36,10 @@ namespace Vostok.Airlock.Consumer.IntergationTests
             MetricClocks.Stop();
         }
 
-        private static ParallelAirlockClient CreateAirlockClient()
+        private static AirlockClient CreateAirlockClient()
         {
             var airlockConfig = GetAirlockConfig();
-            return new ParallelAirlockClient(airlockConfig, 10, Log.FilterByLevel(LogLevel.Warn));
+            return new AirlockClient(airlockConfig, Log.FilterByLevel(LogLevel.Warn));
         }
 
         private static AirlockConfig GetAirlockConfig()
@@ -57,7 +57,9 @@ namespace Vostok.Airlock.Consumer.IntergationTests
                 MaximumMemoryConsumption = 300.Megabytes(),
                 InitialPooledBufferSize = 10.Megabytes(),
                 InitialPooledBuffersCount = 10,
-                EnableTracing = false
+                EnableTracing = false,
+                Parallelism = 10,
+                EnableMetrics = false
             };
             Log.Debug($"AirlockConfig: {airlockConfig.ToPrettyJson()}");
             return airlockConfig;
