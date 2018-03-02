@@ -117,10 +117,13 @@ namespace Vstk.AirlockConsumer.Logs
                 indexRecord.Add("Exception", exception);
             }
 
-            foreach (var kvp in @event.Payload.Properties)
+            if (@event.Payload.Properties != null)
             {
-                if (!indexRecord.ContainsKey(kvp.Key))
-                    indexRecord.Add(kvp.Key, kvp.Value);
+                foreach (var kvp in @event.Payload.Properties)
+                {
+                    if (!indexRecord.ContainsKey(kvp.Key))
+                        indexRecord.Add(kvp.Key, kvp.Value);
+                }
             }
 
             return indexRecord;
