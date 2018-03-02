@@ -20,9 +20,10 @@ namespace Vostok.Airlock.Consumer.Tests.Aggregation
         [Test]
         public void HttpServerTracesAggregationTest()
         {
-            var airlockClient = Substitute.For<IAirlockClient>();
+            var airlockClient = Substitute.For<IAirlockBatchClient>();
             var pushed = new List<MetricEvent>();
-            airlockClient.When(x => x.Push(Arg.Any<string>(), Arg.Any<MetricEvent>(), Arg.Any<DateTimeOffset?>())).Do(x => pushed.Add(x.ArgAt<MetricEvent>(1)));
+            airlockClient.When(x => x.PushAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<Tuple<MetricEvent, DateTimeOffset>>>()))
+                .Do(x => pushed.AddRange(x.ArgAt<IReadOnlyList<Tuple<MetricEvent, DateTimeOffset>>>(1).Select(t => t.Item1)));
 
             var metricScope = Substitute.For<IMetricScope>();
 

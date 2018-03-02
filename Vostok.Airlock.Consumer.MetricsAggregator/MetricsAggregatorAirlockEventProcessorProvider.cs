@@ -5,12 +5,12 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
     public class MetricsAggregatorAirlockEventProcessorProvider : IAirlockEventProcessorProvider
     {
         private readonly IMetricScope rootMetricScope;
-        private readonly IAirlockClient airlockClient;
+        private readonly IAirlockBatchClient airlockClient;
         private readonly MetricsAggregatorSettings settings;
 
         public MetricsAggregatorAirlockEventProcessorProvider(
             IMetricScope rootMetricScope,
-            IAirlockClient airlockClient,
+            IAirlockBatchClient airlockClient,
             MetricsAggregatorSettings settings)
         {
             this.rootMetricScope = rootMetricScope;

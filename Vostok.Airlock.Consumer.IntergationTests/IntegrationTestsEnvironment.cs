@@ -55,7 +55,7 @@ namespace Vostok.Airlock.Consumer.IntergationTests
                 MaximumRecordSize = 1.Kilobytes(),
                 MaximumBatchSizeToSend = 300.Megabytes(),
                 MaximumMemoryConsumption = 300.Megabytes(),
-                InitialPooledBufferSize = 10.Megabytes(),
+                InitialPooledBufferSize = 1.Megabytes(),
                 InitialPooledBuffersCount = 10,
                 EnableTracing = false,
                 Parallelism = 10,

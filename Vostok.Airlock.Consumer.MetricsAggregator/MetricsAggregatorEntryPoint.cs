@@ -10,17 +10,11 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
     {
         private const string defaultAirlockGateEndpoints = "http://gate:6306";
         private const string defaultAirlockGateApiKey = "UniversalApiKey";
-        private IAirlockClient airlockClient;
+        private IAirlockBatchClient airlockClient;
 
         public static void Main()
         {
             new ConsumerApplicationHost<MetricsAggregatorEntryPoint>().Run();
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            airlockClient?.Dispose();
         }
 
         protected override string ServiceName => "metrics-aggregator";
@@ -33,17 +27,17 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
-            airlockClient = CreateAirlockClient(log, environmentVariables, rootMetricScope);
+            airlockClient = CreateAirlockClient(log, environmentVariables);
             routingKeyFilter = new MetricsAggregatorRotingKeyFilter();
             var settings = new MetricsAggregatorSettings();
             processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, airlockClient, settings);
         }
 
-        private static IAirlockClient CreateAirlockClient(ILog log, AirlockEnvironmentVariables environmentVariables, IMetricScope rootMetricScope)
+        private static IAirlockBatchClient CreateAirlockClient(ILog log, AirlockEnvironmentVariables environmentVariables)
         {
             var airlockConfig = GetAirlockConfig(log, environmentVariables);
             var airlockClientLog = Logging.Configure("./log/airlock-{Date}.log", writeToConsole: false);
-            return new AirlockClient(airlockConfig, airlockClientLog, rootMetricScope);
+            return new AirlockBatchClient(airlockConfig, airlockClientLog);
         }
 
         private static AirlockConfig GetAirlockConfig(ILog log, AirlockEnvironmentVariables environmentVariables)

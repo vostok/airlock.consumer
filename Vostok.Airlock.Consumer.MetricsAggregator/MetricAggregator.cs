@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
 
@@ -11,7 +13,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
     {
         private readonly AggregatorMetrics aggregatorMetrics;
         private readonly IBucketKeyProvider bucketKeyProvider;
-        private readonly IAirlockClient airlockClient;
+        private readonly IAirlockBatchClient airlockClient;
         private readonly TimeSpan cooldownPeriod;
         private readonly ConcurrentDictionary<BucketKey, IBucket> buckets;
         private readonly string metricsRoutingKey;
@@ -20,7 +22,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
         public MetricAggregator(
             IMetricScope metricScope,
             IBucketKeyProvider bucketKeyProvider,
-            IAirlockClient airlockClient,
+            IAirlockBatchClient airlockClient,
             TimeSpan cooldownPeriod,
             Borders borders,
             string eventsRoutingKey)
@@ -50,20 +52,14 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             }
         }
 
-        public void Flush(Borders nextBorders)
+        public async Task Flush(Borders nextBorders)
         {
             Interlocked.Exchange(ref borders, nextBorders);
             foreach (var bucket in buckets)
             {
                 var metrics = bucket.Value.Flush(nextBorders);
-                PushToAirlock(metrics);
+                await airlockClient.PushAsync(metricsRoutingKey, metrics.Select(x => new Tuple<MetricEvent, DateTimeOffset>(x, x.Timestamp)).ToArray());
             }
-        }
-
-        private void PushToAirlock(IEnumerable<MetricEvent> metrics)
-        {
-            foreach (var metricEvent in metrics)
-                airlockClient.Push(metricsRoutingKey, metricEvent);
         }
 
         public void Dispose()

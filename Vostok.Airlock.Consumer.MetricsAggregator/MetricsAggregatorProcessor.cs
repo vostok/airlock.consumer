@@ -13,7 +13,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
     {
         private readonly MetricEventSerializer metricEventSerializer = new MetricEventSerializer();
         private readonly SpanAirlockSerializer spanAirlockSerializer = new SpanAirlockSerializer();
-        private readonly IAirlockClient airlockClient;
+        private readonly IAirlockBatchClient airlockClient;
         private readonly IMetricScope rootMetricScope;
         private readonly MetricsAggregatorSettings settings;
         private readonly string eventsRoutingKey;
@@ -24,7 +24,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
         private bool started;
 
         public MetricsAggregatorProcessor(
-            IAirlockClient airlockClient,
+            IAirlockBatchClient airlockClient,
             IMetricScope rootMetricScope,
             MetricsAggregatorSettings settings,
             string eventsRoutingKey)
