@@ -17,6 +17,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
         private readonly IMetricScope rootMetricScope;
         private readonly MetricsAggregatorSettings settings;
         private readonly string eventsRoutingKey;
+        private readonly ILog log;
         private IEventsTimestampProvider eventsTimestampProvider;
         private MetricAggregator aggregator;
         private MetricResetDaemon resetDaemon;
@@ -27,12 +28,14 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             IAirlockBatchClient airlockClient,
             IMetricScope rootMetricScope,
             MetricsAggregatorSettings settings,
-            string eventsRoutingKey)
+            string eventsRoutingKey,
+            ILog log)
         {
             this.airlockClient = airlockClient;
             this.rootMetricScope = rootMetricScope;
             this.settings = settings;
             this.eventsRoutingKey = eventsRoutingKey;
+            this.log = log;
         }
 
         public string ProcessorId => nameof(MetricsAggregatorProcessor);
@@ -51,7 +54,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
                 airlockClient,
                 settings.MetricAggregationPastGap,
                 initialBorders,
-                routingKey);
+                routingKey, log);
             resetDaemon = new MetricResetDaemon(eventsTimestampProvider, settings, aggregator);
             resetDaemonTask = resetDaemon.StartAsync(initialBorders);
             return initialBorders.Past;

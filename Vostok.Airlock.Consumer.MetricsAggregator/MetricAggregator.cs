@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
+using Vstk.RetriableCall;
 
 namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
@@ -18,6 +19,8 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
         private readonly ConcurrentDictionary<BucketKey, IBucket> buckets;
         private readonly string metricsRoutingKey;
         private Borders borders;
+        private readonly ILog log;
+        private readonly RetriableCallStrategy callStrategy = new RetriableCallStrategy();
 
         public MetricAggregator(
             IMetricScope metricScope,
@@ -25,7 +28,8 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             IAirlockBatchClient airlockClient,
             TimeSpan cooldownPeriod,
             Borders borders,
-            string eventsRoutingKey)
+            string eventsRoutingKey,
+            ILog log)
         {
             aggregatorMetrics = new AggregatorMetrics(metricScope.WithTags(new Dictionary<string, string>
             {
@@ -35,6 +39,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             this.airlockClient = airlockClient;
             this.cooldownPeriod = cooldownPeriod;
             this.borders = borders;
+            this.log = log;
             metricsRoutingKey = RoutingKey.ReplaceSuffix(eventsRoutingKey, RoutingKey.MetricsSuffix);
             buckets = new ConcurrentDictionary<BucketKey, IBucket>();
         }
@@ -58,7 +63,9 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             foreach (var bucket in buckets)
             {
                 var metrics = bucket.Value.Flush(nextBorders);
-                await airlockClient.PushAsync(metricsRoutingKey, metrics.Select(x => new Tuple<MetricEvent, DateTimeOffset>(x, x.Timestamp)).ToArray());
+                var metricsWithTs = metrics.Select(x => new Tuple<MetricEvent, DateTimeOffset>(x, x.Timestamp)).ToArray();
+                await callStrategy.CallAsync(async () => await airlockClient.PushAsync(metricsRoutingKey, metricsWithTs), 
+                    ex => ex is AirlockException aex && aex.SendResult==RequestSendResult.IntermittentFailure, log);
             }
         }
 

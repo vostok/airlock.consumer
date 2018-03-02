@@ -32,7 +32,7 @@ namespace Vostok.Airlock.Consumer.Tests.Aggregation
                 MetricAggregationPastGap = 10.Milliseconds(),
                 MetricResetDaemonIterationPeriod = 100.Milliseconds()
             };
-            var processor = new MetricsAggregatorProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey);
+            var processor = new MetricsAggregatorProcessor(airlockClient, metricScope, metricsAggregatorSettings, routingKey, new ConsoleLog());
             processor.GetStartTimestampOnRebalance(routingKey);
             const int eventCount = 10;
             var spans = GenerateSpans(eventCount);

@@ -30,7 +30,7 @@ namespace Vostok.Airlock.Consumer.MetricsAggregator
             airlockClient = CreateAirlockClient(log, environmentVariables);
             routingKeyFilter = new MetricsAggregatorRotingKeyFilter();
             var settings = new MetricsAggregatorSettings();
-            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, airlockClient, settings);
+            processorProvider = new MetricsAggregatorAirlockEventProcessorProvider(rootMetricScope, airlockClient, settings, log);
         }
 
         private static IAirlockBatchClient CreateAirlockClient(ILog log, AirlockEnvironmentVariables environmentVariables)
