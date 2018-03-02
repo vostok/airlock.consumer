@@ -7,7 +7,7 @@ namespace Vstk.AirlockConsumer.Sentry
 {
     public class SentryAirlockEntryPoint : ConsumerApplication
     {
-        private const string defaultSentryUrl = "http://vstk-sentry:9000";
+        private const string defaultSentryUrl = "http://vostok-sentry:9000";
         private const string defaultSentryToken = "f61df24ac3864c55bbda24bfe68aea0c051ed4786d13475c93dd6d1534280a75";
 
         public static void Main()

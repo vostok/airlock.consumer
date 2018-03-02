@@ -22,7 +22,7 @@ namespace Vstk.AirlockConsumer
         public ConsumerGroupHost Initialize(ILog log, AirlockEnvironmentVariables environmentVariables)
         {
             var environment = environmentVariables.GetValue("VOSTOK_ENV", "dev");
-            var metricRoutingKeyPrefix = RoutingKey.CreatePrefix("vstk", environment, ServiceName);
+            var metricRoutingKeyPrefix = RoutingKey.CreatePrefix("vostok", environment, ServiceName);
             var graphiteUri = GetGraphiteUri(log, environmentVariables);
             var graphiteSinkConfig = new GraphiteSinkConfig
             {
