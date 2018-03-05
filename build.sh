@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 cd ..
-curl https://github.com/skbkontur/cement/releases/download/v1.0.22/e6257f9699a456f4d1626424ab90d2cb27337188.zip -O -J -L
+curl https://github.com/skbkontur/cement/releases/download/v1.0.28/19fce5bb72c28c461c2114310eceaa6ed85be457.zip -O -J -L
 mkdir ./cement
-unzip -o e6257f9699a456f4d1626424ab90d2cb27337188.zip -d ./cement
+unzip -o 19fce5bb72c28c461c2114310eceaa6ed85be457.zip -d ./cement
+mono ../cement/dotnet/cm.exe reinstall
 mono ../cement/dotnet/cm.exe init
 curl https://raw.githubusercontent.com/vostok/cement-modules/master/settings -O -J -L
 /bin/cp ./settings ~/.cement/
