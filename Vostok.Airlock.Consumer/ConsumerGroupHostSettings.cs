@@ -22,9 +22,9 @@ namespace Vostok.Airlock.Consumer
         public AutoResetOffsetPolicy AutoResetOffsetPolicy { get; }
         public TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(100);
         public TimeSpan UpdateSubscriptionInterval { get; } = TimeSpan.FromSeconds(30);
-        public TimeSpan UpdateSubscriptionTimeout { get; } = TimeSpan.FromSeconds(10);
         public TimeSpan FlushMetricsInterval { get; } = TimeSpan.FromMinutes(1);
-        public TimeSpan OffsetsForTimesTimeout { get; } = TimeSpan.FromSeconds(10);
+        public TimeSpan ReadFromKafkaTimeout { get; } = TimeSpan.FromSeconds(10);
+        public TimeSpan OffsetForNewTopics { get; } = TimeSpan.FromMinutes(10);
         public string ConsumerGroupHostId => $"{ConsumerGroupId}-{ClientId}";
 
         public Dictionary<string, object> GetConsumerConfig()
