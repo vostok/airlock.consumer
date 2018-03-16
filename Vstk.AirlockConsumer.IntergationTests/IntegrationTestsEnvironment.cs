@@ -12,7 +12,7 @@ namespace Vstk.AirlockConsumer.IntergationTests
 {
     public static class IntegrationTestsEnvironment
     {
-        public const string Project = "vostok";
+        public const string Project = "Vostok";
         public const string Environment = "ci";
         private const string airlockGateEndpoints = "http://localhost:6306";
 
