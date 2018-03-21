@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vstk.AirlockConsumer.Logs
+namespace Vostok.AirlockConsumer.Logs
 {
     internal static class StringExtentions
     {

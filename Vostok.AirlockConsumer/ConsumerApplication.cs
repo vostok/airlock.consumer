@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Net;
-using Vstk.Airlock;
-using Vstk.Graphite.Client;
-using Vstk.Graphite.Reporter;
-using Vstk.Logging;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Graphite.Client;
+using Vostok.Graphite.Reporter;
+using Vostok.Logging;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public abstract class ConsumerApplication : IDisposable
     {

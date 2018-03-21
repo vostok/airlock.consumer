@@ -1,4 +1,4 @@
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public interface IRoutingKeyFilter
     {

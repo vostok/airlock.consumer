@@ -1,4 +1,4 @@
-﻿namespace Vstk.AirlockConsumer.Sentry
+﻿namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryTeam
     {

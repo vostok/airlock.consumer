@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class BucketKey : IEquatable<BucketKey>
     {

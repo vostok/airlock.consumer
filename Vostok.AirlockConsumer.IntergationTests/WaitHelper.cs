@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.Threading;
 using JetBrains.Annotations;
-using Vstk.Logging;
+using Vostok.Logging;
 
-namespace Vstk.AirlockConsumer.IntergationTests
+namespace Vostok.AirlockConsumer.IntergationTests
 {
     public static class WaitHelper
     {

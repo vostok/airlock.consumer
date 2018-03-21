@@ -1,10 +1,10 @@
 using Serilog;
 using Serilog.Events;
-using Vstk.Logging;
-using Vstk.Logging.Serilog;
-using Vstk.Logging.Serilog.Enrichers;
+using Vostok.Logging;
+using Vostok.Logging.Serilog;
+using Vostok.Logging.Serilog.Enrichers;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public static class Logging
     {

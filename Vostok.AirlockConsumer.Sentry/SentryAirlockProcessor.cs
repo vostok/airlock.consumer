@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SharpRaven.Data;
-using Vstk.Airlock.Logging;
-using Vstk.Logging;
-using Vstk.Metrics.Meters;
+using Vostok.Airlock.Logging;
+using Vostok.Logging;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryAirlockProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {

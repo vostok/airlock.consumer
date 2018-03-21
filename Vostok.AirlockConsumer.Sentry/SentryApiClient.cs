@@ -4,10 +4,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
-using Vstk.Logging;
-using Vstk.RetriableCall;
+using Vostok.Logging;
+using Vostok.RetriableCall;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryApiClient
     {

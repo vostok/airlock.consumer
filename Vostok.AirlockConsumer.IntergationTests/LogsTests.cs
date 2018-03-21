@@ -5,11 +5,11 @@ using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using Vstk.Airlock;
-using Vstk.Airlock.Logging;
-using Vstk.Logging;
+using Vostok.Airlock;
+using Vostok.Airlock.Logging;
+using Vostok.Logging;
 
-namespace Vstk.AirlockConsumer.IntergationTests
+namespace Vostok.AirlockConsumer.IntergationTests
 {
     public class LogsTests
     {

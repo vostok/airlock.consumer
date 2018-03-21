@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Vstk.Airlock;
+using Vostok.Airlock;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class DefaultAirlockEventProcessor<T> : IAirlockEventProcessor
     {

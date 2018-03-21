@@ -1,9 +1,9 @@
 ﻿using System;
-using Vstk.Commons.Extensions.UnitConvertions;
-using Vstk.Metrics;
-using Vstk.Metrics.Meters;
+using Vostok.Commons.Extensions.UnitConvertions;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class AggregatorMetrics : IDisposable
     {

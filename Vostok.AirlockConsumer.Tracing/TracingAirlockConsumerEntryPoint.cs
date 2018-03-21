@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
-using Vstk.Airlock;
-using Vstk.Airlock.Tracing;
-using Vstk.Contrails.Client;
-using Vstk.Logging;
-using Vstk.Metrics;
-using Vstk.Tracing;
+using Vostok.Airlock;
+using Vostok.Airlock.Tracing;
+using Vostok.Contrails.Client;
+using Vostok.Logging;
+using Vostok.Metrics;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.Tracing
+namespace Vostok.AirlockConsumer.Tracing
 {
     public class TracingAirlockConsumerEntryPoint : ConsumerApplication
     {

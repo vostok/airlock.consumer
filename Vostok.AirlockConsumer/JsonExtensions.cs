@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using Newtonsoft.Json;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public static class JsonExtensions
     {

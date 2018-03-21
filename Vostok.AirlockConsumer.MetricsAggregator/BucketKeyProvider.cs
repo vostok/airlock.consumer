@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Vstk.Metrics;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class BucketKeyProvider : IBucketKeyProvider
     {

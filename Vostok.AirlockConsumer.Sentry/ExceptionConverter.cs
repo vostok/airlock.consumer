@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using SharpRaven.Data;
-using Vstk.Airlock.Logging;
+using Vostok.Airlock.Logging;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public static class ExceptionConverter
     {

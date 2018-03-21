@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class Borders
     {

@@ -5,11 +5,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
-using Vstk.Logging;
-using Vstk.Metrics;
-using Vstk.Metrics.Meters;
+using Vostok.Logging;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ProcessorHost : IDisposable
     {

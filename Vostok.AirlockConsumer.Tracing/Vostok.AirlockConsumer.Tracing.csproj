@@ -16,46 +16,46 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Vstk.Core">
+    <Reference Include="Vostok.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.core\Vstk.Core\bin\Release\netstandard2.0\Vstk.Core.dll</HintPath>
+      <HintPath>..\..\vostok.core\Vostok.Core\bin\Release\netstandard2.0\Vostok.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Airlock.Client">
+    <Reference Include="Vostok.Airlock.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.airlock.client\Vstk.Airlock.Client\bin\Release\netstandard2.0\Vstk.Airlock.Client.dll</HintPath>
+      <HintPath>..\..\vostok.airlock.client\Vostok.Airlock.Client\bin\Release\netstandard2.0\Vostok.Airlock.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Logging.Serilog">
+    <Reference Include="Vostok.Logging.Serilog">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.logging.serilog\Vstk.Logging.Serilog\bin\Release\netstandard2.0\Vstk.Logging.Serilog.dll</HintPath>
+      <HintPath>..\..\vostok.logging.serilog\Vostok.Logging.Serilog\bin\Release\netstandard2.0\Vostok.Logging.Serilog.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Graphite.Reporter">
+    <Reference Include="Vostok.Graphite.Reporter">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.graphite.reporter\Vstk.Graphite.Reporter\bin\Release\netstandard2.0\Vstk.Graphite.Reporter.dll</HintPath>
+      <HintPath>..\..\vostok.graphite.reporter\Vostok.Graphite.Reporter\bin\Release\netstandard2.0\Vostok.Graphite.Reporter.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Graphite.Client">
+    <Reference Include="Vostok.Graphite.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.graphite.reporter\Vstk.Graphite.Client\bin\Release\netstandard2.0\Vstk.Graphite.Client.dll</HintPath>
+      <HintPath>..\..\vostok.graphite.reporter\Vostok.Graphite.Client\bin\Release\netstandard2.0\Vostok.Graphite.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Core">
+    <Reference Include="Vostok.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.core\Vstk.Core\bin\Release\netstandard2.0\Vstk.Core.dll</HintPath>
+      <HintPath>..\..\vostok.core\Vostok.Core\bin\Release\netstandard2.0\Vostok.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.ClusterClient">
+    <Reference Include="Vostok.ClusterClient">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.clusterclient\Vstk.ClusterClient\bin\Release\netstandard2.0\Vstk.ClusterClient.dll</HintPath>
+      <HintPath>..\..\vostok.clusterclient\Vostok.ClusterClient\bin\Release\netstandard2.0\Vostok.ClusterClient.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.ClusterClient.Transport.Http">
+    <Reference Include="Vostok.ClusterClient.Transport.Http">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.clusterclient.transport.http\Vstk.ClusterClient.Transport.Http\bin\Release\netstandard2.0\Vstk.ClusterClient.Transport.Http.dll</HintPath>
+      <HintPath>..\..\vostok.clusterclient.transport.http\Vostok.ClusterClient.Transport.Http\bin\Release\netstandard2.0\Vostok.ClusterClient.Transport.Http.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Contrails.Client">
+    <Reference Include="Vostok.Contrails.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.contrails.api\Vstk.Contrails.Client\bin\Release\netstandard2.0\Vstk.Contrails.Client.dll</HintPath>
+      <HintPath>..\..\vostok.contrails.api\Vostok.Contrails.Client\bin\Release\netstandard2.0\Vostok.Contrails.Client.dll</HintPath>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vstk.AirlockConsumer\Vstk.AirlockConsumer.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
   </ItemGroup>
 
 </Project>

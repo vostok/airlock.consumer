@@ -2,11 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Vstk.Airlock;
-using Vstk.Commons.Extensions.UnitConvertions;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Commons.Extensions.UnitConvertions;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricAggregator : IDisposable
     {

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Vstk.Airlock;
-using Vstk.Airlock.Metrics;
-using Vstk.Airlock.Tracing;
-using Vstk.Metrics;
-using Vstk.Tracing;
+using Vostok.Airlock;
+using Vostok.Airlock.Metrics;
+using Vostok.Airlock.Tracing;
+using Vostok.Metrics;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricsAggregatorProcessor : IAirlockEventProcessor
     {

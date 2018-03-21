@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vstk.Logging;
+using Vostok.Logging;
 
-namespace Vstk.AirlockConsumer.Sample
+namespace Vostok.AirlockConsumer.Sample
 {
     public class SampleDataAirlockEventProcessor : IAirlockEventProcessor<SampleEvent>
     {

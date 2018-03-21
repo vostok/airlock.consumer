@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Vstk.Airlock;
-using Vstk.Contrails.Client;
-using Vstk.Logging;
-using Vstk.Tracing;
+using Vostok.Airlock;
+using Vostok.Contrails.Client;
+using Vostok.Logging;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.IntergationTests
+namespace Vostok.AirlockConsumer.IntergationTests
 {
     public class TracingTests
     {

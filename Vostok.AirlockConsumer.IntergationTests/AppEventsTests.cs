@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Vstk.Airlock;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.IntergationTests
+namespace Vostok.AirlockConsumer.IntergationTests
 {
     public class AppEventsTests
     {

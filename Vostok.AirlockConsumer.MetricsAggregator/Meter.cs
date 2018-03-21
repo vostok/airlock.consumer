@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Vstk.Commons.Synchronization;
-using Vstk.Metrics.Meters.Histograms;
+using Vostok.Commons.Synchronization;
+using Vostok.Metrics.Meters.Histograms;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class Meter
     {

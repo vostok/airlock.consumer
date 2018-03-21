@@ -5,18 +5,18 @@ using System.Threading;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using Vstk.Airlock;
-using Vstk.Airlock.Tracing;
-using Vstk.AirlockConsumer.MetricsAggregator;
-using Vstk.Metrics;
-using Vstk.Tracing;
+using Vostok.Airlock;
+using Vostok.Airlock.Tracing;
+using Vostok.AirlockConsumer.MetricsAggregator;
+using Vostok.Metrics;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.UnitTests.Aggregation
+namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 {
     public class AggregationProcessorsTests
     {
         private readonly SpanAirlockSerializer spanAirlockSerializer = new SpanAirlockSerializer();
-        private readonly string routingKey = RoutingKey.Create("vstk","ci","test",RoutingKey.TracesSuffix);
+        private readonly string routingKey = RoutingKey.Create("vostok","ci","test",RoutingKey.TracesSuffix);
 
         [Test]
         public void HttpServerTracesAggregationTest()

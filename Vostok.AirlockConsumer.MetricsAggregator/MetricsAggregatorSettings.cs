@@ -1,7 +1,7 @@
 ﻿using System;
-using Vstk.Commons.Extensions.UnitConvertions;
+using Vostok.Commons.Extensions.UnitConvertions;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricsAggregatorSettings
     {

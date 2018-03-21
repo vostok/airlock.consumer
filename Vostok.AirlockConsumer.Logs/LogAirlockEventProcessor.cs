@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using MoreLinq;
-using Vstk.Airlock;
-using Vstk.Airlock.Logging;
-using Vstk.Logging;
-using Vstk.Metrics.Meters;
-using Vstk.RetriableCall;
+using Vostok.Airlock;
+using Vostok.Airlock.Logging;
+using Vostok.Logging;
+using Vostok.Metrics.Meters;
+using Vostok.RetriableCall;
 
-namespace Vstk.AirlockConsumer.Logs
+namespace Vostok.AirlockConsumer.Logs
 {
     public class LogAirlockEventProcessor : SimpleAirlockEventProcessorBase<LogEventData>
     {

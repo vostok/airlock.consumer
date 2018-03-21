@@ -1,8 +1,8 @@
 using System;
-using Vstk.Metrics;
-using Vstk.Metrics.Meters;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ProcessorMetrics : IDisposable
     {

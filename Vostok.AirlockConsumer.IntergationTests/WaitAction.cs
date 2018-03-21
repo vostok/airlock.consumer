@@ -1,4 +1,4 @@
-﻿namespace Vstk.AirlockConsumer.IntergationTests
+﻿namespace Vostok.AirlockConsumer.IntergationTests
 {
     public enum WaitAction
     {

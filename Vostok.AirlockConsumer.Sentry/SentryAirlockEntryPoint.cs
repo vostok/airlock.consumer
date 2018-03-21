@@ -1,9 +1,9 @@
 ﻿using System;
-using Vstk.Airlock;
-using Vstk.Logging;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Logging;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryAirlockEntryPoint : ConsumerApplication
     {

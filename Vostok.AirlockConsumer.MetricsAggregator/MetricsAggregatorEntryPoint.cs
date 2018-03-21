@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using Vstk.Airlock;
-using Vstk.Clusterclient.Topology;
-using Vstk.Logging;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Clusterclient.Topology;
+using Vostok.Logging;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricsAggregatorEntryPoint : ConsumerApplication
     {

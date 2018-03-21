@@ -4,13 +4,13 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using SharpRaven.Data;
-using Vstk.Airlock.Logging;
-using Vstk.AirlockConsumer.Sentry;
-using Vstk.Logging;
-using Vstk.Logging.Logs;
-using Vstk.Metrics.Meters;
+using Vostok.Airlock.Logging;
+using Vostok.AirlockConsumer.Sentry;
+using Vostok.Logging;
+using Vostok.Logging.Logs;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer.UnitTests.Sentry
+namespace Vostok.AirlockConsumer.UnitTests.Sentry
 {
     public class SentryFilteringTest
     {

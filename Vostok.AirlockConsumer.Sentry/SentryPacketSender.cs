@@ -3,11 +3,11 @@ using System.Linq;
 using System.Net;
 using SharpRaven;
 using SharpRaven.Data;
-using Vstk.Logging;
-using Vstk.Metrics.Meters;
-using Vstk.RetriableCall;
+using Vostok.Logging;
+using Vostok.Metrics.Meters;
+using Vostok.RetriableCall;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryPacketSender : ISentryPacketSender
     {

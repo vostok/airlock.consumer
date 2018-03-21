@@ -2,10 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Vstk.Metrics;
-using Vstk.Metrics.Meters;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class TimeBin
     {

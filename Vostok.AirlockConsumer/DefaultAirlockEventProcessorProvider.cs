@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Vstk.Airlock;
+using Vostok.Airlock;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class DefaultAirlockEventProcessorProvider<T, TDeserializer> : IAirlockEventProcessorProvider
         where TDeserializer : IAirlockDeserializer<T>, new()

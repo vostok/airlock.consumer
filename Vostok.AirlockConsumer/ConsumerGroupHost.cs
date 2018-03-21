@@ -5,12 +5,12 @@ using System.Linq;
 using System.Threading;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
-using Vstk.Logging;
+using Vostok.Logging;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
-    // todo (avk, 09.10.2017): integration tests for airlock consumer machinery https://github.com/vstk/airlock.consumer/issues/4
-    // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator) https://github.com/vstk/airlock.consumer/issues/19
+    // todo (avk, 09.10.2017): integration tests for airlock consumer machinery https://github.com/vostok/airlock.consumer/issues/4
+    // todo (avk, 06.10.2017): handle kafka consumer exceptions (introduce decorator) https://github.com/vostok/airlock.consumer/issues/19
     public class ConsumerGroupHost : IDisposable
     {
         private readonly ConsumerGroupHostSettings settings;

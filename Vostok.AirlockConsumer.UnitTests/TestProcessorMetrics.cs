@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using NSubstitute;
-using Vstk.Metrics;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.UnitTests
+namespace Vostok.AirlockConsumer.UnitTests
 {
     public class TestProcessorMetrics : ProcessorMetrics
     {

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using Vstk.Airlock;
-using Vstk.Airlock.Logging;
-using Vstk.Logging;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Airlock.Logging;
+using Vostok.Logging;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.Logs
+namespace Vostok.AirlockConsumer.Logs
 {
     public class ElasticLogsIndexerEntryPoint : ConsumerApplication
     {

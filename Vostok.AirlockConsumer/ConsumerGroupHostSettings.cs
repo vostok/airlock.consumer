@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ConsumerGroupHostSettings
     {

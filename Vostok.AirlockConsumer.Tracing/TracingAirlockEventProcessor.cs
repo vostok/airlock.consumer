@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Vstk.Contrails.Client;
-using Vstk.Logging;
-using Vstk.Tracing;
+using Vostok.Contrails.Client;
+using Vostok.Logging;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.Tracing
+namespace Vostok.AirlockConsumer.Tracing
 {
     public class TracingAirlockEventProcessor : SimpleAirlockEventProcessorBase<Span>
     {

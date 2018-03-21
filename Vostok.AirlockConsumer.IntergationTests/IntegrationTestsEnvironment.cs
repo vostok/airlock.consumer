@@ -2,13 +2,13 @@
 using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
-using Vstk.Airlock;
-using Vstk.Clusterclient.Topology;
-using Vstk.Commons.Extensions.UnitConvertions;
-using Vstk.Logging;
-using Vstk.Logging.Logs;
+using Vostok.Airlock;
+using Vostok.Clusterclient.Topology;
+using Vostok.Commons.Extensions.UnitConvertions;
+using Vostok.Logging;
+using Vostok.Logging.Logs;
 
-namespace Vstk.AirlockConsumer.IntergationTests
+namespace Vostok.AirlockConsumer.IntergationTests
 {
     public static class IntegrationTestsEnvironment
     {

@@ -1,6 +1,6 @@
 ﻿using SharpRaven.Data;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public static class JsonPacketPatcher
     {

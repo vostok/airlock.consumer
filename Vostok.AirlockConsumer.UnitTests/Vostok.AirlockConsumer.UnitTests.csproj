@@ -14,27 +14,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Vstk.Core">
+    <Reference Include="Vostok.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.core\Vstk.Core\bin\Release\netstandard2.0\Vstk.Core.dll</HintPath>
+      <HintPath>..\..\vostok.core\Vostok.Core\bin\Release\netstandard2.0\Vostok.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Airlock.Client">
+    <Reference Include="Vostok.Airlock.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.airlock.client\Vstk.Airlock.Client\bin\Release\netstandard2.0\Vstk.Airlock.Client.dll</HintPath>
+      <HintPath>..\..\vostok.airlock.client\Vostok.Airlock.Client\bin\Release\netstandard2.0\Vostok.Airlock.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Vstk.Contrails.Client">
+    <Reference Include="Vostok.Contrails.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vstk.contrails.api\Vstk.Contrails.Client\bin\Release\netstandard2.0\Vstk.Contrails.Client.dll</HintPath>
+      <HintPath>..\..\vostok.contrails.api\Vostok.Contrails.Client\bin\Release\netstandard2.0\Vostok.Contrails.Client.dll</HintPath>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vstk.AirlockConsumer.MetricsAggregator\Vstk.AirlockConsumer.MetricsAggregator.csproj" />
-    <ProjectReference Include="..\Vstk.AirlockConsumer.Sentry\Vstk.AirlockConsumer.Sentry.csproj" />
-    <ProjectReference Include="..\Vstk.AirlockConsumer.Tracing\Vstk.AirlockConsumer.Tracing.csproj" />
-    <ProjectReference Include="..\Vstk.AirlockConsumer\Vstk.AirlockConsumer.csproj" />
-    <ProjectReference Include="..\Vstk.AirlockConsumer.Logs\Vstk.AirlockConsumer.Logs.csproj" />
-    <ProjectReference Include="..\Vstk.AirlockConsumer.Metrics\Vstk.AirlockConsumer.Metrics.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Sentry\Vostok.AirlockConsumer.Sentry.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj" />
+    <ProjectReference Include="..\Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Vstk.Metrics;
-using Vstk.Tracing;
+using Vostok.Metrics;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public static class SpanToMetricEventConverter
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vstk.Metrics;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public interface IBucket
     {

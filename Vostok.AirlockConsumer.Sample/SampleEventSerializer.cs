@@ -1,8 +1,8 @@
 ﻿using System.IO;
-using Vstk.Airlock;
-using Vstk.Commons.Binary;
+using Vostok.Airlock;
+using Vostok.Commons.Binary;
 
-namespace Vstk.AirlockConsumer.Sample
+namespace Vostok.AirlockConsumer.Sample
 {
     public class SampleEventSerializer : IAirlockSerializer<SampleEvent>, IAirlockDeserializer<SampleEvent>
     {

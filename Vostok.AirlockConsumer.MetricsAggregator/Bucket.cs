@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Vstk.Metrics;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class Bucket : IBucket
     {

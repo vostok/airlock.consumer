@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Vstk.Graphite.Client;
-using Vstk.Graphite.Reporter;
-using Vstk.Logging;
-using Vstk.Metrics;
-using Vstk.RetriableCall;
+using Vostok.Graphite.Client;
+using Vostok.Graphite.Reporter;
+using Vostok.Logging;
+using Vostok.Metrics;
+using Vostok.RetriableCall;
 
-namespace Vstk.AirlockConsumer.Metrics
+namespace Vostok.AirlockConsumer.Metrics
 {
     public class MetricsAirlockEventProcessor : SimpleAirlockEventProcessorBase<MetricEvent>
     {

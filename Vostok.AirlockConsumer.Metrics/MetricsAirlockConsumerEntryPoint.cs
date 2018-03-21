@@ -1,8 +1,8 @@
-﻿using Vstk.Airlock.Metrics;
-using Vstk.Logging;
-using Vstk.Metrics;
+﻿using Vostok.Airlock.Metrics;
+using Vostok.Logging;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.Metrics
+namespace Vostok.AirlockConsumer.Metrics
 {
     public class MetricsAirlockConsumerEntryPoint : ConsumerApplication
     {

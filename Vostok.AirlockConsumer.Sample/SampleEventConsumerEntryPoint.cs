@@ -3,12 +3,12 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Loader;
 using System.Threading;
-using Vstk.Airlock;
-using Vstk.Clusterclient.Topology;
-using Vstk.Logging;
-using Vstk.Metrics;
+using Vostok.Airlock;
+using Vostok.Clusterclient.Topology;
+using Vostok.Logging;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.Sample
+namespace Vostok.AirlockConsumer.Sample
 {
     public static class SampleEventConsumerEntryPoint
     {

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using SharpRaven;
-using Vstk.Airlock;
-using Vstk.Airlock.Logging;
-using Vstk.Logging;
-using Vstk.RetriableCall;
+using Vostok.Airlock;
+using Vostok.Airlock.Logging;
+using Vostok.Logging;
+using Vostok.RetriableCall;
 
-namespace Vstk.AirlockConsumer.Sentry
+namespace Vostok.AirlockConsumer.Sentry
 {
     public class SentryAirlockProcessorProvider : IAirlockEventProcessorProvider
     {

@@ -2,9 +2,9 @@
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
-using Vstk.Logging;
+using Vostok.Logging;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ConsumerApplicationHost<TConsumerApp>
         where TConsumerApp : ConsumerApplication, new()

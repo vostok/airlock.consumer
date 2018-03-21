@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
-using Vstk.AirlockConsumer.MetricsAggregator;
-using Vstk.Metrics;
+using Vostok.AirlockConsumer.MetricsAggregator;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.UnitTests.Aggregation
+namespace Vostok.AirlockConsumer.UnitTests.Aggregation
 {
     public class Bucket_Tests
     {

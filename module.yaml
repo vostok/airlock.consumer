@@ -1,16 +1,16 @@
 full-build *default:
   deps:
-    - vstk.clusterclient.transport.http
-    - vstk.clusterclient
-    - vstk.core
-    - vstk.hosting.core
-    - vstk.airlock.client
-    - vstk.graphite.reporter
-    - vstk.contrails.api
-    - vstk.logging.serilog
+    - vostok.clusterclient.transport.http
+    - vostok.clusterclient
+    - vostok.core
+    - vostok.hosting.core
+    - vostok.airlock.client
+    - vostok.graphite.reporter
+    - vostok.contrails.api
+    - vostok.logging.serilog
 
   build:
-    target: Vstk.AirlockConsumer.sln
+    target: Vostok.AirlockConsumer.sln
     configuration: Release
     tool:
       name: dotnet

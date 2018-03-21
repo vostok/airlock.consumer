@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
-using Vstk.AirlockConsumer.Tracing;
-using Vstk.Contrails.Client;
-using Vstk.Logging;
-using Vstk.Tracing;
+using Vostok.AirlockConsumer.Tracing;
+using Vostok.Contrails.Client;
+using Vostok.Logging;
+using Vostok.Tracing;
 
-namespace Vstk.AirlockConsumer.UnitTests.Tracing
+namespace Vostok.AirlockConsumer.UnitTests.Tracing
 {
     public class ProcessorTests
     {

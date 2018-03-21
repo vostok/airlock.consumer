@@ -1,7 +1,7 @@
-﻿using Vstk.Airlock;
-using Vstk.Metrics;
+﻿using Vostok.Airlock;
+using Vostok.Metrics;
 
-namespace Vstk.AirlockConsumer.MetricsAggregator
+namespace Vostok.AirlockConsumer.MetricsAggregator
 {
     public class MetricsAggregatorAirlockEventProcessorProvider : IAirlockEventProcessorProvider
     {

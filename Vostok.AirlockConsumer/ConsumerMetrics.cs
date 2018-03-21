@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
 using Newtonsoft.Json.Linq;
-using Vstk.Metrics;
-using Vstk.Metrics.Meters;
+using Vostok.Metrics;
+using Vostok.Metrics.Meters;
 
-namespace Vstk.AirlockConsumer
+namespace Vostok.AirlockConsumer
 {
     public class ConsumerMetrics : IDisposable
     {
