@@ -4,11 +4,11 @@ using Vostok.Metrics;
 
 namespace Vostok.Airlock.Consumer.Metrics
 {
-    public class MetricsAirlock.ConsumerEntryPoint : ConsumerApplication
+    public class MetricsAirlockConsumerEntryPoint : ConsumerApplication
     {
         public static void Main()
         {
-            new ConsumerApplicationHost<MetricsAirlock.ConsumerEntryPoint>().Run();
+            new ConsumerApplicationHost<MetricsAirlockConsumerEntryPoint>().Run();
         }
 
         protected override string ServiceName => "consumer-metric";
