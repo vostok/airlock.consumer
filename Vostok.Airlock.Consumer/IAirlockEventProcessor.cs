@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public interface IAirlockEventProcessor
     {

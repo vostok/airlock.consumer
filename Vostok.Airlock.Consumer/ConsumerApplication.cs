@@ -6,7 +6,7 @@ using Vostok.Graphite.Reporter;
 using Vostok.Logging;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public abstract class ConsumerApplication : IDisposable
     {

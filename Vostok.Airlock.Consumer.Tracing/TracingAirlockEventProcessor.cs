@@ -5,7 +5,7 @@ using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.Tracing
+namespace Vostok.Airlock.Consumer.Tracing
 {
     public class TracingAirlockEventProcessor : SimpleAirlockEventProcessorBase<Span>
     {

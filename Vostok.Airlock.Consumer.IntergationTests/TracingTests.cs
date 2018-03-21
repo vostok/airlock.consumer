@@ -7,7 +7,7 @@ using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.IntergationTests
+namespace Vostok.Airlock.Consumer.IntergationTests
 {
     public class TracingTests
     {

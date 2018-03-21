@@ -9,7 +9,7 @@ using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public class ProcessorHost : IDisposable
     {

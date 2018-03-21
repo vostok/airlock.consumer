@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Vostok.AirlockConsumer.Sample
+namespace Vostok.Airlock.Consumer.Sample
 {
     public class SampleRoutingKeyFilter : IRoutingKeyFilter
     {

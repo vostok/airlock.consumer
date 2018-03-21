@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public interface IBucketKeyProvider
     {

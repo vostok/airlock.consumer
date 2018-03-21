@@ -7,11 +7,11 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Airlock.Tracing;
-using Vostok.AirlockConsumer.MetricsAggregator;
+using Vostok.Airlock.Consumer.MetricsAggregator;
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.UnitTests.Aggregation
+namespace Vostok.Airlock.Consumer.UnitTests.Aggregation
 {
     public class AggregationProcessorsTests
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Vostok.Logging;
 
-namespace Vostok.AirlockConsumer.Sample
+namespace Vostok.Airlock.Consumer.Sample
 {
     public class SampleDataAirlockEventProcessor : IAirlockEventProcessor<SampleEvent>
     {

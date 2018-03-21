@@ -5,7 +5,7 @@ using Vostok.Airlock.Logging;
 using Vostok.Logging;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Logs
+namespace Vostok.Airlock.Consumer.Logs
 {
     public class ElasticLogsIndexerEntryPoint : ConsumerApplication
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vostok.AirlockConsumer.Sentry
+namespace Vostok.Airlock.Consumer.Sentry
 {
     public class SentryProcessorSettings
     {

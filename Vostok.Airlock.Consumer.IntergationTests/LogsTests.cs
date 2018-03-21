@@ -9,7 +9,7 @@ using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 
-namespace Vostok.AirlockConsumer.IntergationTests
+namespace Vostok.Airlock.Consumer.IntergationTests
 {
     public class LogsTests
     {

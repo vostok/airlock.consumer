@@ -4,7 +4,7 @@ using Vostok.Logging;
 using Vostok.Logging.Serilog;
 using Vostok.Logging.Serilog.Enrichers;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public static class Logging
     {

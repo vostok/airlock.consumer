@@ -1,6 +1,6 @@
 ﻿using Vostok.Airlock;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public class MetricsAggregatorRotingKeyFilter : IRoutingKeyFilter
     {

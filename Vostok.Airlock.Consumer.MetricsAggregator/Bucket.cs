@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public class Bucket : IBucket
     {

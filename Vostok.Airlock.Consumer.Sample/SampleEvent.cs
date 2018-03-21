@@ -1,4 +1,4 @@
-﻿namespace Vostok.AirlockConsumer.Sample
+﻿namespace Vostok.Airlock.Consumer.Sample
 {
     public sealed class SampleEvent
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public class AirlockEvent<T>
     {

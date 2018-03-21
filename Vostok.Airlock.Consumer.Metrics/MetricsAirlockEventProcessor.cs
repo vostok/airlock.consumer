@@ -8,7 +8,7 @@ using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.RetriableCall;
 
-namespace Vostok.AirlockConsumer.Metrics
+namespace Vostok.Airlock.Consumer.Metrics
 {
     public class MetricsAirlockEventProcessor : SimpleAirlockEventProcessorBase<MetricEvent>
     {

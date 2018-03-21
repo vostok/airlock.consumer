@@ -1,4 +1,4 @@
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public enum AutoResetOffsetPolicy
     {

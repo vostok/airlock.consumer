@@ -2,13 +2,13 @@
 using Vostok.Logging;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Metrics
+namespace Vostok.Airlock.Consumer.Metrics
 {
-    public class MetricsAirlockConsumerEntryPoint : ConsumerApplication
+    public class MetricsAirlock.ConsumerEntryPoint : ConsumerApplication
     {
         public static void Main()
         {
-            new ConsumerApplicationHost<MetricsAirlockConsumerEntryPoint>().Run();
+            new ConsumerApplicationHost<MetricsAirlock.ConsumerEntryPoint>().Run();
         }
 
         protected override string ServiceName => "consumer-metric";

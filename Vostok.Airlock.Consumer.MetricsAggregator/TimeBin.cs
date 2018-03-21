@@ -5,7 +5,7 @@ using System.Threading;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public class TimeBin
     {

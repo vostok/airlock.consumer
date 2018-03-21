@@ -2,7 +2,7 @@
 using Vostok.Commons.Synchronization;
 using Vostok.Metrics.Meters.Histograms;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public class Meter
     {

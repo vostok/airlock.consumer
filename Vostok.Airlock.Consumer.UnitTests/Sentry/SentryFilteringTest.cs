@@ -5,12 +5,12 @@ using NSubstitute;
 using NUnit.Framework;
 using SharpRaven.Data;
 using Vostok.Airlock.Logging;
-using Vostok.AirlockConsumer.Sentry;
+using Vostok.Airlock.Consumer.Sentry;
 using Vostok.Logging;
 using Vostok.Logging.Logs;
 using Vostok.Metrics.Meters;
 
-namespace Vostok.AirlockConsumer.UnitTests.Sentry
+namespace Vostok.Airlock.Consumer.UnitTests.Sentry
 {
     public class SentryFilteringTest
     {

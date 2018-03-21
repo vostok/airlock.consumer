@@ -8,7 +8,7 @@ using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Logging;
 using Vostok.Logging.Logs;
 
-namespace Vostok.AirlockConsumer.IntergationTests
+namespace Vostok.Airlock.Consumer.IntergationTests
 {
     public static class IntegrationTestsEnvironment
     {

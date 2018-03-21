@@ -7,15 +7,15 @@ using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.Tracing
+namespace Vostok.Airlock.Consumer.Tracing
 {
-    public class TracingAirlockConsumerEntryPoint : ConsumerApplication
+    public class TracingAirlock.ConsumerEntryPoint : ConsumerApplication
     {
         private const string defaultCassandraEndpoints = "cassandra:9042";
 
         public static void Main()
         {
-            new ConsumerApplicationHost<TracingAirlockConsumerEntryPoint>().Run();
+            new ConsumerApplicationHost<TracingAirlock.ConsumerEntryPoint>().Run();
         }
 
         protected override string ServiceName => "consumer-tracing";

@@ -2,7 +2,7 @@
 using SharpRaven.Data;
 using Vostok.Airlock.Logging;
 
-namespace Vostok.AirlockConsumer.Sentry
+namespace Vostok.Airlock.Consumer.Sentry
 {
     public static class ExceptionConverter
     {

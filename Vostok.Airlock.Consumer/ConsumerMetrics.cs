@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using Vostok.Metrics;
 using Vostok.Metrics.Meters;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public class ConsumerMetrics : IDisposable
     {

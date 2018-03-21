@@ -8,7 +8,7 @@ using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Sample
+namespace Vostok.Airlock.Consumer.Sample
 {
     public static class SampleEventConsumerEntryPoint
     {

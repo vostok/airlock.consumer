@@ -10,7 +10,7 @@ full-build *default:
     - vostok.logging.serilog
 
   build:
-    target: Vostok.AirlockConsumer.sln
+    target: Vostok.Airlock.Consumer.sln
     configuration: Release
     tool:
       name: dotnet

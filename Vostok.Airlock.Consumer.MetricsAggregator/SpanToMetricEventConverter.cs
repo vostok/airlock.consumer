@@ -2,7 +2,7 @@
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public static class SpanToMetricEventConverter
     {

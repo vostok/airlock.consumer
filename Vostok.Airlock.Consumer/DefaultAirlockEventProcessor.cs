@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Vostok.Airlock;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public class DefaultAirlockEventProcessor<T> : IAirlockEventProcessor
     {

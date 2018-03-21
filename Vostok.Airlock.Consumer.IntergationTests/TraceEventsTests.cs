@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Vostok.Airlock;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.IntergationTests
+namespace Vostok.Airlock.Consumer.IntergationTests
 {
     public class TraceEventsTests
     {

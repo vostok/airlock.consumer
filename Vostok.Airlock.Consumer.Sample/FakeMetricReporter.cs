@@ -1,6 +1,6 @@
 ﻿using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Sample
+namespace Vostok.Airlock.Consumer.Sample
 {
     public class FakeMetricReporter : IMetricEventReporter
     {

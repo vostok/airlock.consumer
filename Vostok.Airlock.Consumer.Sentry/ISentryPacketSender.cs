@@ -1,7 +1,7 @@
 ﻿using SharpRaven.Data;
 using Vostok.Metrics.Meters;
 
-namespace Vostok.AirlockConsumer.Sentry
+namespace Vostok.Airlock.Consumer.Sentry
 {
     public interface ISentryPacketSender
     {

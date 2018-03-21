@@ -29,12 +29,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vostok.AirlockConsumer.MetricsAggregator\Vostok.AirlockConsumer.MetricsAggregator.csproj" />
-    <ProjectReference Include="..\Vostok.AirlockConsumer.Sentry\Vostok.AirlockConsumer.Sentry.csproj" />
-    <ProjectReference Include="..\Vostok.AirlockConsumer.Tracing\Vostok.AirlockConsumer.Tracing.csproj" />
-    <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
-    <ProjectReference Include="..\Vostok.AirlockConsumer.Logs\Vostok.AirlockConsumer.Logs.csproj" />
-    <ProjectReference Include="..\Vostok.AirlockConsumer.Metrics\Vostok.AirlockConsumer.Metrics.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer.MetricsAggregator\Vostok.Airlock.Consumer.MetricsAggregator.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer.Sentry\Vostok.Airlock.Consumer.Sentry.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer.Tracing\Vostok.Airlock.Consumer.Tracing.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer\Vostok.Airlock.Consumer.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer.Logs\Vostok.Airlock.Consumer.Logs.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer.Metrics\Vostok.Airlock.Consumer.Metrics.csproj" />
   </ItemGroup>
 
 </Project>

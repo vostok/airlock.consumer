@@ -4,7 +4,7 @@ using System.Threading;
 using JetBrains.Annotations;
 using Vostok.Logging;
 
-namespace Vostok.AirlockConsumer.IntergationTests
+namespace Vostok.Airlock.Consumer.IntergationTests
 {
     public static class WaitHelper
     {

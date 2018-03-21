@@ -3,7 +3,7 @@ using System.IO;
 using Vostok.Airlock;
 using Vostok.Commons.Binary;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public class ByteBufferAirlockSource : IAirlockSource
     {

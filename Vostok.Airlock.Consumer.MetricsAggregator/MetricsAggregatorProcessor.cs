@@ -8,7 +8,7 @@ using Vostok.Airlock.Tracing;
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public class MetricsAggregatorProcessor : IAirlockEventProcessor
     {

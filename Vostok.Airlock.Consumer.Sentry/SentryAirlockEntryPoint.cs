@@ -3,7 +3,7 @@ using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.Sentry
+namespace Vostok.Airlock.Consumer.Sentry
 {
     public class SentryAirlockEntryPoint : ConsumerApplication
     {

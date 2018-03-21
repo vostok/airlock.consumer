@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging;
 
-namespace Vostok.AirlockConsumer
+namespace Vostok.Airlock.Consumer
 {
     public class ConsumerApplicationHost<TConsumerApp>
         where TConsumerApp : ConsumerApplication, new()

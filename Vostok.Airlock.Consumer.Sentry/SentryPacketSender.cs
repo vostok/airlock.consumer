@@ -7,7 +7,7 @@ using Vostok.Logging;
 using Vostok.Metrics.Meters;
 using Vostok.RetriableCall;
 
-namespace Vostok.AirlockConsumer.Sentry
+namespace Vostok.Airlock.Consumer.Sentry
 {
     public class SentryPacketSender : ISentryPacketSender
     {

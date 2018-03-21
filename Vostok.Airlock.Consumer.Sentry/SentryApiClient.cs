@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 using Vostok.Logging;
 using Vostok.RetriableCall;
 
-namespace Vostok.AirlockConsumer.Sentry
+namespace Vostok.Airlock.Consumer.Sentry
 {
     public class SentryApiClient
     {

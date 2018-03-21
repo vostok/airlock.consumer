@@ -2,7 +2,7 @@
 using Vostok.Airlock;
 using Vostok.Commons.Binary;
 
-namespace Vostok.AirlockConsumer.Sample
+namespace Vostok.Airlock.Consumer.Sample
 {
     public class SampleEventSerializer : IAirlockSerializer<SampleEvent>, IAirlockDeserializer<SampleEvent>
     {

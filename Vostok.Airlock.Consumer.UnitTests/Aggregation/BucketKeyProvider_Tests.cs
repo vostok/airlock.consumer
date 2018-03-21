@@ -2,9 +2,9 @@
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
-using Vostok.AirlockConsumer.MetricsAggregator;
+using Vostok.Airlock.Consumer.MetricsAggregator;
 
-namespace Vostok.AirlockConsumer.UnitTests.Aggregation
+namespace Vostok.Airlock.Consumer.UnitTests.Aggregation
 {
     public class BucketKeyProvider_Tests
     {

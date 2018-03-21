@@ -5,7 +5,7 @@ using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
 using Vostok.Metrics;
 
-namespace Vostok.AirlockConsumer.MetricsAggregator
+namespace Vostok.Airlock.Consumer.MetricsAggregator
 {
     public class MetricsAggregatorEntryPoint : ConsumerApplication
     {

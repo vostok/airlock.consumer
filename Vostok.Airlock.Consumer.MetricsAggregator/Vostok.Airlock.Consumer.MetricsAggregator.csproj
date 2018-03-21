@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vostok.AirlockConsumer\Vostok.AirlockConsumer.csproj" />
+    <ProjectReference Include="..\Vostok.Airlock.Consumer\Vostok.Airlock.Consumer.csproj" />
   </ItemGroup>
 
 </Project>
