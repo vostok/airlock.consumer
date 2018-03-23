@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using Vostok.Airlock;
 using Vostok.Commons.Binary;
 
-namespace Vostok.Airlock.Consumer.UnitTests
+namespace Vostok.Airlock.Consumer.Tests
 {
     public class NonReusableByteBufferAirlockSink : IAirlockSink
     {

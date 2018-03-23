@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
-using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Logging;

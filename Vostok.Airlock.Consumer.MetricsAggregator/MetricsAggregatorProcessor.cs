@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Vostok.Airlock;
 using Vostok.Airlock.Metrics;
 using Vostok.Airlock.Tracing;
 using Vostok.Metrics;

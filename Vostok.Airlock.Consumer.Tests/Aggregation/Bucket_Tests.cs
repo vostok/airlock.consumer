@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Vostok.Airlock.Consumer.MetricsAggregator;
 using Vostok.Metrics;
 
-namespace Vostok.Airlock.Consumer.UnitTests.Aggregation
+namespace Vostok.Airlock.Consumer.Tests.Aggregation
 {
     public class Bucket_Tests
     {

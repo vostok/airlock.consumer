@@ -2,7 +2,7 @@
 using NSubstitute;
 using Vostok.Metrics;
 
-namespace Vostok.Airlock.Consumer.UnitTests
+namespace Vostok.Airlock.Consumer.Tests
 {
     public class TestProcessorMetrics : ProcessorMetrics
     {

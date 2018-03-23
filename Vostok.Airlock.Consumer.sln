@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Airlock.Consumer", "Vostok.Airlock.Consumer\Vostok.Airlock.Consumer.csproj", "{D11DD2E1-0296-4FA1-8630-CF0A453EFF0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Airlock.Consumer.UnitTests", "Vostok.Airlock.Consumer.UnitTests\Vostok.Airlock.Consumer.UnitTests.csproj", "{A0B4778F-1D4E-4C2A-A00A-305E64A23C5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Airlock.Consumer.Tests", "Vostok.Airlock.Consumer.Tests\Vostok.Airlock.Consumer.Tests.csproj", "{A0B4778F-1D4E-4C2A-A00A-305E64A23C5E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Airlock.Consumer.Logs", "Vostok.Airlock.Consumer.Logs\Vostok.Airlock.Consumer.Logs.csproj", "{9530980E-F85B-4BBE-A9B2-1A5AFC17690D}"
 EndProject

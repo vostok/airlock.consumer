@@ -9,7 +9,7 @@ using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;
 
-namespace Vostok.Airlock.Consumer.UnitTests.Tracing
+namespace Vostok.Airlock.Consumer.Tests.Tracing
 {
     public class ProcessorTests
     {

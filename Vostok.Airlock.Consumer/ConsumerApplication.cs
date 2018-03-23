@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Vostok.Airlock;
 using Vostok.Graphite.Client;
 using Vostok.Graphite.Reporter;
 using Vostok.Logging;

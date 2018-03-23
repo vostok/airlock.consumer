@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using MoreLinq;
-using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 using Vostok.Metrics.Meters;

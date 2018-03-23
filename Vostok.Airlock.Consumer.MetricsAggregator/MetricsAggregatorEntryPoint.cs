@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
 using Vostok.Metrics;

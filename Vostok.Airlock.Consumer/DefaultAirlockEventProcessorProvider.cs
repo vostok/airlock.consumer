@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Vostok.Airlock;
 
 namespace Vostok.Airlock.Consumer
 {

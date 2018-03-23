@@ -1,5 +1,4 @@
-﻿using Vostok.Airlock;
-using Vostok.Metrics;
+﻿using Vostok.Metrics;
 
 namespace Vostok.Airlock.Consumer.MetricsAggregator
 {

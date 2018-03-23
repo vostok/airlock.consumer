@@ -5,13 +5,12 @@ using System.Threading;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using Vostok.Airlock;
-using Vostok.Airlock.Tracing;
 using Vostok.Airlock.Consumer.MetricsAggregator;
+using Vostok.Airlock.Tracing;
 using Vostok.Metrics;
 using Vostok.Tracing;
 
-namespace Vostok.Airlock.Consumer.UnitTests.Aggregation
+namespace Vostok.Airlock.Consumer.Tests.Aggregation
 {
     public class AggregationProcessorsTests
     {

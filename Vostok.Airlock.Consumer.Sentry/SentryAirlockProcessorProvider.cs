@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using SharpRaven;
-using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 using Vostok.RetriableCall;

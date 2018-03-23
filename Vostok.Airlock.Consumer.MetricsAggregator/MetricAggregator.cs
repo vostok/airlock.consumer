@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Vostok.Airlock;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Metrics;
 

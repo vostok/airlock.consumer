@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Vostok.Airlock;
 using Vostok.Metrics;
 
 namespace Vostok.Airlock.Consumer.IntergationTests

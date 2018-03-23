@@ -1,5 +1,3 @@
-using Vostok.Airlock;
-
 namespace Vostok.Airlock.Consumer
 {
     public class DefaultRoutingKeyFilter : IRoutingKeyFilter

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Loader;
 using System.Threading;
-using Vostok.Airlock;
 using Vostok.Clusterclient.Topology;
 using Vostok.Logging;
 using Vostok.Metrics;

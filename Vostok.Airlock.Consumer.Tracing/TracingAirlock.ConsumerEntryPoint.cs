@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Vostok.Airlock;
 using Vostok.Airlock.Tracing;
 using Vostok.Contrails.Client;
 using Vostok.Logging;

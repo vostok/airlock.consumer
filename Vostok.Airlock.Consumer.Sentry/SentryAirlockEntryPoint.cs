@@ -1,5 +1,4 @@
 ﻿using System;
-using Vostok.Airlock;
 using Vostok.Logging;
 using Vostok.Metrics;
 

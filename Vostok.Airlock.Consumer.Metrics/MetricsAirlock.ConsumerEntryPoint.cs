@@ -21,7 +21,7 @@ namespace Vostok.Airlock.Consumer.Metrics
 
         protected sealed override void DoInitialize(ILog log, IMetricScope rootMetricScope, AirlockEnvironmentVariables environmentVariables, out IRoutingKeyFilter routingKeyFilter, out IAirlockEventProcessorProvider processorProvider)
         {
-            routingKeyFilter = new DefaultRoutingKeyFilter(Airlock.RoutingKey.MetricsSuffix);
+            routingKeyFilter = new DefaultRoutingKeyFilter(RoutingKey.MetricsSuffix);
             var graphiteUri = GetGraphiteUri(log, environmentVariables);
             processorProvider = new DefaultAirlockEventProcessorProvider<MetricEvent, MetricEventSerializer>(project => new MetricsAirlockEventProcessor(graphiteUri, log));
         }

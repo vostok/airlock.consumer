@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Vostok.Airlock;
 using Vostok.Contrails.Client;
 using Vostok.Logging;
 using Vostok.Tracing;

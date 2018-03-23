@@ -5,7 +5,6 @@ using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using Vostok.Airlock;
 using Vostok.Airlock.Logging;
 using Vostok.Logging;
 
