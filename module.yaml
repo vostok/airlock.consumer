@@ -3,7 +3,7 @@ full-build *default:
     - vostok.clusterclient.transport.http
     - vostok.clusterclient
     - vostok.core
-    - vostok.hosting.core@airlockMetrics
+    - vostok.hosting.core@batchAirlock
     - vostok.airlock.client@batchAirlock
     - vostok.graphite.reporter
     - vostok.contrails.api
