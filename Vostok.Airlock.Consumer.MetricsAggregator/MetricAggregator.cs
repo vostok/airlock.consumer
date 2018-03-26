@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Extensions.UnitConvertions;
+using Vostok.Logging;
 using Vostok.Metrics;
-using Vstk.RetriableCall;
+using Vostok.RetriableCall;
 
 namespace Vostok.Airlock.Consumer.MetricsAggregator
 {

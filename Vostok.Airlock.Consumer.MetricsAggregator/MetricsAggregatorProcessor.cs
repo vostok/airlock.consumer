@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Airlock.Metrics;
 using Vostok.Airlock.Tracing;
+using Vostok.Logging;
 using Vostok.Metrics;
 using Vostok.Tracing;
 

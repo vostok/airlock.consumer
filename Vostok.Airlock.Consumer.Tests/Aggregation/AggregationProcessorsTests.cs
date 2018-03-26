@@ -7,6 +7,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Airlock.Consumer.MetricsAggregator;
 using Vostok.Airlock.Tracing;
+using Vostok.Logging.Logs;
 using Vostok.Metrics;
 using Vostok.Tracing;
 
