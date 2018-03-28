@@ -112,7 +112,7 @@ namespace Vostok.Airlock.Consumer.Logs
                 indexRecord.Add("Message", @event.Payload.Message);
             if (@event.Payload.Exceptions != null && @event.Payload.Exceptions.Count > 0)
             {
-                var exception = string.Join("\\n   ---\\n", @event.Payload.Exceptions).Truncate(maxExceptionLength);
+                var exception = string.Join("\n   ---\n", @event.Payload.Exceptions).Truncate(maxExceptionLength);
                 indexRecord.Add("Exception", exception);
             }
 
