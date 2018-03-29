@@ -160,7 +160,7 @@ namespace Vostok.Airlock.Consumer
                 log.Error($"Could not get metadata, consumerName: {consumer.Name}, memberId: {consumer.MemberId}", e);
                 return true;
             }
-            log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
+            //log.Debug($"GotMetadata: consumerName: {consumer.Name}, memberId: {consumer.MemberId}, metadata: {metadata}");
 
             var topicsToSubscribeTo = new HashSet<string>();
             foreach (var topicMetadata in metadata.Topics)
