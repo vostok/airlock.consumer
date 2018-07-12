@@ -6,6 +6,7 @@ using Vostok.Clusterclient.Topology;
 using Vostok.Commons.Extensions.UnitConvertions;
 using Vostok.Logging;
 using Vostok.Logging.Logs;
+using Vostok.Metrics;
 
 namespace Vostok.Airlock.Consumer.IntergationTests
 {
@@ -21,21 +22,24 @@ namespace Vostok.Airlock.Consumer.IntergationTests
         {
             Log.Debug($"Pushing {events.Length} events to airlock");
             var sw = Stopwatch.StartNew();
-            ParallelAirlockClient airlockClient;
+            AirlockClient airlockClient;
             using (airlockClient = CreateAirlockClient())
             {
                 foreach (var @event in events)
                     airlockClient.Push(routingKey, @event, getTimestamp(@event));
             }
-            Log.Debug($"SentItemsCount: {airlockClient.SentItemsCount}, LostItemsCount: {airlockClient.LostItemsCount}, Elapsed: {sw.Elapsed}");
-            airlockClient.LostItemsCount.Should().Be(0);
-            airlockClient.SentItemsCount.Should().Be(events.Length);
+
+            var airlockClientCounters = airlockClient.Counters;
+            Log.Debug($"SentItemsCount: {airlockClientCounters.SentItems.GetValue()}, LostItemsCount: {airlockClientCounters.LostItems.GetValue()}, Elapsed: {sw.Elapsed}");
+            airlockClientCounters.LostItems.GetValue().Should().Be(0);
+            airlockClientCounters.SentItems.GetValue().Should().Be(events.Length);
+            MetricClocks.Stop();
         }
 
-        private static ParallelAirlockClient CreateAirlockClient()
+        private static AirlockClient CreateAirlockClient()
         {
             var airlockConfig = GetAirlockConfig();
-            return new ParallelAirlockClient(airlockConfig, 10, Log.FilterByLevel(LogLevel.Warn));
+            return new AirlockClient(airlockConfig, Log.FilterByLevel(LogLevel.Warn));
         }
 
         private static AirlockConfig GetAirlockConfig()
@@ -54,6 +58,8 @@ namespace Vostok.Airlock.Consumer.IntergationTests
                 InitialPooledBufferSize = 10.Megabytes(),
                 InitialPooledBuffersCount = 10,
                 EnableTracing = false,
+                Parallelism = 10,
+                EnableMetrics = false
             };
             Log.Debug($"AirlockConfig: {airlockConfig.ToPrettyJson()}");
             return airlockConfig;
