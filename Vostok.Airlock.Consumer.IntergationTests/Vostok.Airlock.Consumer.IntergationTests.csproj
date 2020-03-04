@@ -15,19 +15,19 @@
   <ItemGroup>
     <Reference Include="Vostok.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.core\Vostok.Core\bin\Release\netstandard2.0\Vostok.Core.dll</HintPath>
+      <HintPath>..\..\vostok.legacy.core\Vostok.Core\bin\Release\netstandard2.0\Vostok.Core.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Airlock.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.airlock.client\Vostok.Airlock.Client\bin\Release\netstandard2.0\Vostok.Airlock.Client.dll</HintPath>
+      <HintPath>..\..\vostok.legacy.airlock.client\Vostok.Airlock.Client\bin\Release\netstandard2.0\Vostok.Airlock.Client.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.ClusterClient">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.clusterclient\Vostok.ClusterClient\bin\Release\netstandard2.0\Vostok.ClusterClient.dll</HintPath>
+      <HintPath>..\..\vostok.legacy.clusterclient\Vostok.ClusterClient\bin\Release\netstandard2.0\Vostok.ClusterClient.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Contrails.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.contrails.api\Vostok.Contrails.Client\bin\Release\netstandard2.0\Vostok.Contrails.Client.dll</HintPath>
+      <HintPath>..\..\vostok.legacy.contrails.api\Vostok.Contrails.Client\bin\Release\netstandard2.0\Vostok.Contrails.Client.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -1,13 +1,12 @@
 full-build *default:
   deps:
-    - vostok.clusterclient.transport.http
-    - vostok.clusterclient
-    - vostok.core
-    - vostok.hosting.core
-    - vostok.airlock.client
-    - vostok.graphite.reporter
-    - vostok.contrails.api
-    - vostok.logging.serilog
+    - vostok.legacy.clusterclient.transport.http
+    - vostok.legacy.clusterclient
+    - vostok.legacy.core
+    - vostok.legacy.airlock.client
+    - vostok.legacy.graphite.reporter
+    - vostok.legacy.contrails.api
+    - vostok.legacy.logging.serilog
 
   build:
     target: Vostok.Airlock.Consumer.sln
