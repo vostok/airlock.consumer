@@ -35,7 +35,7 @@ namespace Vostok.Airlock.Consumer.Logs
                     {
                         RoutingKey.Parse(@event.RoutingKey, out var project, out var environment, out var service,
                             out var _);
-                        var indexName = $"{project}-{environment}-{@event.Payload.Timestamp.Date:yyyy.MM.dd}";
+                        var indexName = $"{project}-{environment}";
                         var indexRecordMeta = BuildIndexRecordMeta(indexName);
                         var indexRecord = BuildIndexRecord(@event, service);
                         return new {indexName, indexRecordMeta, indexRecord};
