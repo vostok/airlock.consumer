@@ -153,7 +153,7 @@ namespace Vostok.Airlock.Consumer
             Metadata metadata;
             try
             {
-                metadata = consumer.GetMetadata(allTopics: true, timeout: settings.UpdateSubscriptionTimeout);
+                metadata = consumer.GetMetadata(allTopics: true, timeout: settings.ReadFromKafkaTimeout);
             }
             catch (Exception e)
             {
@@ -234,33 +234,12 @@ namespace Vostok.Airlock.Consumer
                     if (!startTimestampOnRebalance.HasValue)
                     {
                         log.Debug("startTimestampOnRebalance is null");
-                        topicPartitionOffsets.AddRange(newPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid)));
+                        topicPartitionOffsets.AddRange(GetNewTopicPartitionOffsets(newPartitions, routingKey));
                     }
                     else
                     {
                         log.Debug("startTimestampOnRebalance is not null");
-                        var timestampToSearch = new Timestamp(startTimestampOnRebalance.Value.ToUnixTimeMilliseconds(), TimestampType.NotAvailable);
-                        var timestampsToSearch = newPartitions.Select(x => new TopicPartitionTimestamp(routingKey, x, timestampToSearch));
-                        var offsetsForTimes = consumer.OffsetsForTimes(timestampsToSearch, settings.OffsetsForTimesTimeout);
-                        foreach (var topicPartitionOffset in offsetsForTimes)
-                        {
-                            if (!topicPartitionOffset.Error)
-                            {
-                                var offset = topicPartitionOffset.Offset;
-                                if (offset == timestampToSearch.UnixTimestampMs)
-                                {
-                                    offset = Offset.Invalid;
-                                    log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} failed to get offset for timestamp: timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffset}");
-                                }
-                                log.Debug($"set offset {offset} for partition {topicPartitionOffset.TopicPartition}");
-                                topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffset.TopicPartition, offset));
-                            }
-                            else
-                            {
-                                log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId}, failed to get offset for timestamp {startTimestampOnRebalance}: {topicPartitionOffset}");
-                                topicPartitionOffsets.Add(new TopicPartitionOffset(topicPartitionOffset.TopicPartition, Offset.Invalid));
-                            }
-                        }
+                        topicPartitionOffsets.AddRange(GetNewTopicPartitionOffsetsFromTimestamp(startTimestampOnRebalance.Value, newPartitions, routingKey));
                     }
                 }
                 var remainingPartitions = partitionsToAssign.Except(topicPartitionOffsets.Where(x => x.Topic == routingKey).Select(x => x.Partition)).ToArray();
@@ -283,6 +262,72 @@ namespace Vostok.Airlock.Consumer
             if (topicPartitionOffsets.Count != topicPartitions.Count)
                 throw new InvalidOperationException($"AssertionFailure: topicPartitionOffsets.Count ({topicPartitionOffsets.Count}) != topicPartitions.Count ({topicPartitions.Count})");
             return topicPartitionOffsets;
+        }
+
+        private void ShowTopicPartitionOffsetErrors(IEnumerable<TopicPartitionOffsetError> tpo, string message)
+        {
+            var errorPartitions = tpo.Where(x => x.Error).Select(x => x.Partition).ToArray();
+            if (errorPartitions.Length > 0)
+            {
+                log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId}, partitions: {string.Join(",", errorPartitions)}, {message}");
+            }
+        }
+
+        private IEnumerable<TopicPartitionOffset> GetNewTopicPartitionOffsets(IReadOnlyCollection<int> newPartitions, string routingKey)
+        {
+            var commitedOffsets = consumer.Committed(newPartitions.Select(x => new TopicPartition(routingKey, x)), settings.ReadFromKafkaTimeout).ToArray();
+            ShowTopicPartitionOffsetErrors(commitedOffsets, "failed to get commited offsets");
+            var commitedDictionary = commitedOffsets.ToDictionary(x => x.Partition);
+            var uncommitedPartitions = newPartitions.Where(x => !commitedDictionary.TryGetValue(x, out var curOffset) || !curOffset.Error && curOffset.Offset == Offset.Invalid).ToArray();
+            if (uncommitedPartitions.Length == 0)
+            {
+                log.Debug($"consumerName: {consumer.Name}, memberId: {consumer.MemberId}, all partitions was commited earlier, continue from stored positions");
+                return newPartitions.Select(x => new TopicPartitionOffset(routingKey, x, Offset.Invalid));
+            }
+
+            var offsetTimestamp = DateTimeOffset.UtcNow.Subtract(settings.OffsetForNewTopics);
+            log.Debug($"consumerName: {consumer.Name}, memberId: {consumer.MemberId}, unknown partitions found, try to get positions from timestamp {offsetTimestamp}, unknown partitions: {string.Join(",", uncommitedPartitions)}");
+            var timestampToSearch = new Timestamp(offsetTimestamp.ToUnixTimeMilliseconds(), TimestampType.NotAvailable);
+            var timestampsToSearch = uncommitedPartitions.Select(x => new TopicPartitionTimestamp(routingKey, x, timestampToSearch));
+            var uncommitedOffsets = consumer.OffsetsForTimes(timestampsToSearch, settings.ReadFromKafkaTimeout).ToArray();
+            ShowTopicPartitionOffsetErrors(uncommitedOffsets, $"failed to get offsets for timestamp {offsetTimestamp}");
+            var uncommitedOffsetsDictionary = uncommitedOffsets.ToDictionary(x => x.Partition);
+
+            return newPartitions.Select(
+                x =>
+                {
+                    if (!uncommitedOffsetsDictionary.TryGetValue(x, out var curOffset) || !curOffset.Error && curOffset.Offset != Offset.Invalid)
+                    {
+                        return new TopicPartitionOffset(routingKey, x, curOffset.Offset);
+                    }
+
+                    return new TopicPartitionOffset(routingKey, x, Offset.Invalid);
+                });
+        }
+
+        private IEnumerable<TopicPartitionOffset> GetNewTopicPartitionOffsetsFromTimestamp(DateTimeOffset startTimestamp, List<int> newPartitions, string routingKey)
+        {
+            var timestampToSearch = new Timestamp(startTimestamp.ToUnixTimeMilliseconds(), TimestampType.NotAvailable);
+            var timestampsToSearch = newPartitions.Select(x => new TopicPartitionTimestamp(routingKey, x, timestampToSearch));
+            var offsetsForTimes = consumer.OffsetsForTimes(timestampsToSearch, settings.ReadFromKafkaTimeout).ToArray();
+            ShowTopicPartitionOffsetErrors(offsetsForTimes, $"failed to get offsets for timestamp {startTimestamp}");
+            foreach (var topicPartitionOffset in offsetsForTimes)
+            {
+                if (topicPartitionOffset.Error)
+                    yield return new TopicPartitionOffset(topicPartitionOffset.TopicPartition, Offset.Invalid);
+                else
+                {
+                    var offset = topicPartitionOffset.Offset;
+                    if (offset == timestampToSearch.UnixTimestampMs)
+                    {
+                        offset = Offset.Invalid;
+                        log.Error($"consumerName: {consumer.Name}, memberId: {consumer.MemberId} failed to get offset for timestamp: timestampToSearch ({timestampToSearch.UnixTimestampMs}) == offset for: {topicPartitionOffset}");
+                    }
+
+                    log.Debug($"set offset {offset} for partition {topicPartitionOffset.TopicPartition}");
+                    yield return new TopicPartitionOffset(topicPartitionOffset.TopicPartition, offset);
+                }
+            }
         }
 
         private void OnMessage(Message<Null, byte[]> message)
